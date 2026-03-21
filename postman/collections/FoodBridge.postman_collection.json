@@ -1,0 +1,588 @@
+{
+  "info": {
+    "_postman_id": "81c16601-0496-47f0-8f16-6c5f5d4d03d3",
+    "name": "FoodBridge",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cadastro/Login/Admin",
+      "item": [
+        {
+          "name": "Login Usuario",
+          "id": "dd6669f5-bdc3-4dd1-a86f-a0bd15e1a40d",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"admin@foodbridge.com\",\r\n    \"senha\": \"admin123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Usuario - Admin",
+          "id": "1e9213d6-7f60-45db-beed-1a60b6b7b23d",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"admin@foodbridge.com\",\r\n    \"senha\": \"admin123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Selecionar Organização - Gerar Token completo",
+          "id": "55a9b9e2-4136-4e1d-9f49-bcd73f34706d",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQxMzAwNjcsImV4cCI6MTc3NDEzMDM2N30.cn_bg3J60WzCDkPBppiGoPGJGFf3CVGObqIfVu-aDX8",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"organizacaoId\": 2\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/select-org",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "select-org"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Rota Admin - Organizacoes",
+          "id": "d7555973-f4c6-459d-ad8f-6f2bbdfec1b9",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/organizacoes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "organizacoes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Rota Admin - Organizacoes Pendentes",
+          "id": "4ad8ac87-7780-4c66-a95f-f9e1c07d97f5",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDA2NjMxMCwiZXhwIjoxNzc0MTUyNzEwfQ.skTB4I6WUTblDA2grY7zdANeljmhftww2upK3IHOWxo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/organizacoes/pendentes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "organizacoes",
+                "pendentes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rota Admin - Aprovar Organização",
+          "id": "fe8a38b8-c0da-4b3c-8e4b-157187b0e532",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/organizacoes/{{$id}}/aprovar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "organizacoes",
+                "{{$id}}",
+                "aprovar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rota Admin - Reprovar Organização",
+          "id": "381fb977-56e8-4727-97c1-a0f1aaebf824",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDA2NjMxMCwiZXhwIjoxNzc0MTUyNzEwfQ.skTB4I6WUTblDA2grY7zdANeljmhftww2upK3IHOWxo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/organizacoes/{{$id}}/reprovar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "organizacoes",
+                "{{$id}}",
+                "reprovar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Rota Admin - Usuários",
+          "id": "ca98c5a7-b9ef-4af8-ad7d-e2d77183b1ce",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEyOTY2MywiZXhwIjoxNzc0MjE2MDYzfQ.y0Sa8_37GoYHi3f5V4zwqnzS33G8d5Dvou6rM2XuuR4",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/usuarios",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Rota Admin - Usuários Pendentes de Aprovação",
+          "id": "20a612cc-5823-408f-94c3-4c7bc4d44bc9",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDA2NjMxMCwiZXhwIjoxNzc0MTUyNzEwfQ.skTB4I6WUTblDA2grY7zdANeljmhftww2upK3IHOWxo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/usuarios/pendentes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "usuarios",
+                "pendentes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rota Admin - Aprovar Usuario",
+          "id": "56f92699-4096-44e0-a9a0-df7d7add0605",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/usuarios/{{id}}/aprovar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "usuarios",
+                "{{id}}",
+                "aprovar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rota Admin - Reprovar Usuario",
+          "id": "941c1354-eb38-43a5-87ff-e2e2e380ae79",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDExMDM4OSwiZXhwIjoxNzc0MTk2Nzg5fQ.ao7Y7yJA1vylO3jD2Nz-8UKC0sLB3G1mKl7mfvt5jEQ",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/usuarios/{{id}}/reprovar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "admin",
+                "usuarios",
+                "{{id}}",
+                "reprovar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Organizacao",
+          "id": "85b04a19-cadd-49dd-b0d1-eab5047810b7",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQxMzAwNjcsImV4cCI6MTc3NDEzMDM2N30.cn_bg3J60WzCDkPBppiGoPGJGFf3CVGObqIfVu-aDX8",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"ONG Amigos do Bem\",\r\n  \"cnpj\": \"12345678000100\",\r\n  \"description\": \"Organização voltada a ações sociais\",\r\n  \"telefone\": \"11999999999\",\r\n  \"email\": \"contato@amigosdobemjoao.org\",\r\n  \"website\": \"https://amigosdobem.org\",\r\n  \"role\": \"ONG\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/organizacoes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "organizacoes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Usuario",
+          "id": "963e8a69-78bf-4ac8-b9b4-e12acbd6786f",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDExMTc1NCwiZXhwIjoxNzc0MTk4MTU0fQ.d-Hai5wUG03m-vqwwKB8PVoL0dus1m-GTPkKVEROT28",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Daniel Almeida\",\r\n  \"email\": \"danieldealmeidadev@outlook.com\",\r\n  \"senha\": \"123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/usuarios/criar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "usuarios",
+                "criar"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "1fca02c0-edf7-4b3f-aec8-ac29a143e183"
+    }
+  ]
+}
