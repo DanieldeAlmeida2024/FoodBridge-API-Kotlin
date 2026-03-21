@@ -3,7 +3,10 @@ package com.br.foodbridge.service.utils
 import com.br.foodbridge.config.JwtConfig
 import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.enums.UserStatus
+import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
+import com.br.foodbridge.domain.repository.UsuarioRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -14,7 +17,9 @@ import java.util.Date
 @Component
 class JwtService(
     private val jwtConfig: JwtConfig,
-    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository
+    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository,
+    private val usuarioRepository: UsuarioRepository,
+    private val organizacaoRepository: OrganizacaoRepository
 ) {
 
     companion object {
@@ -131,21 +136,36 @@ class JwtService(
     // 🔹 CONVERSÃO TEMP → ACCESS
     // =========================================================
 
-    fun generateAccessFromTemp(
-        tempToken: String,
-        organizacaoId: Long
-    ): TokenData {
-
+    fun generateAccessFromTemp(tempToken: String, organizacaoId: Long): TokenData {
+        // Extrai usuário do token TEMP
         val usuarioId = extractTempTokenData(tempToken).usuarioId
 
+        // Busca usuário e organização, lançando erro caso não existam
+        val usuario = usuarioRepository.findById(usuarioId)
+            .orElseThrow { IllegalArgumentException("Usuário não encontrado") }
+
+        val organizacao = organizacaoRepository.findById(organizacaoId)
+            .orElseThrow { IllegalArgumentException("Organização não encontrada") }
+
+        // Busca vínculo entre usuário e organização
         val vinculo = usuarioOrganizacaoRepository
             .findByUsuarioIdAndOrganizacaoId(usuarioId, organizacaoId)
             ?: throw IllegalArgumentException("Vínculo não encontrado")
-        println(vinculo.status)
-        require(vinculo.status == StatusOrganizacao.VERIFICADO) {
-            "Usuário não aprovado"
+
+        // Valida os status necessários
+        if (vinculo.status != StatusOrganizacao.VERIFICADO) {
+            throw IllegalStateException("Usuário não aprovado na organização")
         }
 
+        if (usuario.status != UserStatus.VERIFICADO) {
+            throw IllegalStateException("Usuário ainda não foi aprovado")
+        }
+
+        if (organizacao.status != StatusOrganizacao.VERIFICADO) {
+            throw IllegalStateException("Organização ainda não foi aprovada")
+        }
+
+        // Gera token de acesso final (ACCESS)
         val token = generateAccessToken(
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,

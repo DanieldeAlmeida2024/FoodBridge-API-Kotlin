@@ -1,0 +1,381 @@
+{
+  "info": {
+    "_postman_id": "c1087661-8d2d-4f58-ba06-4eb3a295a276",
+    "name": "FoodBridge Automated Flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Criar Usuário",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "e1d4e93a-253b-4bec-adab-6d7c8a480c92",
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "8199b94f-f193-41ac-acaf-4fd99e4820cd",
+            "exec": [
+              "var requestBody = JSON.parse(pm.request.body.raw);\r",
+              "pm.collectionVariables.set(\"lastCreatedUserEmail\", requestBody.email);\r",
+              "pm.collectionVariables.set(\"lastCreatedUserPassword\", requestBody.senha);\r",
+              "console.log('Usuário criado: ' + pm.collectionVariables.get('lastCreatedUserEmail'));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "42dd091e-b570-47da-ba59-929ca16a2281",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "uuid": "c8c5748c-8754-4256-9b20-5baf38fb49c1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nome\": \"Usuario Flow {{$randomInt}}\",\r\n    \"email\": \"flow_user_{{$randomInt}}@example.com\",\r\n    \"senha\": \"password123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/usuarios/criar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "usuarios",
+            "criar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login Usuário (Temporário)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "a04fd67e-2a63-44f7-9a54-8818ce990206",
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "6ed55d50-d22f-4506-bdef-eefe4998bf9c",
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "if (jsonData && jsonData.tempToken) {\r",
+              "    pm.collectionVariables.set(\"temporaryToken\", jsonData.tempToken);\r",
+              "    console.log('Token Temporário: ' + pm.collectionVariables.get('temporaryToken'));\r",
+              "} else {\r",
+              "    console.error('Token temporário não encontrado na resposta.');\r",
+              "}\r",
+              "if (jsonData && jsonData.organizacoes) {\r",
+              "    pm.collectionVariables.set(\"organizacoesList\", JSON.stringify(jsonData.organizacoes));\r",
+              "    console.log('Lista de Organizações: ' + pm.collectionVariables.get('organizacoesList'));\r",
+              "} else {\r",
+              "    pm.collectionVariables.set(\"organizacoesList\", \"[]\");\r",
+              "    console.log('Nenhuma organização encontrada ou lista vazia.');\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "c10d2f76-cde8-4c64-a32e-cee2ecf04a9a",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "uuid": "61d068b9-9bd3-461d-bdc0-e0d0babc383d"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{lastCreatedUserEmail}}\",\r\n    \"senha\": \"{{lastCreatedUserPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Cadastrar Organização (Opcional)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "d2fbcc22-95e1-426e-948e-cc40aa5b4a81",
+            "exec": [
+              "// Reset organizacaoId para garantir que não use um valor antigo\r",
+              "pm.collectionVariables.set(\"organizacaoId\", \"\");\r",
+              "var organizacoes = JSON.parse(pm.collectionVariables.get(\"organizacoesList\"));\r",
+              "if (organizacoes && organizacoes.length > 0) {\r",
+              "    pm.collectionVariables.set(\"organizacaoId\", organizacoes[0].id);\r",
+              "    console.log('Organização existente encontrada com ID: ' + pm.collectionVariables.get('organizacaoId'));\r",
+              "    pm.request.abort(); // Aborta a requisição se já houver organização\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "6effaa5a-048c-4f95-aec2-3a7e4e8359fd",
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "if (jsonData && jsonData.id) {\r",
+              "    pm.collectionVariables.set(\"organizacaoId\", jsonData.id);\r",
+              "    console.log('Organização criada com ID: ' + pm.collectionVariables.get('organizacaoId'));\r",
+              "} else {\r",
+              "    console.error('ID da organização não encontrado na resposta de criação.');\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "3424932a-6c3f-4928-bb10-293ec16c5741",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{temporaryToken}}",
+            "type": "text",
+            "uuid": "db53cd36-4847-4937-b4c9-33343d3e3297"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/vnd.api+json",
+            "type": "text",
+            "uuid": "2fe0d3a4-8add-48db-901e-ae54bcdadec5"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nome\": \"ONG Flow Teste {{$randomInt}}\",\r\n    \"cnpj\": \"{{$randomInt}}0001{{$randomInt}}\",\r\n    \"description\": \"Organização criada via Postman Flow\",\r\n    \"telefone\": \"119{{$randomInt}}{{$randomInt}}{{$randomInt}}{{$randomInt}}\",\r\n    \"email\": \"flow_org_{{$randomInt}}@example.com\",\r\n    \"website\": \"https://floworg.com\",\r\n    \"role\": \"ONG\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/organizacoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "organizacoes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Selecionar Organização (Token Completo)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "a3f66c8f-ac72-4537-874d-cf0d4d4c53d7",
+            "exec": [
+              "// Se organizacaoId não foi definido pela criação de uma nova org, pega da lista existente\r",
+              "if (!pm.collectionVariables.get(\"organizacaoId\")) {\r",
+              "    var organizacoes = JSON.parse(pm.collectionVariables.get(\"organizacoesList\"));\r",
+              "    if (organizacoes && organizacoes.length > 0) {\r",
+              "        pm.collectionVariables.set(\"organizacaoId\", organizacoes[0].id);\r",
+              "        console.log('Usando ID da primeira organização existente: ' + pm.collectionVariables.get('organizacaoId'));\r",
+              "    } else {\r",
+              "        console.error('Nenhuma organização disponível para seleção. Verifique se o passo 3 foi executado ou se o usuário possui organizações.');\r",
+              "        pm.request.abort();\r",
+              "    }\r",
+              "}\r",
+              "console.log('Preparando para selecionar organização com ID: ' + pm.collectionVariables.get('organizacaoId'));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "15f0fbb2-942b-4b13-8ade-348a4f70286f",
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "if (jsonData && jsonData.token) {\r",
+              "    pm.collectionVariables.set(\"fullToken\", jsonData.token);\r",
+              "    console.log('Token Completo: ' + pm.collectionVariables.get('fullToken'));\r",
+              "} else {\r",
+              "    console.error('Token completo não encontrado na resposta.');\r",
+              "}\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Token completo foi gerado\", function () {\r",
+              "    pm.expect(pm.collectionVariables.get(\"fullToken\")).to.be.a(\"string\").and.to.have.lengthOf.at.least(1);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "28585140-a411-403e-a1a0-dc08a28c79ad",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{temporaryToken}}",
+            "type": "text",
+            "uuid": "153dcb7f-b572-4aad-b6b9-cf7e9b577ab8"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text",
+            "uuid": "9a030f4c-a4de-42cc-943d-73e48b7e9ee5"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"organizacaoId\": {{organizacaoId}}\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/select-org",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "select-org"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "id": "360970d4-4e91-4202-be62-e345d3694b75",
+      "key": "baseUrl",
+      "value": "",
+      "description": {
+        "content": "URL base da API",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "90e164c4-18c0-4f8e-943a-3dd630cd6005",
+      "key": "lastCreatedUserEmail",
+      "value": "",
+      "description": {
+        "content": "Email do último usuário criado para o fluxo",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "58ff9520-779b-49e6-8cf2-a04c75c79785",
+      "key": "lastCreatedUserPassword",
+      "value": "",
+      "description": {
+        "content": "Senha do último usuário criado para o fluxo",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "3cd3d820-2cc2-41b1-bee0-0b7c43d0e0bc",
+      "key": "temporaryToken",
+      "value": "",
+      "description": {
+        "content": "Token temporário obtido após o login",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "e6d73ee8-f6d6-41a1-b360-bf3fd09d0bce",
+      "key": "organizacoesList",
+      "value": "",
+      "description": {
+        "content": "Lista de organizações associadas ao usuário (JSON string )",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "6fd79c06-7cdc-4950-9f8e-e5df795624e4",
+      "key": "organizacaoId",
+      "value": "",
+      "description": {
+        "content": "ID da organização selecionada ou criada",
+        "type": "text/plain"
+      }
+    },
+    {
+      "id": "6dd5b29f-d827-45e5-840a-305ea0735123",
+      "key": "fullToken",
+      "value": "",
+      "description": {
+        "content": "Token de acesso completo após a seleção da organização",
+        "type": "text/plain"
+      }
+    }
+  ]
+}
