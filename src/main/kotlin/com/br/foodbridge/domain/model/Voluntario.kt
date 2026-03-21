@@ -1,14 +1,39 @@
 package com.br.foodbridge.domain.model
 
 import com.br.foodbridge.domain.enums.StatusVoluntario
+import jakarta.persistence.*
+import java.time.LocalDateTime
 
+@Entity
+@Table(name = "voluntarios")
 data class Voluntario(
-    val id: Int,
-    val Ongs: String,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
+
+    @Column(nullable = false)
     val nome: String,
+
+    @Column(nullable = false)
     val telefone: String,
+
+    @Column(nullable = false, unique = true)
     val email: String,
+
+    @Column(nullable = false)
     val endereco: String,
+
+    @Column(nullable = false, unique = true)
     val cpf: String,
-    val status: StatusVoluntario
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val status: StatusVoluntario,
+
+    @Column(nullable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @OneToMany(mappedBy = "voluntario", fetch = FetchType.LAZY)
+    val organizacoes: MutableList<VoluntarioOrganizacao> = mutableListOf()
 )

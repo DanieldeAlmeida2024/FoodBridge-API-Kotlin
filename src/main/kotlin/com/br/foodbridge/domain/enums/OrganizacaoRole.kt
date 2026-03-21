@@ -1,6 +1,6 @@
 package com.br.foodbridge.domain.enums
 
-enum class UserRole {
+enum class OrganizacaoRole {
     DOADOR,
     PRODUTOR,
     DISTRIBUIDOR,
