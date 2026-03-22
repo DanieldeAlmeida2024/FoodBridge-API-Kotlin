@@ -46,18 +46,12 @@ class JwtFilter(
                 JwtService.TOKEN_TYPE_ACCESS -> {
                     val data = jwtService.extractAccessTokenData(token)
 
-                    RequestContext.set(
-                        usuarioId = data.usuarioId,
-                        organizacaoId = data.organizacaoId,
-                        role = data.role
-                    )
-
                     val authorities = listOf(
                         SimpleGrantedAuthority("ROLE_${data.role}")
                     )
 
                     val authentication = UsernamePasswordAuthenticationToken(
-                        data.usuarioId.toString(),
+                        data,
                         null,
                         authorities
                     )
@@ -65,17 +59,21 @@ class JwtFilter(
                     SecurityContextHolder.getContext().authentication = authentication
                 }
 
-                // 🟡 TOKEN TEMP → apenas contexto (SEM Spring Security)
+                // 🟡 TOKEN TEMP → autentica no Spring com role TEMP
                 JwtService.TOKEN_TYPE_TEMP -> {
                     val data = jwtService.extractTempTokenData(token)
 
-                    RequestContext.set(
-                        usuarioId = data.usuarioId,
-                        organizacaoId = null,
-                        role = null
+                    val authorities = listOf(
+                        SimpleGrantedAuthority("ROLE_TEMP")
                     )
 
-                    // 🚫 NÃO autentica no Spring
+                    val authentication = UsernamePasswordAuthenticationToken(
+                        data,
+                        null,
+                        authorities
+                    )
+
+                    SecurityContextHolder.getContext().authentication = authentication
                 }
 
                 else -> {
@@ -87,16 +85,10 @@ class JwtFilter(
             // 🔥 NÃO quebra a request
             // Apenas ignora token inválido
 
-            RequestContext.clear()
             SecurityContextHolder.clearContext()
         }
 
-        try {
-            filterChain.doFilter(request, response)
-        } finally {
-            // 🔹 Sempre limpa contexto custom
-            RequestContext.clear()
-        }
+        filterChain.doFilter(request, response)
     }
 
     // =========================================================

@@ -5,7 +5,8 @@ import com.br.foodbridge.controller.dto.usuario.UsuarioDTO
 import com.br.foodbridge.controller.dto.usuario.UsuarioOrganizacaoDTO
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
-import com.br.foodbridge.middleware.RequestContext
+import com.br.foodbridge.controller.dto.auth.TokenData
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.AdminService
 import com.br.foodbridge.service.UsuarioService
 import org.springframework.http.HttpStatus
@@ -62,21 +63,21 @@ class AdminController(
 
     // 🔹 Aprovar usuário (feito por outro usuário ativo da mesma organização)
     @PostMapping("/usuarios/{id}/aprovar")
-    fun aprovarUsuario(@PathVariable id: Long): ResponseEntity<Void> {
-        val aprovador = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-
-        adminService.aprovarUsuario(id, aprovador.id!!)
+    fun aprovarUsuario(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+        adminService.aprovarUsuario(id, tokenData.usuarioId)
         return ResponseEntity.noContent().build()
     }
 
     // 🔹 Reprovar usuário
     @PostMapping("/usuarios/{id}/reprovar")
-    fun reprovarUsuario(@PathVariable id: Long): ResponseEntity<Void> {
-        val reprovador = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-
-        adminService.reprovarUsuario(id, reprovador.id!!)
+    fun reprovarUsuario(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+        adminService.reprovarUsuario(id, tokenData.usuarioId)
         return ResponseEntity.noContent().build()
     }
 }

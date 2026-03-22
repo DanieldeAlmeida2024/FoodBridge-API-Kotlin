@@ -4,7 +4,8 @@ import com.br.foodbridge.controller.dto.usuario.*
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.domain.model.Usuario
 
-import com.br.foodbridge.middleware.RequestContext
+import com.br.foodbridge.controller.dto.auth.TokenData
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.UsuarioService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,7 +22,7 @@ class UsuarioController(
         @RequestBody request: CreateUpdateUserRequest
     ): ResponseEntity<UsuarioDTO?> {
 
-        // ✅ NÃO chama RequestContext, usuário pode ser null
+        // Usuário pode ser null na criação
         val usuario = usuarioService.createUser(request)
 
         // Retorna DTO sem senha
@@ -38,30 +39,38 @@ class UsuarioController(
 
     // 🔍 Usuário logado
     @GetMapping("/eu")
-    fun getMe(): ResponseEntity<Usuario> {
-        val usuario =RequestContext.getUsuario(usuarioService)
-            ?: throw IllegalStateException("Usuário não autenticado")
+    fun getMe(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<Usuario> {
+        val usuario = usuarioService.findByIdEntity(tokenData.usuarioId)
         return ResponseEntity.ok(usuario)
     }
 
     // 🔗 Organizações vinculadas do usuário logado
     @GetMapping("/eu/organizacoes")
-    fun getMyOrganizations(): ResponseEntity<List<OrganizacaoResumoDTO>> {
-        val organizacoes = usuarioService.listarOrganizacoesDoUsuario()
+    fun getMyOrganizations(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<List<OrganizacaoResumoDTO>> {
+        val organizacoes = usuarioService.listarOrganizacoesDoUsuario(tokenData.usuarioId)
         return ResponseEntity.ok(organizacoes)
     }
 
     // ✏️ Atualizar dados do usuário logado
     @PutMapping("/eu")
-    fun updateMe(@RequestBody request: CreateUpdateUserRequest): ResponseEntity<UsuarioResponse> {
-        val usuarioAtualizado = usuarioService.update(request)
+    fun updateMe(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @RequestBody request: CreateUpdateUserRequest
+    ): ResponseEntity<UsuarioResponse> {
+        val usuarioAtualizado = usuarioService.update(tokenData.usuarioId, request)
         return ResponseEntity.ok(usuarioAtualizado)
     }
 
     // ❌ Deletar conta do usuário logado
     @DeleteMapping("/eu")
-    fun deleteMe(): ResponseEntity<Void> {
-        usuarioService.delete()
+    fun deleteMe(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<Void> {
+        usuarioService.delete(tokenData.usuarioId)
         return ResponseEntity.noContent().build()
     }
 }

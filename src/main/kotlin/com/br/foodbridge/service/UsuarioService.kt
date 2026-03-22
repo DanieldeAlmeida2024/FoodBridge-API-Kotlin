@@ -12,7 +12,7 @@ import com.br.foodbridge.domain.model.UsuarioOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioRepository
-import com.br.foodbridge.middleware.RequestContext
+
 import com.br.foodbridge.service.utils.JwtService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -33,11 +33,6 @@ class UsuarioService(
             .orElseThrow { IllegalArgumentException("Usuário não encontrado") }
     }
 
-    // 🔹 Buscar usuário logado (entidade)
-    private fun getUsuarioLogado(): Usuario =
-        RequestContext.getUsuario(this)
-            ?: throw IllegalStateException("Usuário não autenticado")
-
     // 🔹 CREATE usuário
     fun createUser(request: CreateUpdateUserRequest): Usuario {
         if (usuarioRepository.existsByEmail(request.email)) {
@@ -54,8 +49,8 @@ class UsuarioService(
     }
 
     // 🔹 UPDATE usuário logado
-    fun update(request: CreateUpdateUserRequest): UsuarioResponse {
-        val usuarioLogado = getUsuarioLogado()
+    fun update(usuarioId: Long, request: CreateUpdateUserRequest): UsuarioResponse {
+        val usuarioLogado = findByIdEntity(usuarioId)
 
         val atualizado = usuarioLogado.copy(
             nome = request.nome ?: usuarioLogado.nome,
@@ -68,8 +63,8 @@ class UsuarioService(
     }
 
     // 🔹 DELETE usuário logado
-    fun delete() {
-        val usuarioLogado = getUsuarioLogado()
+    fun delete(usuarioId: Long) {
+        val usuarioLogado = findByIdEntity(usuarioId)
 
         // Remove vínculos antes de deletar
         val vinculos = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioLogado.id!!)
@@ -80,9 +75,8 @@ class UsuarioService(
 
 
     // 🔹 Listar organizações do usuário logado
-    fun listarOrganizacoesDoUsuario(): List<OrganizacaoResumoDTO> {
-        val usuarioLogado = getUsuarioLogado()
-        val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioLogado.id!!)
+    fun listarOrganizacoesDoUsuario(usuarioId: Long): List<OrganizacaoResumoDTO> {
+        val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioId)
 
         return vinculacoes.map {
             OrganizacaoResumoDTO(

@@ -22,10 +22,10 @@ class OrganizacaoService(
     // 🔹 APROVAÇÃO / REPROVAÇÃO
     // =========================================================
 
-    fun aprovarUsuarioOrganizacao(vinculoId: Long, aprovadorId: Long) {
+    fun aprovarUsuarioOrganizacao(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
         val vinculo = getVinculoOrThrow(vinculoId)
 
-        val aprovador = getAprovadorValido(aprovadorId, vinculo.organizacao?.id!!)
+        validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
 
         vinculo.status = StatusOrganizacao.VERIFICADO
         vinculo.approvedAt = LocalDateTime.now()
@@ -33,10 +33,10 @@ class OrganizacaoService(
         usuarioOrganizacaoRepository.save(vinculo)
     }
 
-    fun reprovarUsuario(vinculoId: Long, aprovadorId: Long) {
+    fun reprovarUsuario(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
         val vinculo = getVinculoOrThrow(vinculoId)
 
-        getAprovadorValido(aprovadorId, vinculo.organizacao?.id!!)
+        validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
 
         vinculo.status = StatusOrganizacao.INATIVO
 
@@ -140,19 +140,17 @@ class OrganizacaoService(
         usuarioOrganizacaoRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Vínculo não encontrado") }
 
-    private fun getAprovadorValido(
-        aprovadorId: Long,
-        organizacaoId: Long
-    ): UsuarioOrganizacao {
-
-        val aprovador = usuarioOrganizacaoRepository
-            .findByUsuarioIdAndOrganizacaoId(aprovadorId, organizacaoId)
-            ?: throw IllegalArgumentException("Aprovador não pertence à organização")
-
-        if (aprovador.status != StatusOrganizacao.VERIFICADO) {
-            throw IllegalArgumentException("Apenas usuários ativos podem realizar essa ação")
+    private fun validarAcessoAprovacao(
+        organizacaoIdAlvo: Long,
+        organizacaoIdToken: Long?,
+        roleToken: String?
+    ) {
+        if (organizacaoIdToken != organizacaoIdAlvo) {
+            throw IllegalArgumentException("Usuário não pertence à organização")
         }
 
-        return aprovador
+        if (roleToken != OrganizacaoRole.ADMIN.name) {
+            throw IllegalArgumentException("Apenas administradores podem realizar essa ação")
+        }
     }
 }

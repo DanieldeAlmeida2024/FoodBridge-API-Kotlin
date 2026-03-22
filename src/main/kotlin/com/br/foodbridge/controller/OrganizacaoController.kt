@@ -4,7 +4,8 @@ import com.br.foodbridge.controller.dto.mapper.OrganizacaoMapper.toResponse
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.domain.model.Organizacao
-import com.br.foodbridge.middleware.RequestContext
+import com.br.foodbridge.controller.dto.auth.TokenData
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.OrganizacaoService
 import com.br.foodbridge.service.UsuarioService
 import org.springframework.http.HttpStatus
@@ -28,13 +29,11 @@ class OrganizacaoController(
 
     @PostMapping
     fun cadastrarOuVincular(
+        @AuthenticationPrincipal tokenData: TokenData,
         @RequestBody request: CreateUpdateOrganizacaoRequest
     ): ResponseEntity<OrganizacaoDTO> {
 
-        val usuario = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-
-        val usuarioEntity = usuarioService.findByIdEntity(usuario.id)
+        val usuarioEntity = usuarioService.findByIdEntity(tokenData.usuarioId)
 
         val organizacao = organizacaoService
             .cadastrarOuVincularOrganizacao(usuarioEntity, request)
@@ -60,11 +59,12 @@ class OrganizacaoController(
     }
 
     @GetMapping("/me")
-    fun getMinhaOrganizacao(): ResponseEntity<Organizacao> {
-        val usuario = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+    fun getMinhaOrganizacao(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<Organizacao> {
+        val usuario = usuarioService.findByIdEntity(tokenData.usuarioId)
 
-        val vinculo = usuario.organizacoes?.firstOrNull()
+        val vinculo = usuario.organizacoes?.firstOrNull { it.organizacao?.id == tokenData.organizacaoId }
         return if (vinculo != null) ResponseEntity.ok(vinculo.organizacao)
         else ResponseEntity.status(HttpStatus.NOT_FOUND).build()
     }
@@ -83,23 +83,20 @@ class OrganizacaoController(
 
     @PatchMapping("/usuarios/{vinculoId}/aprovar")
     fun aprovarUsuario(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
 
-        val usuario = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-
-        organizacaoService.aprovarUsuarioOrganizacao(vinculoId, usuario.id!!)
+        organizacaoService.aprovarUsuarioOrganizacao(vinculoId, tokenData.usuarioId, tokenData.organizacaoId, tokenData.role)
         return ResponseEntity.noContent().build()
     }
 
     @PatchMapping("/usuarios/{vinculoId}/reprovar")
     fun reprovarUsuario(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
-        val usuario = RequestContext.getUsuario(usuarioService)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        organizacaoService.reprovarUsuario(vinculoId, usuario.id!!)
+        organizacaoService.reprovarUsuario(vinculoId, tokenData.usuarioId, tokenData.organizacaoId, tokenData.role)
         return ResponseEntity.noContent().build()
     }
 }
