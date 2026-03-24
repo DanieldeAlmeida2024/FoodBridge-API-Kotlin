@@ -12,6 +12,7 @@ object OrganizacaoMapper {
         email = org.email,
         telefone = org.telefone,
         status = org.status,
-        usuarios = org.usuarios
+        usuarios = org.usuarios,
+        voluntarios = org.voluntarios
     )
 }

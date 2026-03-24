@@ -1,6 +1,7 @@
 package com.br.foodbridge.domain.model
 
 import com.br.foodbridge.domain.enums.StatusVoluntario
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -13,27 +14,24 @@ data class Voluntario(
     val id: Long? = null,
 
     @Column(nullable = false)
-    val nome: String,
+    val nome: String = "",
 
     @Column(nullable = false)
-    val telefone: String,
+    val telefone: String = "",
 
     @Column(nullable = false, unique = true)
-    val email: String,
+    val email: String = "",
 
     @Column(nullable = false)
-    val endereco: String,
+    val endereco: String = "",
 
     @Column(nullable = false, unique = true)
-    val cpf: String,
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val status: StatusVoluntario,
+    val cpf: String = "",
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @OneToMany(mappedBy = "voluntario", fetch = FetchType.LAZY)
+    @JsonIgnore
     val organizacoes: MutableList<VoluntarioOrganizacao> = mutableListOf()
 )

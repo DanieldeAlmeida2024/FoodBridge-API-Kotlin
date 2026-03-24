@@ -2,6 +2,7 @@ package com.br.foodbridge.controller.dto.organizacao
 
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
+import com.br.foodbridge.domain.model.VoluntarioOrganizacao
 
 data class OrganizacaoDTO(
 
@@ -11,5 +12,6 @@ data class OrganizacaoDTO(
     val status: StatusOrganizacao,
     val id: Long?,
     val nome: String,
-    val usuarios: MutableList<UsuarioOrganizacao>
+    val usuarios: MutableList<UsuarioOrganizacao>,
+    val voluntarios: MutableList<VoluntarioOrganizacao>
 )

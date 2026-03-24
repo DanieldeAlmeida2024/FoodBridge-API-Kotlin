@@ -79,7 +79,6 @@ class JwtFilter(
                 else -> {
                 }
             }
-
         } catch (ex: Exception) {
             SecurityContextHolder.clearContext()
         }
@@ -87,8 +86,6 @@ class JwtFilter(
     }
 
     // Helpers
-
-
     private fun extractToken(request: HttpServletRequest): String? {
         val header = request.getHeader("Authorization") ?: return null
 

@@ -25,6 +25,7 @@ class AdminService(
             cnpj = it.cnpj,
             email = it.email,
             telefone = it.telefone,
+            voluntarios = it.voluntarios,
         )
     }
 
@@ -39,6 +40,7 @@ class AdminService(
                 cnpj = it.cnpj,
                 email = it.email,
                 telefone = it.telefone,
+                voluntarios = it.voluntarios,
             )
         }
             .filter { it.status == StatusOrganizacao.DOCUMENTOS_PENDENTES }

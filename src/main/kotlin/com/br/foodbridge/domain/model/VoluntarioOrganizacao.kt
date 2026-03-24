@@ -1,5 +1,7 @@
 package com.br.foodbridge.domain.model
 
+import com.br.foodbridge.domain.enums.StatusVoluntario
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -19,11 +21,17 @@ data class VoluntarioOrganizacao(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "voluntario_id", nullable = false)
-    val voluntario: Voluntario,
+    val voluntario: Voluntario? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
-    val organizacao: Organizacao,
+    @JsonIgnore
+    val organizacao: Organizacao? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var status: StatusVoluntario = StatusVoluntario.ATIVO,
+
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()

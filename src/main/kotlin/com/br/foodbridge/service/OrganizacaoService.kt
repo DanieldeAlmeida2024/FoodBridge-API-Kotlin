@@ -37,8 +37,7 @@ class OrganizacaoService(
         request: CreateUpdateOrganizacaoRequest
     ): Organizacao {
         // Busca ou cria organização
-        val organizacao = organizacaoRepository.findByCnpj(request.cnpj)
-            ?: criarOrganizacao(request)
+        val organizacao = organizacaoRepository.findByCnpj(request.cnpj) ?: criarOrganizacao(request)
 
         // Verifica se já existe vínculo
         val vinculoExistente = usuarioOrganizacaoRepository
@@ -102,11 +101,9 @@ class OrganizacaoService(
 
     // DELETE - Ideia não excluir, mas gerar uma solicitação para o admin inabilitar (STATUS.INATIVO)
     fun delete(id: Long, vinculoId: Long) {
-        val vinculo = getVinculoOrThrow(vinculoId)
-        if (vinculo.id == vinculoId) {
-            val org = findById(id)
-            organizacaoRepository.delete(org)
-        }
+        val org = findById(id)
+        organizacaoRepository.delete(org)
+
     }
 
     // HELPERS

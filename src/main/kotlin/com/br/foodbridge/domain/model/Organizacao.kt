@@ -3,6 +3,7 @@ package com.br.foodbridge.domain.model
 import com.br.foodbridge.controller.dto.usuario.UsuarioOrganizacaoDTO
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
