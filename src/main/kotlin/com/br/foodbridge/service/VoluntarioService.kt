@@ -63,9 +63,5 @@ class VoluntarioService(
         return voluntarioRepository.save(novo)
     }
 
-    // DELETE
-    fun delete(id: Long) {
-        val v = findById(id)
-        voluntarioRepository.delete(v)
-    }
+    //implementar para que o usuário da organização não apague o voluntário, já que ele pode estar vinculado a outras ongs, apenas alterar o StatusVoluntario (INATIVO OU SUSPENSO)
 }

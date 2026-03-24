@@ -100,7 +100,7 @@ class OrganizacaoService(
         return organizacaoRepository.save(atualizado)
     }
 
-    // DELETE
+    // DELETE - Ideia não excluir, mas gerar uma solicitação para o admin inabilitar (STATUS.INATIVO)
     fun delete(id: Long, vinculoId: Long) {
         val vinculo = getVinculoOrThrow(vinculoId)
         if (vinculo.id == vinculoId) {
