@@ -19,7 +19,7 @@ class JwtFilter(
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val path = request.requestURI
 
-        // 🔓 Rotas públicas que não precisam de JWT
+        // Rotas públicas que não precisam de JWT
         return path.startsWith("/auth")
     }
 
@@ -31,7 +31,7 @@ class JwtFilter(
 
         val token = extractToken(request)
 
-        // 🔹 Sem token → segue fluxo normal (rotas públicas)
+        // Sem token → segue fluxo normal (rotas públicas)
         if (token == null) {
             filterChain.doFilter(request, response)
             return
@@ -42,7 +42,7 @@ class JwtFilter(
 
             when (tokenType) {
 
-                // 🔐 TOKEN ACCESS → autentica no Spring
+                // TOKEN ACCESS → autentica no Spring
                 JwtService.TOKEN_TYPE_ACCESS -> {
                     val data = jwtService.extractAccessTokenData(token)
 
@@ -59,7 +59,7 @@ class JwtFilter(
                     SecurityContextHolder.getContext().authentication = authentication
                 }
 
-                // 🟡 TOKEN TEMP → autentica no Spring com role TEMP
+                // TOKEN TEMP → autentica no Spring com role TEMP
                 JwtService.TOKEN_TYPE_TEMP -> {
                     val data = jwtService.extractTempTokenData(token)
 
@@ -77,23 +77,17 @@ class JwtFilter(
                 }
 
                 else -> {
-                    // tipo desconhecido → ignora
                 }
             }
 
         } catch (ex: Exception) {
-            // 🔥 NÃO quebra a request
-            // Apenas ignora token inválido
-
             SecurityContextHolder.clearContext()
         }
-
         filterChain.doFilter(request, response)
     }
 
-    // =========================================================
-    // 🔹 Helpers
-    // =========================================================
+    // Helpers
+
 
     private fun extractToken(request: HttpServletRequest): String? {
         val header = request.getHeader("Authorization") ?: return null

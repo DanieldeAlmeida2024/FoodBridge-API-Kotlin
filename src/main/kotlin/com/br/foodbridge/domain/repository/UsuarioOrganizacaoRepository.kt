@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 interface UsuarioOrganizacaoRepository : JpaRepository<UsuarioOrganizacao, Long> {
     fun findByUsuarioIdAndOrganizacaoId(
         usuarioId: Long,
-        organizacaoId: Long
+        organizacaoId: Long?
     ): UsuarioOrganizacao?
     fun findAllByUsuarioId(usuarioId: Long): List<UsuarioOrganizacao>
     fun findAllByOrganizacaoId(organizacaoId: Long): List<UsuarioOrganizacao>

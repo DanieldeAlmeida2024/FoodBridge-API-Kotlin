@@ -12,11 +12,10 @@ import java.time.LocalDateTime
 @Service
 class AdminService(
     private val organizacaoRepository: OrganizacaoRepository,
-    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository,
     private val usuarioRepository: UsuarioRepository,
 ) {
-    // 🔍 LISTAR ORGANIZAÇÕES
-// 🔹 Listagens
+    // LISTAR ORGANIZAÇÕES
+// Listagens
     fun listarOrganizacoes(): List<OrganizacaoDTO> = organizacaoRepository.findAll().map{
         OrganizacaoDTO(
             id = it.id,
@@ -45,7 +44,7 @@ class AdminService(
             .filter { it.status == StatusOrganizacao.DOCUMENTOS_PENDENTES }
     }
 
-    // 🔍 LISTAR USUÁRIOS (VÍNCULOS)
+    // LISTAR USUÁRIOS (VÍNCULOS)
     fun listarUsuarios(): List<UsuarioDTO> {
         return usuarioRepository.findAll().map {
             UsuarioDTO(
@@ -68,7 +67,7 @@ class AdminService(
             .filter { it.status == UserStatus.PENDENTE_VERIFICACAO }
     }
 
-    // 🔹 Aprovar ou reprovar organização (só admin)
+    // Aprovar ou reprovar organização (só admin)
     fun aprovarOrganizacao(id: Long) {
         val org = organizacaoRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Organização não encontrada") }

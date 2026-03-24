@@ -27,10 +27,9 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/organizacoes/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET,"/organizacoes/").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)

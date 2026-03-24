@@ -26,6 +26,7 @@ class JwtService(
         private const val CLAIM_TYPE = "type"
         private const val CLAIM_ORG_ID = "organizacaoId"
         private const val CLAIM_ROLE = "role"
+        private const val CLAIM_BOND = "bond"
 
         const val TOKEN_TYPE_TEMP = "TEMP"
         const val TOKEN_TYPE_ACCESS = "ACCESS"
@@ -45,9 +46,7 @@ class JwtService(
             .parseClaimsJws(token)
             .body
 
-    // =========================================================
-    // 🔹 GERAÇÃO DE TOKENS
-    // =========================================================
+    //  GERAÇÃO DE TOKENS
 
     fun generateTempToken(usuarioId: Long): String =
         buildToken(
@@ -59,6 +58,7 @@ class JwtService(
     fun generateAccessToken(
         usuarioId: Long,
         organizacaoId: Long,
+        vinculoId: Long,
         role: String
     ): String =
         buildToken(
@@ -66,7 +66,8 @@ class JwtService(
             claims = mapOf(
                 CLAIM_TYPE to TOKEN_TYPE_ACCESS,
                 CLAIM_ORG_ID to organizacaoId,
-                CLAIM_ROLE to role
+                CLAIM_ROLE to role,
+                CLAIM_BOND to vinculoId
             ),
             expiration = jwtConfig.expiration
         )
@@ -87,9 +88,7 @@ class JwtService(
             .compact()
     }
 
-    // =========================================================
-    // 🔹 EXTRAÇÃO DE DADOS
-    // =========================================================
+    // EXTRAÇÃO DE DADOS
 
     fun extractTokenType(token: String): String =
         parse(token)[CLAIM_TYPE]?.toString()
@@ -105,6 +104,7 @@ class JwtService(
         return TokenData(
             token = token,
             usuarioId = claims.subject.toLong(),
+            vinculoId = null,
             organizacaoId = null,
             role = null
         )
@@ -120,6 +120,7 @@ class JwtService(
         val usuarioId = claims.subject.toLong()
         val organizacaoId = claims[CLAIM_ORG_ID]?.toString()?.toLong()
             ?: throw IllegalStateException("Token sem organizacaoId")
+        val vinculoId = claims[CLAIM_BOND]?.toString()?.toLong()
 
         val role = claims[CLAIM_ROLE]?.toString()
             ?: throw IllegalStateException("Token sem role")
@@ -128,13 +129,12 @@ class JwtService(
             token = token,
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
+            vinculoId = vinculoId,
             role = role
         )
     }
 
-    // =========================================================
-    // 🔹 CONVERSÃO TEMP → ACCESS
-    // =========================================================
+    //  CONVERSÃO TEMP → ACCESS
 
     fun generateAccessFromTemp(tempToken: String, organizacaoId: Long): TokenData {
         // Extrai usuário do token TEMP
@@ -151,6 +151,11 @@ class JwtService(
         val vinculo = usuarioOrganizacaoRepository
             .findByUsuarioIdAndOrganizacaoId(usuarioId, organizacaoId)
             ?: throw IllegalArgumentException("Vínculo não encontrado")
+
+        //Valida se o vinculo foi encontrado antes de criar o token
+        val vinculoIdNotNull = vinculo.id
+            ?: throw IllegalArgumentException("vinculo não encontrado")
+
 
         // Valida os status necessários
         if (vinculo.status != StatusOrganizacao.VERIFICADO) {
@@ -169,6 +174,7 @@ class JwtService(
         val token = generateAccessToken(
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
+            vinculoId = vinculo.id,
             role = vinculo.role.name
         )
 
@@ -176,6 +182,7 @@ class JwtService(
             token = token,
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
+            vinculoId = vinculo.id,
             role = vinculo.role.name
         )
     }

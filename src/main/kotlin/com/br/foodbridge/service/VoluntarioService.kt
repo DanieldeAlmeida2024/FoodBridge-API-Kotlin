@@ -13,7 +13,7 @@ class VoluntarioService(
     private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository
 ) {
 
-    // 🔹 CREATE
+    // CREATE
     fun create(voluntario: Voluntario): Voluntario {
 
         if (voluntarioRepository.existsByCpf(voluntario.cpf)) {
@@ -23,7 +23,7 @@ class VoluntarioService(
         return voluntarioRepository.save(voluntario)
     }
 
-    // 🔹 VINCULAR A ORGANIZAÇÃO
+    // VINCULAR A ORGANIZAÇÃO
     fun vincular(voluntarioId: Long, organizacao: Organizacao): VoluntarioOrganizacao {
 
         if (voluntarioOrganizacaoRepository
@@ -42,7 +42,7 @@ class VoluntarioService(
         return voluntarioOrganizacaoRepository.save(vinculo)
     }
 
-    // 🔹 READ
+    // READ
     fun findById(id: Long): Voluntario {
         return voluntarioRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Voluntário não encontrado") }
@@ -50,7 +50,7 @@ class VoluntarioService(
 
     fun findAll(): List<Voluntario> = voluntarioRepository.findAll()
 
-    // 🔹 UPDATE
+    // UPDATE
     fun update(id: Long, updated: Voluntario): Voluntario {
         val v = findById(id)
 
@@ -63,7 +63,7 @@ class VoluntarioService(
         return voluntarioRepository.save(novo)
     }
 
-    // 🔹 DELETE
+    // DELETE
     fun delete(id: Long) {
         val v = findById(id)
         voluntarioRepository.delete(v)

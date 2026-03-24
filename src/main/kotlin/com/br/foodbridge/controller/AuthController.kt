@@ -18,12 +18,12 @@ class AuthController(
     private val jwtService: JwtService
 ) {
 
-    // 🔐 LOGIN
+    // LOGIN
     @PostMapping("/login")
     fun login(@RequestBody request: LoginRequest) =
         authService.login(request)
 
-    // 🎯 SELECT ORG COM TOKEN
+    // SELECT ORG COM TOKEN
     @PostMapping("/select-org")
     fun selectOrg(
         @RequestHeader("Authorization") authHeader: String,
@@ -39,6 +39,7 @@ class AuthController(
         return AuthResponse(
             token = tokenData.token,
             usuarioId = tokenData.usuarioId,
+            vinculoId = tokenData.vinculoId,
             organizacaoId = tokenData.organizacaoId,
             role = tokenData.role
         )

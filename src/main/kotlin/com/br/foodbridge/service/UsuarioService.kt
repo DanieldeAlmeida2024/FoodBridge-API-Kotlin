@@ -33,7 +33,7 @@ class UsuarioService(
             .orElseThrow { IllegalArgumentException("Usuário não encontrado") }
     }
 
-    // 🔹 CREATE usuário
+    // CREATE usuário
     fun createUser(request: CreateUpdateUserRequest): Usuario {
         if (usuarioRepository.existsByEmail(request.email)) {
             throw IllegalArgumentException("Email já cadastrado")
@@ -48,7 +48,7 @@ class UsuarioService(
         return usuarioRepository.save(usuario)
     }
 
-    // 🔹 UPDATE usuário logado
+    // UPDATE usuário logado
     fun update(usuarioId: Long, request: CreateUpdateUserRequest): UsuarioResponse {
         val usuarioLogado = findByIdEntity(usuarioId)
 
@@ -62,7 +62,7 @@ class UsuarioService(
         return UsuarioMapper.toResponse(saved)
     }
 
-    // 🔹 DELETE usuário logado
+    // DELETE usuário logado
     fun delete(usuarioId: Long) {
         val usuarioLogado = findByIdEntity(usuarioId)
 
@@ -74,7 +74,7 @@ class UsuarioService(
     }
 
 
-    // 🔹 Listar organizações do usuário logado
+    // Listar organizações do usuário logado
     fun listarOrganizacoesDoUsuario(usuarioId: Long): List<OrganizacaoResumoDTO> {
         val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioId)
 

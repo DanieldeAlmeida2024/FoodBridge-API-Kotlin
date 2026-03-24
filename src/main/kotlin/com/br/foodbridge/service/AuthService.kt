@@ -5,6 +5,7 @@ import com.br.foodbridge.controller.dto.auth.LoginResponse
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.model.UsuarioOrganizacao
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioRepository
 import com.br.foodbridge.service.utils.JwtService
@@ -20,19 +21,19 @@ class AuthService (
 ){
 
     fun login(request: LoginRequest): LoginResponse {
-        // 1️⃣ Busca o usuário pelo email
+        // Busca o usuário pelo email
         val usuario = usuarioRepository.findByEmail(request.email)
             ?: throw IllegalArgumentException("Usuário não encontrado")
 
-        // 2️⃣ Valida senha
+        // Valida senha
         if (!passwordEncoder.matches(request.senha, usuario.senha)) {
             throw IllegalArgumentException("Senha inválida")
         }
 
-        // 3️⃣ Busca todos vínculos do usuário
+        // Busca todos vínculos do usuário
         val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuario.id!!)
 
-        // 4️⃣ Monta lista de organizações vinculadas
+        // Monta lista de organizações vinculadas
         val organizacoes = vinculacoes.map {
             OrganizacaoResumoDTO(
                 organizacaoId = it.organizacao?.id!!,
@@ -42,23 +43,28 @@ class AuthService (
             )
         }
 
-        // 5️⃣ Verifica se é admin de alguma organização verificada
+        // Verifica se é admin de alguma organização verificada
         val adminOrg = vinculacoes.firstOrNull {
             it.role == OrganizacaoRole.ADMIN && it.status == StatusOrganizacao.VERIFICADO
         }
 
-        // 6️⃣ Gera token final ou temporário
+        // Gera token final ou temporário
         val token = if (adminOrg != null) {
+            // busca o ID do vinculo entre a organização e o usuario
+            val vinculo = getVinculoOrThrowForAdminLogin(usuario.id, adminOrg.organizacao?.id)
+            val vinculoId = vinculo.id?: throw IllegalArgumentException("vinculo não encontrado")
+
             jwtService.generateAccessToken(
                 usuarioId = usuario.id,
                 organizacaoId = adminOrg.organizacao?.id!!,
+                vinculoId = vinculoId,
                 role = adminOrg.role.name
             )
         } else {
             jwtService.generateTempToken(usuario.id)
         }
 
-        // 7️⃣ Retorna resposta
+        // Retorna resposta
         return LoginResponse(
             tempToken = token,
             nome = usuario.nome,
@@ -85,6 +91,7 @@ class AuthService (
         val token = jwtService.generateAccessToken(
             usuarioId = usuario.id!!,
             organizacaoId = organizacaoId,
+            vinculoId = vinculo.id!!,
             role = vinculo.role.name
         )
 
@@ -105,6 +112,14 @@ class AuthService (
             organizacoes = organizacoes
         )
     }
+    // Helpers
 
+    private fun getVinculoOrThrowForAdminLogin(
+        userId: Long,
+        organizacaoId: Long?
+    ): UsuarioOrganizacao =
+        usuarioOrganizacaoRepository
+            .findByUsuarioIdAndOrganizacaoId(userId, organizacaoId)
+            ?: throw IllegalArgumentException("Vínculo não encontrado")
 
 }

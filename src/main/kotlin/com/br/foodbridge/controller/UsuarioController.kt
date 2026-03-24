@@ -37,7 +37,7 @@ class UsuarioController(
     }
 
 
-    // 🔍 Usuário logado
+    // Usuário logado
     @GetMapping("/eu")
     fun getMe(
         @AuthenticationPrincipal tokenData: TokenData
@@ -46,7 +46,7 @@ class UsuarioController(
         return ResponseEntity.ok(usuario)
     }
 
-    // 🔗 Organizações vinculadas do usuário logado
+    // Organizações vinculadas do usuário logado
     @GetMapping("/eu/organizacoes")
     fun getMyOrganizations(
         @AuthenticationPrincipal tokenData: TokenData
@@ -55,7 +55,7 @@ class UsuarioController(
         return ResponseEntity.ok(organizacoes)
     }
 
-    // ✏️ Atualizar dados do usuário logado
+    // Atualizar dados do usuário logado
     @PutMapping("/eu")
     fun updateMe(
         @AuthenticationPrincipal tokenData: TokenData,
@@ -65,7 +65,7 @@ class UsuarioController(
         return ResponseEntity.ok(usuarioAtualizado)
     }
 
-    // ❌ Deletar conta do usuário logado
+    // Deletar conta do usuário logado
     @DeleteMapping("/eu")
     fun deleteMe(
         @AuthenticationPrincipal tokenData: TokenData

@@ -20,7 +20,6 @@ data class UsuarioOrganizacao(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    // 🔗 Usuário
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     var usuario: Usuario? = null,
@@ -30,17 +29,14 @@ data class UsuarioOrganizacao(
     @JsonIgnore
     var organizacao: Organizacao?=null,
 
-    // 🔐 Papel dentro da organização
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var role: OrganizacaoRole = OrganizacaoRole.DOADOR, // valor default
 
-    // 📊 Status do vínculo (aprovação)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: StatusOrganizacao = StatusOrganizacao.REVISAO,
 
-    // 📅 Auditoria
     @Column(nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
 

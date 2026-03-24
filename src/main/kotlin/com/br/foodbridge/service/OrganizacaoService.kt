@@ -1,7 +1,6 @@
 package com.br.foodbridge.service
 
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
-import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.model.Organizacao
@@ -18,45 +17,30 @@ class OrganizacaoService(
     private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository
 ) {
 
-    // =========================================================
-    // 🔹 APROVAÇÃO / REPROVAÇÃO
-    // =========================================================
-
     fun aprovarUsuarioOrganizacao(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
         val vinculo = getVinculoOrThrow(vinculoId)
-
         validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
-
         vinculo.status = StatusOrganizacao.VERIFICADO
         vinculo.approvedAt = LocalDateTime.now()
-
         usuarioOrganizacaoRepository.save(vinculo)
     }
 
     fun reprovarUsuario(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
         val vinculo = getVinculoOrThrow(vinculoId)
-
         validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
-
         vinculo.status = StatusOrganizacao.INATIVO
-
         usuarioOrganizacaoRepository.save(vinculo)
     }
-
-    // =========================================================
-    // 🔹 CRIAR OU VINCULAR ORGANIZAÇÃO
-    // =========================================================
 
     fun cadastrarOuVincularOrganizacao(
         usuario: Usuario,
         request: CreateUpdateOrganizacaoRequest
     ): Organizacao {
-
-        // 1️⃣ Busca ou cria organização
+        // Busca ou cria organização
         val organizacao = organizacaoRepository.findByCnpj(request.cnpj)
             ?: criarOrganizacao(request)
 
-        // 2️⃣ Verifica se já existe vínculo
+        // Verifica se já existe vínculo
         val vinculoExistente = usuarioOrganizacaoRepository
             .findByUsuarioIdAndOrganizacaoId(usuario.id!!, organizacao.id!!)
 
@@ -64,7 +48,7 @@ class OrganizacaoService(
             throw IllegalArgumentException("Usuário já vinculado a esta organização")
         }
 
-        // 3️⃣ Cria vínculo
+        //  Cria vínculo
         val vinculo = UsuarioOrganizacao(
             usuario = usuario,
             organizacao = organizacao,
@@ -72,9 +56,7 @@ class OrganizacaoService(
             status = StatusOrganizacao.VERIFICADO,
             createdAt = LocalDateTime.now()
         )
-
         usuarioOrganizacaoRepository.save(vinculo)
-
         return organizacao
     }
 
@@ -94,9 +76,7 @@ class OrganizacaoService(
         return organizacaoRepository.save(nova)
     }
 
-    // =========================================================
-    // 🔹 CONSULTAS
-    // =========================================================
+    // CONSULTAS
 
     fun findById(id: Long): Organizacao =
         organizacaoRepository.findById(id)
@@ -105,9 +85,7 @@ class OrganizacaoService(
     fun findAll(): List<Organizacao> =
         organizacaoRepository.findAll()
 
-    // =========================================================
-    // 🔹 UPDATE
-    // =========================================================
+    // UPDATE
 
     fun update(id: Long, request: CreateUpdateOrganizacaoRequest): Organizacao {
         val org = findById(id)
@@ -119,23 +97,19 @@ class OrganizacaoService(
             email = request.email,
             website = request.website
         )
-
         return organizacaoRepository.save(atualizado)
     }
 
-    // =========================================================
-    // 🔹 DELETE
-    // =========================================================
-
-    fun delete(id: Long) {
-        val org = findById(id)
-        organizacaoRepository.delete(org)
+    // DELETE
+    fun delete(id: Long, vinculoId: Long) {
+        val vinculo = getVinculoOrThrow(vinculoId)
+        if (vinculo.id == vinculoId) {
+            val org = findById(id)
+            organizacaoRepository.delete(org)
+        }
     }
 
-    // =========================================================
-    // 🔹 HELPERS PRIVADOS
-    // =========================================================
-
+    // HELPERS
     private fun getVinculoOrThrow(id: Long): UsuarioOrganizacao =
         usuarioOrganizacaoRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Vínculo não encontrado") }
