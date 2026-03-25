@@ -36,6 +36,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET,"/usuarios").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE,"/usuarios/{usuarioId}").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/voluntarios/**").authenticated()
+                    .requestMatchers("/doacao/**").authenticated()
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)

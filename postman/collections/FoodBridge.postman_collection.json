@@ -76,32 +76,6 @@
         },
         {
           "name": "Selecionar Organização - Gerar Token completo",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "72f0c882-7b7b-4cc5-9947-15a12540403c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "af37358f-f02f-4326-a3cb-ccceaeda054e",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "55a9b9e2-4136-4e1d-9f49-bcd73f34706d",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -146,32 +120,6 @@
         },
         {
           "name": "GET Rota Admin - Organizacoes",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "e1ad7df5-ecb6-4905-b6dc-dd5893070f2a",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "75aedf32-5716-4812-9643-9392522c535d",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "d7555973-f4c6-459d-ad8f-6f2bbdfec1b9",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -261,32 +209,6 @@
         },
         {
           "name": "Rota Admin - Aprovar Organização",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "bbe0b2bd-30dc-4577-bb60-09221003b694",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "ef4b3c7e-bf87-411f-af34-368a78fbd961",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "fe8a38b8-c0da-4b3c-8e4b-157187b0e532",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -379,32 +301,6 @@
         },
         {
           "name": "GET Rota Admin - Usuários",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "3ff150e6-8442-4ac5-860a-7951e2ebbf32",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "b0313c50-34ec-47f6-a1b0-9c0ba1eadd0f",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "ca98c5a7-b9ef-4af8-ad7d-e2d77183b1ce",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -494,32 +390,6 @@
         },
         {
           "name": "Rota Admin - Aprovar Usuario",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "39c36e3c-4cb3-426c-b1a1-29a0771ea9a8",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "790b84c3-1ada-44ee-abd6-93c0c0a362f5",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "56f92699-4096-44e0-a9a0-df7d7add0605",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -612,32 +482,6 @@
         },
         {
           "name": "Criar Organizacao",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "ed78475a-9009-4be3-88ee-f004fe7c152a",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "74b58bef-5002-4596-a6d4-182f632a886c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "85b04a19-cadd-49dd-b0d1-eab5047810b7",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -727,32 +571,6 @@
         },
         {
           "name": "Criar ou vincular Voluntário",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "5469d903-2a07-4179-a4f8-905c2403b7ea",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "558ff3cc-48b9-4c73-8d71-6697ffe14e4b",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "b39dcb5b-1f63-49ed-92ad-2d100d0bea34",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -830,6 +648,79 @@
         }
       ],
       "id": "1fca02c0-edf7-4b3f-aec8-ac29a143e183"
+    },
+    {
+      "name": "Doacoes/Requisicoes",
+      "item": [
+        {
+          "name": "Publicar Doação",
+          "id": "d480dac0-c077-491b-bb79-d680b1fe7f4e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjIsInJvbGUiOiJPTkciLCJib25kIjoyLCJpYXQiOjE3NzQ0Nzk2NjMsImV4cCI6MTc3NDU2NjA2M30.VPw3MocMvwGMKDE_URa-Sql4ftrumIzZuyrUmClwQCI",
+                "type": "text",
+                "uuid": "2d3431c7-2c5f-4fd8-9ef3-958dd6d2a37b"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "uuid": "427776b2-bd74-413a-b10e-3068813d4b57"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"tipoComida\": \"FRUTAS\",\r\n    \"descricaoComida\": \"MAÇÃ\",\r\n    \"quantidade\": 5,\r\n    \"unidade\": \"KG\",\r\n    \"dataExpiracao\": \"2026-03-27T14:30:00\",\r\n    \"status\": \"PUBLICADO\",\r\n    \"endereco\": {\r\n        \"linha1\": \"Rua das Flores\",\r\n        \"linha2\": \"Apto 101\",\r\n        \"numero\": \"123\",\r\n        \"cep\": \"01234567\",\r\n        \"bairro\": \"Centro\",\r\n        \"cidade\": \"São Paulo\",\r\n        \"estado\": \"SP\",\r\n        \"pais\": \"Brasil\"\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/doacao/publicar",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "doacao",
+                "publicar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Publicações da organização",
+          "id": "63cfa5ac-5cef-41eb-9b93-c59d7f9aae6d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETAR Doacao",
+          "id": "99db0078-c30a-47ba-a2b4-9458b0736946",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "f18cfd85-46e6-47d0-9af7-417df34d68c8"
     }
   ]
 }

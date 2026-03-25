@@ -15,9 +15,9 @@ data class DoacaoDTO(
     val quantidade: Double,
     val unidade: Unidade,
     val dataExpiracao: LocalDateTime,
-    val status: StatusDoacao,
+    val status: StatusDoacao?,
     @field:NotNull("Endereço é obrigatório")
     @field:Valid
     val endereco: Endereco,
-    val organizacao: Organizacao
+    val organizacao: Organizacao?
 )
