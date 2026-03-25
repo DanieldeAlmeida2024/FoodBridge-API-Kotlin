@@ -3,6 +3,10 @@ package com.br.foodbridge.domain.model
 import com.br.foodbridge.domain.enums.StatusVoluntario
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import jakarta.validation.Valid
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
+import org.jetbrains.annotations.NotNull
 import java.time.LocalDateTime
 
 @Entity
@@ -22,8 +26,9 @@ data class Voluntario(
     @Column(nullable = false, unique = true)
     val email: String = "",
 
-    @Column(nullable = false)
-    val endereco: String = "",
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    val endereco: Endereco = Endereco("","","","","","","",""),
 
     @Column(nullable = false, unique = true)
     val cpf: String = "",

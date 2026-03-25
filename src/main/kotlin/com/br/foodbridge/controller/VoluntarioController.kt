@@ -27,8 +27,6 @@ class VoluntarioController (
     ): ResponseEntity<in VoluntarioDTO> {
         //Alterar
         val tokenData = authentication.principal as TokenData
-        println(tokenData)
-        println(tokenData::class)
         val voluntario = voluntarioService.criarOuVincular(request, tokenData)
 
         return ResponseEntity.ok(voluntario)

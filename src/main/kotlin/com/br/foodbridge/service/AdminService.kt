@@ -26,6 +26,7 @@ class AdminService(
             email = it.email,
             telefone = it.telefone,
             voluntarios = it.voluntarios,
+            endereco = it.endereco,
         )
     }
 
@@ -41,6 +42,7 @@ class AdminService(
                 email = it.email,
                 telefone = it.telefone,
                 voluntarios = it.voluntarios,
+                endereco = it.endereco,
             )
         }
             .filter { it.status == StatusOrganizacao.DOCUMENTOS_PENDENTES }

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController
 class OrganizacaoController(
     private val organizacaoService: OrganizacaoService,
     private val usuarioService: UsuarioService,
-    private val jwtService: JwtService
 ) {
 
     @PostMapping

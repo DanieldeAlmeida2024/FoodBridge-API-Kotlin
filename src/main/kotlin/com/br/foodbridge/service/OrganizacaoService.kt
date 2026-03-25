@@ -3,6 +3,7 @@ package com.br.foodbridge.service
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.model.Endereco
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.Usuario
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
@@ -60,6 +61,16 @@ class OrganizacaoService(
     }
 
     private fun criarOrganizacao(request: CreateUpdateOrganizacaoRequest): Organizacao {
+        val endereco = Endereco(
+            request.endereco.linha1,
+            request.endereco.linha2,
+            request.endereco.numero,
+            request.endereco.cep,
+            request.endereco.bairro,
+            request.endereco.cidade,
+            request.endereco.estado,
+            request.endereco.pais
+        )
         val nova = Organizacao(
             nome = request.nome,
             cnpj = request.cnpj,
@@ -69,7 +80,8 @@ class OrganizacaoService(
             website = request.website,
             status = StatusOrganizacao.REVISAO,
             role = request.role,
-            createdAt = LocalDateTime.now()
+            createdAt = LocalDateTime.now(),
+            endereco = endereco
         )
 
         return organizacaoRepository.save(nova)

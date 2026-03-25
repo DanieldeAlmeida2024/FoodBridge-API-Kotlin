@@ -3,6 +3,7 @@ package com.br.foodbridge.service
 import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.controller.dto.voluntario.CreateUpdateVoluntario
 import com.br.foodbridge.domain.enums.StatusVoluntario
+import com.br.foodbridge.domain.model.Endereco
 import com.br.foodbridge.domain.model.Voluntario
 import com.br.foodbridge.domain.model.VoluntarioOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
@@ -37,12 +38,22 @@ class VoluntarioService(
                 return voluntarioOrganizacaoRepository.save(vinculo)
             }
         }
+        val endereco = Endereco(
+            voluntario.endereco.linha1,
+            voluntario.endereco.linha2,
+            voluntario.endereco.numero,
+            voluntario.endereco.cep,
+            voluntario.endereco.bairro,
+            voluntario.endereco.cidade,
+            voluntario.endereco.estado,
+            voluntario.endereco.pais
+            )
         val entityVoluntario = Voluntario(
             nome = voluntario.nome,
             cpf = voluntario.cpf,
             email = voluntario.email,
             telefone = voluntario.telefone,
-            endereco = voluntario.endereco
+            endereco = endereco
         )
 
         val voluntario = voluntarioRepository.save(entityVoluntario)

@@ -1,11 +1,13 @@
 package com.br.foodbridge.domain.model
 
-import com.br.foodbridge.controller.dto.usuario.UsuarioOrganizacaoDTO
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
-import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import jakarta.validation.Valid
 import java.time.LocalDateTime
+import org.hibernate.type.SqlTypes
+import org.hibernate.annotations.JdbcTypeCode
+import org.jetbrains.annotations.NotNull
 
 @Entity
 @Table(name = "organizacoes")
@@ -40,6 +42,10 @@ data class Organizacao(
     @Column(nullable = false)
     val status: StatusOrganizacao = StatusOrganizacao.DOCUMENTOS_PENDENTES,
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    val endereco: Endereco = Endereco("","","","","","","",""),
+
     @Column(nullable = true)
     val verificationDate: LocalDateTime? = null,
 
@@ -50,5 +56,8 @@ data class Organizacao(
     val usuarios: MutableList<UsuarioOrganizacao> = mutableListOf(),
 
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
-    val voluntarios: MutableList<VoluntarioOrganizacao> = mutableListOf()
+    val voluntarios: MutableList<VoluntarioOrganizacao> = mutableListOf(),
+
+    @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    val doacoes: MutableList<Doacao> = mutableListOf(),
 )

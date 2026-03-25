@@ -23,6 +23,16 @@ class DataInitializer(
     fun init() = CommandLineRunner {
 
         if (usuarioRepository.existsByEmail(adminConfig.email)) return@CommandLineRunner
+        val enderecoAdmin = Endereco(
+            "Endereco Admin",
+            "",
+            "0",
+            "0000000",
+            "Capuava",
+            "Goiânia",
+            "Goias",
+            "Brasil"
+        )
 
         val organizacaoAdmin = organizacaoRepository.save(
             Organizacao(
@@ -30,7 +40,8 @@ class DataInitializer(
                 cnpj = "00000000000000",
                 telefone = "000000000",
                 role = OrganizacaoRole.ADMIN,
-                email = adminConfig.email
+                email = adminConfig.email,
+                endereco = enderecoAdmin
             )
         )
 

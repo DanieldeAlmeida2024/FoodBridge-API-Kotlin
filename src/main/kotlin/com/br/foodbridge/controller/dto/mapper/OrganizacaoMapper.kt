@@ -13,6 +13,7 @@ object OrganizacaoMapper {
         telefone = org.telefone,
         status = org.status,
         usuarios = org.usuarios,
-        voluntarios = org.voluntarios
+        voluntarios = org.voluntarios,
+        endereco = org.endereco,
     )
 }

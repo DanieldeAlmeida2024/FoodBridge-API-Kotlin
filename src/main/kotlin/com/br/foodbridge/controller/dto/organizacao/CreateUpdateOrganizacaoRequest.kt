@@ -2,8 +2,11 @@ package com.br.foodbridge.controller.dto.organizacao
 
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.model.Endereco
+import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import org.jetbrains.annotations.NotNull
 import java.time.LocalDateTime
 
 data class CreateUpdateOrganizacaoRequest(
@@ -19,6 +22,9 @@ data class CreateUpdateOrganizacaoRequest(
     @field:NotBlank("É obrigatório selecionar um tipo de organização")
     val role: OrganizacaoRole,
     val status: StatusOrganizacao = StatusOrganizacao.REVISAO,
+    @field:NotNull("Endereço é obrigatório")
+    @field:Valid
+    val endereco: Endereco,
     val verificationDate: LocalDateTime?,
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

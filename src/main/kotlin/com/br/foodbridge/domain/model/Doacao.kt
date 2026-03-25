@@ -1,0 +1,56 @@
+package com.br.foodbridge.domain.model
+
+import com.br.foodbridge.domain.enums.StatusDoacao
+import com.br.foodbridge.domain.enums.TipoDoacao
+import com.br.foodbridge.domain.enums.Unidade
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
+import jakarta.validation.Valid
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
+import org.jetbrains.annotations.NotNull
+import java.time.LocalDateTime
+
+@Entity
+@Table(name = "doacoes")
+data class Doacao(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
+
+    @Enumerated(EnumType.STRING)
+    val tipoComida: TipoDoacao = TipoDoacao.OUTROS,
+
+    @Column(nullable = true)
+    val descricaoComida: String = "",
+
+    @Column(nullable = false)
+    val quantidade: Double = 0.0,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val unidade: Unidade = Unidade.UNIDADE,
+
+    @Column(nullable = true)
+    val dataExpiracao: LocalDateTime = LocalDateTime.now(),
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val status: StatusDoacao = StatusDoacao.RASCUNHO,
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    val endereco: Endereco,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    val organizacao: Organizacao
+)
