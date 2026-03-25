@@ -1,7 +1,7 @@
 {
   "info": {
-    "_postman_id": "81c16601-0496-47f0-8f16-6c5f5d4d03d3",
-    "name": "FoodBridge",
+    "_postman_id": "763743e6-b875-46cb-8f59-de8fc7b97061",
+    "name": "FoodBridge Copy",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,16 +10,16 @@
       "item": [
         {
           "name": "Login Usuario",
-          "id": "dd6669f5-bdc3-4dd1-a86f-a0bd15e1a40d",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "98989d60-951b-4100-ad54-7304a5fb1e24",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"danieldealmeida368@outlook.com\",\r\n    \"senha\": \"123\"\r\n}",
+              "raw": "{\r\n    \"email\": \"admin@foodbridge.com\",\r\n    \"senha\": \"admin123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -43,11 +43,11 @@
         },
         {
           "name": "Login Usuario - Admin",
-          "id": "1e9213d6-7f60-45db-beed-1a60b6b7b23d",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "014d0787-2d1f-4c64-8522-b337075a1dc0",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
@@ -76,42 +76,16 @@
         },
         {
           "name": "Selecionar Organização - Gerar Token completo",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "72f0c882-7b7b-4cc5-9947-15a12540403c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "af37358f-f02f-4326-a3cb-ccceaeda054e",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "55a9b9e2-4136-4e1d-9f49-bcd73f34706d",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "b2f4d6d3-4421-48d8-b887-3d4ffb737874",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQ0NDc1MjcsImV4cCI6MTc3NDQ0NzgyN30.kX6JbLDgLCFAfruo1SRPO9ax8w7EwbvdevmiC3X6wWQ",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQxMzAwNjcsImV4cCI6MTc3NDEzMDM2N30.cn_bg3J60WzCDkPBppiGoPGJGFf3CVGObqIfVu-aDX8",
                 "type": "text"
               },
               {
@@ -146,42 +120,19 @@
         },
         {
           "name": "GET Rota Admin - Organizacoes",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "e1ad7df5-ecb6-4905-b6dc-dd5893070f2a",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "75aedf32-5716-4812-9643-9392522c535d",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "d7555973-f4c6-459d-ad8f-6f2bbdfec1b9",
+          "id": "8a163370-cf2e-4bd3-a65f-495620987b0a",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
                 "type": "text"
               },
               {
@@ -216,11 +167,14 @@
         },
         {
           "name": "GET Rota Admin - Organizacoes Pendentes",
-          "id": "4ad8ac87-7780-4c66-a95f-f9e1c07d97f5",
+          "id": "9a3fe991-c64a-4c9b-9c66-108c843608a0",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [
               {
@@ -261,42 +215,16 @@
         },
         {
           "name": "Rota Admin - Aprovar Organização",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "bbe0b2bd-30dc-4577-bb60-09221003b694",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "ef4b3c7e-bf87-411f-af34-368a78fbd961",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "fe8a38b8-c0da-4b3c-8e4b-157187b0e532",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "93eff952-3d68-4bff-bc0e-fa5682bfc66a",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
                 "type": "text"
               },
               {
@@ -333,11 +261,11 @@
         },
         {
           "name": "Rota Admin - Reprovar Organização",
-          "id": "381fb977-56e8-4727-97c1-a0f1aaebf824",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "10145d94-73f3-40ee-9ac5-f57a44e768fb",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -379,42 +307,19 @@
         },
         {
           "name": "GET Rota Admin - Usuários",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "3ff150e6-8442-4ac5-860a-7951e2ebbf32",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "b0313c50-34ec-47f6-a1b0-9c0ba1eadd0f",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "ca98c5a7-b9ef-4af8-ad7d-e2d77183b1ce",
+          "id": "bc879b7b-e731-4bfd-986d-93ab746cba52",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEyOTY2MywiZXhwIjoxNzc0MjE2MDYzfQ.y0Sa8_37GoYHi3f5V4zwqnzS33G8d5Dvou6rM2XuuR4",
                 "type": "text"
               },
               {
@@ -449,11 +354,14 @@
         },
         {
           "name": "GET Rota Admin - Usuários Pendentes de Aprovação",
-          "id": "20a612cc-5823-408f-94c3-4c7bc4d44bc9",
+          "id": "9d946eb3-fda6-492c-a975-db9bb72fde68",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [
               {
@@ -494,42 +402,16 @@
         },
         {
           "name": "Rota Admin - Aprovar Usuario",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "39c36e3c-4cb3-426c-b1a1-29a0771ea9a8",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "790b84c3-1ada-44ee-abd6-93c0c0a362f5",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "56f92699-4096-44e0-a9a0-df7d7add0605",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "e82cc0e9-1a07-4989-84cc-781d062105d0",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDEzMDA5OSwiZXhwIjoxNzc0MjE2NDk5fQ.c2S2q4wTTNrDWX_2aUqBbDkNu2Ow_4MTp2KiD8nsdQo",
                 "type": "text"
               },
               {
@@ -566,11 +448,11 @@
         },
         {
           "name": "Rota Admin - Reprovar Usuario",
-          "id": "941c1354-eb38-43a5-87ff-e2e2e380ae79",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "4a1a5ed7-78fc-4716-ae16-6d3389517e88",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -612,42 +494,16 @@
         },
         {
           "name": "Criar Organizacao",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "ed78475a-9009-4be3-88ee-f004fe7c152a",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "74b58bef-5002-4596-a6d4-182f632a886c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "85b04a19-cadd-49dd-b0d1-eab5047810b7",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "01ef717e-fa6b-4af6-bf1f-40d50b080499",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQ0NDcyNjUsImV4cCI6MTc3NDQ0NzU2NX0.u293thIlVGymgjxqZF0pRzRS41vMyNXXE7eLBgesLHQ",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQxMzAwNjcsImV4cCI6MTc3NDEzMDM2N30.cn_bg3J60WzCDkPBppiGoPGJGFf3CVGObqIfVu-aDX8",
                 "type": "text"
               },
               {
@@ -658,7 +514,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"ONG Amigos do Bem\",\r\n  \"cnpj\": \"12345678000100\",\r\n  \"description\": \"Organização voltada a ações sociais\",\r\n  \"telefone\": \"11999999999\",\r\n  \"email\": \"contato@amigosdobemjoao.org\",\r\n  \"website\": \"https://amigosdobem.org\",\r\n  \"role\": \"ONG\",\r\n  \"endereco\": {\r\n    \"linha1\": \"Rua das Flores\",\r\n    \"linha2\": \"Apto 101\",\r\n    \"numero\": \"123\",\r\n    \"cep\": \"01234567\",\r\n    \"bairro\": \"Centro\",\r\n    \"cidade\": \"São Paulo\",\r\n    \"estado\": \"SP\",\r\n    \"pais\": \"Brasil\"\r\n  }\r\n}",
+              "raw": "{\r\n  \"nome\": \"ONG Amigos do Bem\",\r\n  \"cnpj\": \"12345678000100\",\r\n  \"description\": \"Organização voltada a ações sociais\",\r\n  \"telefone\": \"11999999999\",\r\n  \"email\": \"contato@amigosdobemjoao.org\",\r\n  \"website\": \"https://amigosdobem.org\",\r\n  \"role\": \"ONG\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -681,11 +537,11 @@
         },
         {
           "name": "Criar Usuario",
-          "id": "963e8a69-78bf-4ac8-b9b4-e12acbd6786f",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "id": "ab4abc14-a085-43c3-b24e-641d1cf6ec55",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -703,7 +559,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Daniel Almeida\",\r\n  \"email\": \"danieldealmeida368@outlook.com\",\r\n  \"senha\": \"123\"\r\n}",
+              "raw": "{\r\n  \"nome\": \"Daniel Almeida\",\r\n  \"email\": \"danieldealmeidadev@outlook.com\",\r\n  \"senha\": \"123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -724,112 +580,9 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Criar ou vincular Voluntário",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "5469d903-2a07-4179-a4f8-905c2403b7ea",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "558ff3cc-48b9-4c73-8d71-6697ffe14e4b",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "b39dcb5b-1f63-49ed-92ad-2d100d0bea34",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjIsInJvbGUiOiJPTkciLCJib25kIjoyLCJpYXQiOjE3NzQ0NDc1NDEsImV4cCI6MTc3NDUzMzk0MX0.bU00ydEJfkpv6aU5e5h35plvY6zpwgF0WUTIqK5zczM",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"nome\": \"Daniel de Almeida\",\r\n    \"telefone\": \"062998217977\",\r\n    \"email\": \"danieldealmeida368@gmail.com\",\r\n    \"cpf\": \"12345678909\",\r\n    \"endereco\": {\r\n        \"linha1\": \"Rua das Flores\",\r\n        \"linha2\": \"Apto 101\",\r\n        \"numero\": \"123\",\r\n        \"cep\": \"01234567\",\r\n        \"bairro\": \"Centro\",\r\n        \"cidade\": \"São Paulo\",\r\n        \"estado\": \"SP\",\r\n        \"pais\": \"Brasil\"\r\n    }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:8080/voluntarios",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "voluntarios"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET Rota Admin  - Voluntários",
-          "id": "844e6e41-7c29-4223-aa9a-dab3a45a17c6",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDM2MzQ0NSwiZXhwIjoxNzc0NDQ5ODQ1fQ.FAJ2skGVp36S12EQW9FjANjNbZBasXn4MQRSgKSDWs4",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "http://localhost:8080/voluntarios",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "voluntarios"
-              ]
-            }
-          },
-          "response": []
         }
       ],
-      "id": "1fca02c0-edf7-4b3f-aec8-ac29a143e183"
+      "id": "24306ddc-08ab-4103-9167-3e487c7ed3c1"
     }
   ]
 }
