@@ -18,9 +18,8 @@ class JwtFilter(
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val path = request.requestURI
-
-        // Rotas públicas que não precisam de JWT
-        return path.startsWith("/auth")
+        // Permite pular o login, mas não o select-org
+        return path.startsWith("/auth/login")
     }
 
     override fun doFilterInternal(
@@ -31,7 +30,6 @@ class JwtFilter(
 
         val token = extractToken(request)
 
-        // Sem token → segue fluxo normal (rotas públicas)
         if (token == null) {
             filterChain.doFilter(request, response)
             return
@@ -40,48 +38,32 @@ class JwtFilter(
         try {
             val tokenType = jwtService.extractTokenType(token)
 
-            when (tokenType) {
-
-                // TOKEN ACCESS → autentica no Spring
-                JwtService.TOKEN_TYPE_ACCESS -> {
-                    val data = jwtService.extractAccessTokenData(token)
-
-                    val authorities = listOf(
-                        SimpleGrantedAuthority("ROLE_${data.role}")
-                    )
-
-                    val authentication = UsernamePasswordAuthenticationToken(
-                        data,
-                        null,
-                        authorities
-                    )
-
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
-
-                // TOKEN TEMP → autentica no Spring com role TEMP
-                JwtService.TOKEN_TYPE_TEMP -> {
-                    val data = jwtService.extractTempTokenData(token)
-
-                    val authorities = listOf(
-                        SimpleGrantedAuthority("ROLE_TEMP")
-                    )
-
-                    val authentication = UsernamePasswordAuthenticationToken(
-                        data,
-                        null,
-                        authorities
-                    )
-
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
-
-                else -> {
-                }
+            val data = when (tokenType) {
+                JwtService.TOKEN_TYPE_ACCESS -> jwtService.extractAccessTokenData(token)
+                JwtService.TOKEN_TYPE_TEMP -> jwtService.extractTempTokenData(token)
+                else -> null
             }
+
+            data?.let {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_${it.role ?: "USER"}"))
+
+                val authentication = UsernamePasswordAuthenticationToken(
+                    it,
+                    null,
+                    authorities
+                )
+
+                SecurityContextHolder.getContext().authentication = authentication
+            }
+
         } catch (ex: Exception) {
+            // Limpa o contexto, mas NÃO interrompe a requisição
             SecurityContextHolder.clearContext()
+            // Apenas loga, não envia erro
+            logger.warn("Token inválido ou expirado: ${ex.message}")
         }
+
+        // Continua normalmente, mesmo sem token válido
         filterChain.doFilter(request, response)
     }
 

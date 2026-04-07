@@ -4,6 +4,7 @@ import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.controller.dto.doacao.DoacaoDTO
 import com.br.foodbridge.controller.dto.mapper.DoacaoMapper.toResponse
 import com.br.foodbridge.domain.model.Doacao
+import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.service.DoacaoService
 import com.br.foodbridge.service.OrganizacaoService
 import jakarta.validation.Valid
@@ -20,63 +21,108 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/doacao")
+@RequestMapping("/doacoes")
 class DoacaoController(
-    private val doacaoService: DoacaoService,
-    private val organizacaoService: OrganizacaoService
+    private val doacaoService: DoacaoService
 ) {
-    @PostMapping("/publicar")
-    fun publicar(
-        @AuthenticationPrincipal tokenData: TokenData,
-        @RequestBody @Valid doacaoDto: DoacaoDTO
-    ): ResponseEntity<Doacao?> =
-        tokenData.organizacaoId?.let { organizacaoId ->
-            val organizacao = organizacaoService.findById(organizacaoId)
-            val doacao = doacaoService.criarDoacao(doacaoDto, organizacao)
-            ResponseEntity.status(HttpStatus.CREATED).body(toResponse(doacao))
-        } ?: ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
+    @PostMapping
+    fun criar(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @RequestBody @Valid request: DoacaoDTO
+    ): ResponseEntity<DoacaoDTO> {
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        val doacao = doacaoService.criarDoacao(request, organizacaoId)
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(toResponse(doacao))
+    }
 
     @GetMapping("/{id}")
-    fun listarDoacao(
+    fun buscarPorId(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long
     ): ResponseEntity<DoacaoDTO> {
-        tokenData.organizacaoId?.let {
-            return ResponseEntity.ok(doacaoService.listarDoacao(id))
-        } ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        validarOrganizacao(tokenData)
+
+        return ResponseEntity.ok(
+            doacaoService.listarDoacao(id)
+        )
     }
 
     @GetMapping
     fun listar(
-        @AuthenticationPrincipal tokenData: TokenData,
-    ): ResponseEntity<List<Doacao>> =
-        tokenData.organizacaoId?.let { organizacaoId ->
-            val organizacao = organizacaoService.findById(organizacaoId)
-            ResponseEntity.ok(doacaoService.listarDoacoesOrganizacao(organizacao))
-        } ?: ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<List<DoacaoDTO>> {
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        val lista = doacaoService
+            .listarDoacoesOrganizacao(organizacaoId)
+            .map { toResponse(it) }
+
+        return ResponseEntity.ok(lista)
+    }
 
     @PutMapping("/{id}")
-    fun editar(
+    fun atualizar(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long,
-        @RequestBody @Valid doacao: DoacaoDTO,
-    ): ResponseEntity<Doacao?> =
-        tokenData.organizacaoId?.let {
-            organizacaoId ->
-            val organizacao = organizacaoService.findById(organizacaoId)
-            val doacao = doacaoService.editarDoacao(doacao, organizacao)
-            ResponseEntity.status(HttpStatus.CREATED).body(toResponse(doacao))
-        }?: ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        @RequestBody @Valid request: DoacaoDTO
+    ): ResponseEntity<DoacaoDTO> {
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        val atualizado = doacaoService.editarDoacao(
+            id,
+            request,
+            organizacaoId
+        )
+
+        return ResponseEntity.ok(toResponse(atualizado))
+    }
 
     @DeleteMapping("/{id}")
-    fun apagar(
+    fun deletar(
         @AuthenticationPrincipal tokenData: TokenData,
-        @PathVariable id: Long,
+        @PathVariable id: Long
     ): ResponseEntity<Void> {
-        tokenData.organizacaoId?.let {
-            doacaoService.deletarDoacao(id)
-            return ResponseEntity.noContent().build()
-        }?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        doacaoService.deletarDoacao(id, organizacaoId)
+
+        return ResponseEntity.noContent().build()
+    }
+
+    // ======================
+    // HELPERS
+    // ======================
+
+    private fun validarOrganizacao(tokenData: TokenData) {
+        if (tokenData.organizacaoId == null) {
+            throw BusinessException("Usuário não vinculado a uma organização")
+        }
+    }
+
+    private fun toResponse(doacao: Doacao): DoacaoDTO {
+        return DoacaoDTO(
+            tipoComida = doacao.tipoComida,
+            descricaoComida = doacao.descricaoComida,
+            quantidade = doacao.quantidade,
+            unidade = doacao.unidade,
+            dataExpiracao = doacao.dataExpiracao,
+            status = doacao.status,
+            endereco = doacao.endereco,
+            organizacao = doacao.organizacao
+        )
     }
 }

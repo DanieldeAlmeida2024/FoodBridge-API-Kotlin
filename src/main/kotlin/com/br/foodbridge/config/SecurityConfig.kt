@@ -28,8 +28,10 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/auth/login").permitAll()
+                    .requestMatchers("/auth/select-org").authenticated()
                     .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
+                    .requestMatchers("/error").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET,"/organizacoes/").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE,"/organizacoes/{id}").hasRole("ADMIN")

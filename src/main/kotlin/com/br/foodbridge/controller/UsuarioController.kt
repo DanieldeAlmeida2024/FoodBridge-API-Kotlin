@@ -5,6 +5,8 @@ import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.domain.model.Usuario
 
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.UsuarioService
 import org.springframework.http.HttpStatus
@@ -17,60 +19,86 @@ class UsuarioController(
     private val usuarioService: UsuarioService
 ) {
 
-    @PostMapping("/criar")
+    @PostMapping
     fun criarUsuario(
         @RequestBody request: CreateUpdateUserRequest
-    ): ResponseEntity<UsuarioDTO?> {
+    ): ResponseEntity<UsuarioResponse> {
 
-        // Usuário pode ser null na criação
         val usuario = usuarioService.createUser(request)
 
-        // Retorna DTO sem senha
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            UsuarioDTO(
-                id = usuario.id,
-                nome = usuario.nome,
-                email = usuario.email,
-                status = usuario.status,
-            )
-        )
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(toResponse(usuario))
     }
 
-
-    // Usuário logado
-    @GetMapping("/eu")
+    @GetMapping("/me")
     fun getMe(
         @AuthenticationPrincipal tokenData: TokenData
-    ): ResponseEntity<Usuario> {
-        val usuario = usuarioService.findByIdEntity(tokenData.usuarioId)
-        return ResponseEntity.ok(usuario)
+    ): ResponseEntity<UsuarioResponse> {
+
+        val usuarioId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        val usuario = usuarioService.findByIdEntity(usuarioId)
+
+        return ResponseEntity.ok(toResponse(usuario))
     }
 
-    // Organizações vinculadas do usuário logado
-    @GetMapping("/eu/organizacoes")
+    @GetMapping("/me/organizacoes")
     fun getMyOrganizations(
         @AuthenticationPrincipal tokenData: TokenData
     ): ResponseEntity<List<OrganizacaoResumoDTO>> {
-        val organizacoes = usuarioService.listarOrganizacoesDoUsuario(tokenData.usuarioId)
+
+        val usuarioId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        val organizacoes = usuarioService
+            .listarOrganizacoesDoUsuario(usuarioId)
+
         return ResponseEntity.ok(organizacoes)
     }
 
-    // Atualizar dados do usuário logado
-    @PutMapping("/eu")
+    @PutMapping("/me")
     fun updateMe(
         @AuthenticationPrincipal tokenData: TokenData,
         @RequestBody request: CreateUpdateUserRequest
     ): ResponseEntity<UsuarioResponse> {
-        val usuarioAtualizado = usuarioService.update(tokenData.usuarioId, request)
-        return ResponseEntity.ok(usuarioAtualizado)
+
+        val usuarioId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        val atualizado = usuarioService.update(usuarioId, request)
+
+        return ResponseEntity.ok(atualizado)
     }
 
-    // Deletar conta do usuário logado
-    @DeleteMapping("/eu")
+    @DeleteMapping("/me")
     fun deleteMe(
         @AuthenticationPrincipal tokenData: TokenData
     ): ResponseEntity<Void> {
-        usuarioService.delete(tokenData.usuarioId)
+
+        val usuarioId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        usuarioService.delete(usuarioId)
+
         return ResponseEntity.noContent().build()
+    }
+
+    // ======================
+    // MAPPER
+    // ======================
+
+    private fun toResponse(usuario: Usuario): UsuarioResponse {
+
+        val id = usuario.id
+            ?: throw BusinessException("Usuário sem ID")
+
+        return UsuarioResponse(
+            id = id,
+            nome = usuario.nome,
+            email = usuario.email,
+            status = usuario.status,
+        )
     }
 }

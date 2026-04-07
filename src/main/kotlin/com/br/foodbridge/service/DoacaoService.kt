@@ -4,37 +4,110 @@ import com.br.foodbridge.controller.dto.doacao.DoacaoDTO
 import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.repository.DoacaoRepository
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
+import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.stereotype.Service
 
 @Service
-class DoacaoService (
+class DoacaoService(
     private val doacaoRepository: DoacaoRepository,
     private val organizacaoService: OrganizacaoService
-){
+) {
 
-    fun criarDoacao(doacao: DoacaoDTO, organizacao: Organizacao): Doacao {
-        val doacao = Doacao(
-            tipoComida = doacao.tipoComida,
-            descricaoComida = doacao.descricaoComida,
-            quantidade = doacao.quantidade,
-            unidade = doacao.unidade,
-            dataExpiracao = doacao.dataExpiracao,
-            status = doacao.status,
-            endereco = doacao.endereco,
+    fun criarDoacao(request: DoacaoDTO, organizacaoId: Long?): Doacao {
+
+        if (organizacaoId == null || organizacaoId <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        if (request.quantidade <= 0) {
+            throw ValidationException("Quantidade deve ser maior que zero")
+        }
+
+        val organizacao = organizacaoService.findById(organizacaoId)
+
+        val nova = Doacao(
+            tipoComida = request.tipoComida,
+            descricaoComida = request.descricaoComida,
+            quantidade = request.quantidade,
+            unidade = request.unidade,
+            dataExpiracao = request.dataExpiracao,
+            status = request.status,
+            endereco = request.endereco,
             organizacao = organizacao
         )
 
-        return doacaoRepository.save(doacao)
+        return doacaoRepository.save(nova)
     }
 
-    // Listagem de doações pela organizacao
-    fun listarDoacoesOrganizacao(organizacao: Organizacao): List<Doacao> {
+    fun listarDoacoesOrganizacao(organizacaoId: Long?): List<Doacao> {
+
+        if (organizacaoId == null || organizacaoId <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        val organizacao = organizacaoService.findById(organizacaoId)
+
         return doacaoRepository.findByOrganizacao(organizacao)
     }
 
-    // Atualizacao de doação
-    fun editarDoacao(doacao: DoacaoDTO, organizacao: Organizacao):Doacao {
-        val doacao = Doacao(
+    fun editarDoacao(id: Long?, request: DoacaoDTO, organizacaoId: Long?): Doacao {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da doação inválido")
+        }
+
+        if (organizacaoId == null || organizacaoId <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        val doacao = findDoacaoById(id)
+
+        if (doacao.organizacao?.id != organizacaoId) {
+            throw BusinessException("Doação não pertence a esta organização")
+        }
+
+        val atualizado = doacao.copy(
+            tipoComida = request.tipoComida,
+            descricaoComida = request.descricaoComida,
+            quantidade = request.quantidade,
+            unidade = request.unidade,
+            dataExpiracao = request.dataExpiracao,
+            status = request.status,
+            endereco = request.endereco
+        )
+
+        return doacaoRepository.save(atualizado)
+    }
+
+    fun deletarDoacao(id: Long?, organizacaoId: Long?) {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da doação inválido")
+        }
+
+        if (organizacaoId == null || organizacaoId <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        val doacao = findDoacaoById(id)
+
+        if (doacao.organizacao?.id != organizacaoId) {
+            throw BusinessException("Doação não pertence a esta organização")
+        }
+
+        doacaoRepository.delete(doacao)
+    }
+
+    fun listarDoacao(id: Long?): DoacaoDTO {
+
+        val doacao = findDoacaoById(id)
+
+        val organizacao = doacao.organizacao
+            ?: throw BusinessException("Doação sem organização")
+
+        return DoacaoDTO(
             tipoComida = doacao.tipoComida,
             descricaoComida = doacao.descricaoComida,
             quantidade = doacao.quantidade,
@@ -44,38 +117,19 @@ class DoacaoService (
             endereco = doacao.endereco,
             organizacao = organizacao
         )
-        return doacaoRepository.save(doacao)
     }
 
-    // Apagar doacao
-    fun deletarDoacao(doacao: Long, organizacao: Organizacao) {
-        if(organizacao.id != null){
-            throw IllegalArgumentException("Usuário não logado")
-        }
-        val organizacao = organizacaoService.findById(organizacao.id)
-        if (vinculoExistente != null) {
-            throw IllegalArgumentException("Usuário já vinculado a esta organização")
-        }
-        val doacao: Doacao = doacaoRepository.findById(doacao).orElseThrow{
-            throw IllegalArgumentException("Doacao nao encontrado")}
-        return doacaoRepository.delete(doacao)
-    }
+    // ======================
+    // HELPERS
+    // ======================
 
-    // Listar doação específica
-    fun listarDoacao(id: Long): DoacaoDTO {
-        val doacao = doacaoRepository.findById(id).orElseThrow {
-            throw IllegalArgumentException("Doacao não encontrado")
+    private fun findDoacaoById(id: Long?): Doacao {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da doação inválido")
         }
-        val retorno = DoacaoDTO(
-            tipoComida = doacao.tipoComida,
-            descricaoComida = doacao.descricaoComida,
-            quantidade = doacao.quantidade,
-            unidade = doacao.unidade,
-            dataExpiracao = doacao.dataExpiracao,
-            status = doacao.status,
-            endereco = doacao.endereco,
-            organizacao = doacao.organizacao
-        )
-        return retorno
+
+        return doacaoRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Doação não encontrada") }
     }
 }

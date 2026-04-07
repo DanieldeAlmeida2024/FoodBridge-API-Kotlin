@@ -9,6 +9,9 @@ import com.br.foodbridge.domain.model.VoluntarioOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.VoluntarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.VoluntarioRepository
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
+import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,76 +21,132 @@ class VoluntarioService(
     private val organizacaoRepository: OrganizacaoRepository
 ) {
 
-    // CREATE
-    fun criarOuVincular(voluntario: CreateUpdateVoluntario, tokenData: TokenData): Any {
+    fun criarOuVincular(request: CreateUpdateVoluntario, tokenData: TokenData): Voluntario {
 
-        if (voluntarioRepository.existsByCpf(voluntario.cpf)) {
-            val voluntario = voluntarioRepository.findByCpf(voluntario.cpf)
-            if(voluntario.id != null) {
-                if (voluntarioOrganizacaoRepository
-                        .existsByVoluntarioIdAndOrganizacaoId(voluntario.id, tokenData.organizacaoId!!)) {
-                    throw IllegalArgumentException("Já vinculado")
-                }
-                val organizacao = organizacaoRepository.findById(tokenData.organizacaoId)
-                    .orElseThrow {IllegalArgumentException("Organização inválida")}
-                val vinculo = VoluntarioOrganizacao(
-                    voluntario = voluntario,
-                    organizacao = organizacao,
-                    status = StatusVoluntario.ATIVO
-                )
-                return voluntarioOrganizacaoRepository.save(vinculo)
-            }
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw ValidationException("Organização do token é obrigatória")
+
+        if (request.cpf.isBlank()) {
+            throw ValidationException("CPF é obrigatório")
         }
-        val endereco = Endereco(
-            voluntario.endereco.linha1,
-            voluntario.endereco.linha2,
-            voluntario.endereco.numero,
-            voluntario.endereco.cep,
-            voluntario.endereco.bairro,
-            voluntario.endereco.cidade,
-            voluntario.endereco.estado,
-            voluntario.endereco.pais
+
+        if (request.nome.isBlank()) {
+            throw ValidationException("Nome é obrigatório")
+        }
+
+        val organizacao = organizacaoRepository.findById(organizacaoId)
+            .orElseThrow { ResourceNotFoundException("Organização não encontrada") }
+
+        val voluntarioExistente = voluntarioRepository.findByCpf(request.cpf)
+
+        if (voluntarioExistente != null) {
+
+            if (voluntarioExistente.id == null) {
+                throw BusinessException("Voluntário inválido")
+            }
+
+            val jaVinculado = voluntarioOrganizacaoRepository
+                .existsByVoluntarioIdAndOrganizacaoId(
+                    voluntarioExistente.id,
+                    organizacaoId
+                )
+
+            if (jaVinculado) {
+                throw BusinessException("Voluntário já vinculado a esta organização")
+            }
+
+            val vinculo = VoluntarioOrganizacao(
+                voluntario = voluntarioExistente,
+                organizacao = organizacao,
+                status = StatusVoluntario.ATIVO
             )
-        val entityVoluntario = Voluntario(
-            nome = voluntario.nome,
-            cpf = voluntario.cpf,
-            email = voluntario.email,
-            telefone = voluntario.telefone,
+
+            voluntarioOrganizacaoRepository.save(vinculo)
+
+            return voluntarioExistente
+        }
+
+        val endereco = Endereco(
+            linha1 = request.endereco.linha1,
+            linha2 = request.endereco.linha2,
+            numero = request.endereco.numero,
+            cep = request.endereco.cep,
+            bairro = request.endereco.bairro,
+            cidade = request.endereco.cidade,
+            estado = request.endereco.estado,
+            pais = request.endereco.pais
+        )
+
+        val novoVoluntario = Voluntario(
+            nome = request.nome,
+            cpf = request.cpf,
+            email = request.email,
+            telefone = request.telefone,
             endereco = endereco
         )
 
-        val voluntario = voluntarioRepository.save(entityVoluntario)
-        val organizacao = organizacaoRepository.findById(tokenData.organizacaoId!!)
-            .orElseThrow { IllegalArgumentException("Organização Inválida") }
+        val salvo = voluntarioRepository.save(novoVoluntario)
+
         val vinculo = VoluntarioOrganizacao(
-            voluntario = voluntario,
+            voluntario = salvo,
             organizacao = organizacao,
             status = StatusVoluntario.ATIVO
         )
+
         voluntarioOrganizacaoRepository.save(vinculo)
-        return voluntario
+
+        return salvo
     }
 
-    // READ
-    fun findById(id: Long): Voluntario {
+    fun findById(id: Long?): Voluntario {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID do voluntário inválido")
+        }
+
         return voluntarioRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Voluntário não encontrado") }
+            .orElseThrow { ResourceNotFoundException("Voluntário não encontrado") }
     }
 
     fun findAll(): List<Voluntario> = voluntarioRepository.findAll()
 
-    // UPDATE
-    fun update(id: Long, updated: Voluntario): Voluntario {
-        val v = findById(id)
+    fun update(id: Long, request: CreateUpdateVoluntario): Voluntario {
 
-        val novo = v.copy(
-            nome = updated.nome,
-            telefone = updated.telefone,
-            endereco = updated.endereco
+        val voluntario = findById(id)
+
+        val atualizado = voluntario.copy(
+            nome = request.nome,
+            telefone = request.telefone,
+            email = request.email,
+            endereco = voluntario.endereco.copy(
+                linha1 = request.endereco.linha1,
+                linha2 = request.endereco.linha2,
+                numero = request.endereco.numero,
+                cep = request.endereco.cep,
+                bairro = request.endereco.bairro,
+                cidade = request.endereco.cidade,
+                estado = request.endereco.estado,
+                pais = request.endereco.pais
+            )
         )
 
-        return voluntarioRepository.save(novo)
+        return voluntarioRepository.save(atualizado)
     }
 
-    //implementar para que o usuário da organização não apague o voluntário, já que ele pode estar vinculado a outras ongs, apenas alterar o StatusVoluntario (INATIVO OU SUSPENSO)
+    fun desativarVinculo(voluntarioId: Long, organizacaoId: Long) {
+
+        if (voluntarioId <= 0 || organizacaoId <= 0) {
+            throw ValidationException("IDs inválidos")
+        }
+
+        val vinculo = voluntarioOrganizacaoRepository
+            .findByVoluntarioIdAndOrganizacaoId(voluntarioId, organizacaoId)
+            ?: throw ResourceNotFoundException("Vínculo não encontrado")
+
+        val atualizado = vinculo.copy(
+            status = StatusVoluntario.INATIVO
+        )
+
+        voluntarioOrganizacaoRepository.save(atualizado)
+    }
 }

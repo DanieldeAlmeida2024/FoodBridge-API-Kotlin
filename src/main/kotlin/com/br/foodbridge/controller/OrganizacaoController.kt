@@ -5,6 +5,9 @@ import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoReque
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
+import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.OrganizacaoService
 import com.br.foodbridge.service.UsuarioService
@@ -33,73 +36,137 @@ class OrganizacaoController(
         @RequestBody request: CreateUpdateOrganizacaoRequest
     ): ResponseEntity<OrganizacaoDTO> {
 
-        val usuarioEntity = usuarioService.findByIdEntity(tokenData.usuarioId)
+        val usuarioId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        val usuario = usuarioService.findByIdEntity(usuarioId)
 
         val organizacao = organizacaoService
-            .cadastrarOuVincularOrganizacao(usuarioEntity, request)
+            .cadastrarOuVincularOrganizacao(usuario, request)
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(toResponse(organizacao))
     }
 
+    @GetMapping("/cnpj/{cnpj}")
+    fun buscarPorCnpj(
+        @PathVariable cnpj: String
+    ): ResponseEntity<OrganizacaoDTO> {
+
+        val org = organizacaoService.findByCnpj(cnpj)
+            ?: throw ResourceNotFoundException("Organização não encontrada")
+
+        return ResponseEntity.ok(toResponse(org))
+    }
+
+    @GetMapping("/{id}")
+    fun buscarPorId(
+        @PathVariable id: Long
+    ): ResponseEntity<OrganizacaoDTO> {
+
+        val org = organizacaoService.findById(id)
+
+        return ResponseEntity.ok(toResponse(org))
+    }
+
+    @GetMapping
+    fun listarTodas(): ResponseEntity<List<OrganizacaoDTO>> {
+
+        val lista = organizacaoService.findAll()
+            .map { toResponse(it) }
+
+        return ResponseEntity.ok(lista)
+    }
+
+    @GetMapping("/me")
+    fun minhaOrganizacao(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<OrganizacaoDTO> {
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        val org = organizacaoService.findById(organizacaoId)
+
+        return ResponseEntity.ok(toResponse(org))
+    }
+
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
         @RequestBody request: CreateUpdateOrganizacaoRequest
-    ): ResponseEntity<Organizacao> {
+    ): ResponseEntity<OrganizacaoDTO> {
+
         val atualizado = organizacaoService.update(id, request)
-        return ResponseEntity.ok(atualizado)
+
+        return ResponseEntity.ok(toResponse(atualizado))
     }
 
-    @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): ResponseEntity<Organizacao> {
-        val org = organizacaoService.findById(id)
-        return ResponseEntity.ok(org)
-    }
-
-    @GetMapping("/me")
-    fun getMinhaOrganizacao(
-        @AuthenticationPrincipal tokenData: TokenData
-    ): ResponseEntity<Organizacao> {
-        val usuario = usuarioService.findByIdEntity(tokenData.usuarioId)
-
-        val vinculo = usuario.organizacoes?.firstOrNull { it.organizacao?.id == tokenData.organizacaoId }
-        return if (vinculo != null) ResponseEntity.ok(vinculo.organizacao)
-        else ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-    }
-
-    @GetMapping
-    fun listarTodas(): ResponseEntity<List<Organizacao>> {
-        val organizacoes = organizacaoService.findAll()
-        return ResponseEntity.ok(organizacoes)
-    }
-
-    // Apagar organização
     @DeleteMapping("/{id}")
-    fun deletar(@PathVariable id: Long, @AuthenticationPrincipal tokenData: TokenData,): ResponseEntity<Void> {
-        organizacaoService.delete(id, tokenData.usuarioId)
+    fun deletar(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+
+        if (tokenData.role != "ADMIN") {
+            throw BusinessException("Apenas administradores podem inativar a organização")
+        }
+
+        organizacaoService.inativarOrganizacao(id)
+
         return ResponseEntity.noContent().build()
     }
 
-    // Aprovar usuário (Que solicitar o vinculo com a mesma organização do usuário ativo)
     @PatchMapping("/usuarios/{vinculoId}/aprovar")
     fun aprovarUsuario(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
 
-        organizacaoService.aprovarUsuarioOrganizacao(vinculoId, tokenData.usuarioId, tokenData.organizacaoId, tokenData.role)
+        organizacaoService.aprovarUsuarioOrganizacao(
+            vinculoId,
+            tokenData.organizacaoId,
+            tokenData.role
+        )
+
         return ResponseEntity.noContent().build()
     }
 
-    // Reprovar usuário (Que solicitar o vinculo com a mesma organização do usuário ativo)
     @PatchMapping("/usuarios/{vinculoId}/reprovar")
     fun reprovarUsuario(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
-        organizacaoService.reprovarUsuario(vinculoId, tokenData.usuarioId, tokenData.organizacaoId, tokenData.role)
+
+        organizacaoService.reprovarUsuario(
+            vinculoId,
+            tokenData.organizacaoId,
+            tokenData.role
+        )
+
         return ResponseEntity.noContent().build()
+    }
+
+    // ======================
+    // MAPPER
+    // ======================
+
+    private fun toResponse(org: Organizacao): OrganizacaoDTO {
+
+        val id = org.id
+            ?: throw BusinessException("Organização sem ID")
+
+        return OrganizacaoDTO(
+            id = id,
+            nome = org.nome,
+            status = org.status,
+            usuarios = org.usuarios,
+            cnpj = org.cnpj,
+            email = org.email,
+            telefone = org.telefone,
+            voluntarios = org.voluntarios,
+            endereco = org.endereco
+        )
     }
 }

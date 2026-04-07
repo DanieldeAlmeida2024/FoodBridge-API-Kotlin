@@ -3,6 +3,7 @@ package com.br.foodbridge.controller
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.controller.dto.usuario.UsuarioDTO
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.AdminService
 import com.br.foodbridge.service.UsuarioService
@@ -13,68 +14,81 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/admin")
 class AdminController(
     private val adminService: AdminService,
-    private val usuarioService: UsuarioService
 ) {
 
-    // Listar todas organizações
+    // ======================
+    // ORGANIZAÇÕES
+    // ======================
+
     @GetMapping("/organizacoes")
-    fun listarOrganizacoes(): ResponseEntity<List<OrganizacaoDTO>?> {
-        val organizacoes = adminService.listarOrganizacoes()
-        return ResponseEntity.ok(organizacoes)
+    fun listarOrganizacoes(): ResponseEntity<List<OrganizacaoDTO>> {
+        return ResponseEntity.ok(adminService.listarOrganizacoes())
     }
 
-    // Listar organizações pendentes de validação
     @GetMapping("/organizacoes/pendentes")
     fun listarOrganizacoesPendentes(): ResponseEntity<List<OrganizacaoDTO>> {
-        val pendentes = adminService.listarOrganizacoesPendentes()
-        return ResponseEntity.ok(pendentes)
+        return ResponseEntity.ok(adminService.listarOrganizacoesPendentes())
     }
 
-    // Listar todos os usuários
+    @PatchMapping("/organizacoes/{id}/aprovar")
+    fun aprovarOrganizacao(
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+
+        adminService.aprovarOrganizacao(id)
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/organizacoes/{id}/reprovar")
+    fun reprovarOrganizacao(
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+
+        adminService.reprovarOrganizacao(id)
+
+        return ResponseEntity.noContent().build()
+    }
+
+    // ======================
+    // USUÁRIOS
+    // ======================
+
     @GetMapping("/usuarios")
-    fun listarUsuarios(): ResponseEntity<List<UsuarioDTO>?> {
-        val usuarios = adminService.listarUsuarios()
-        return ResponseEntity.ok(usuarios)
+    fun listarUsuarios(): ResponseEntity<List<UsuarioDTO>> {
+        return ResponseEntity.ok(adminService.listarUsuarios())
     }
 
-    // Listar usuários pendentes de ativação
     @GetMapping("/usuarios/pendentes")
     fun listarUsuariosPendentes(): ResponseEntity<List<UsuarioDTO>> {
-        val pendentes = adminService.listarUsuariosPendentes()
-        return ResponseEntity.ok(pendentes)
+        return ResponseEntity.ok(adminService.listarUsuariosPendentes())
     }
 
-    // Aprovar organização
-    @PostMapping("/organizacoes/{id}/aprovar")
-    fun aprovarOrganizacao(@PathVariable id: Long): ResponseEntity<Void> {
-        adminService.aprovarOrganizacao(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    // Reprovar organização
-    @PostMapping("/organizacoes/{id}/reprovar")
-    fun reprovarOrganizacao(@PathVariable id: Long): ResponseEntity<Void> {
-        adminService.reprovarOrganizacao(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    // Aprovar usuário
-    @PostMapping("/usuarios/{id}/aprovar")
+    @PatchMapping("/usuarios/{id}/aprovar")
     fun aprovarUsuario(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long
     ): ResponseEntity<Void> {
-        adminService.aprovarUsuario(id, tokenData.usuarioId)
+
+        val adminId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        adminService.aprovarUsuario(id, adminId)
+
         return ResponseEntity.noContent().build()
     }
 
-    // Reprovar usuário
-    @PostMapping("/usuarios/{id}/reprovar")
+    @PatchMapping("/usuarios/{id}/reprovar")
     fun reprovarUsuario(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long
     ): ResponseEntity<Void> {
-        adminService.reprovarUsuario(id, tokenData.usuarioId)
+
+        val adminId = tokenData.usuarioId
+            ?: throw ValidationException("Usuário inválido no token")
+
+        adminService.reprovarUsuario(id, adminId)
+
         return ResponseEntity.noContent().build()
     }
 }

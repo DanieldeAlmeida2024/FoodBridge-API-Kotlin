@@ -2,9 +2,15 @@ package com.br.foodbridge.controller
 
 import com.br.foodbridge.controller.dto.auth.AuthResponse
 import com.br.foodbridge.controller.dto.auth.LoginRequest
+import com.br.foodbridge.controller.dto.auth.LoginResponse
 import com.br.foodbridge.controller.dto.auth.SelectOrganizationRequest
+import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.service.AuthService
 import com.br.foodbridge.service.utils.JwtService
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -18,31 +24,51 @@ class AuthController(
     private val jwtService: JwtService
 ) {
 
+    // ===============================
     // LOGIN
+    // ===============================
     @PostMapping("/login")
-    fun login(@RequestBody request: LoginRequest) =
-        authService.login(request)
+    fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<LoginResponse> {
+        val loginResponse = authService.login(request)
 
-    // SELECT ORG COM TOKEN
+        val authResponse = LoginResponse(
+            tempToken = loginResponse.tempToken,
+            organizacoes = loginResponse.organizacoes,
+            email = loginResponse.email,
+            status = loginResponse.status,
+            nome = loginResponse.nome,
+        )
+
+        return ResponseEntity.ok(authResponse)
+    }
+
+    // ===============================
+    // SELECT ORGANIZATION (TOKEN TEMPORÁRIO -> TOKEN FINAL)
+    // ===============================
     @PostMapping("/select-org")
     fun selectOrg(
-        @RequestHeader("Authorization") authHeader: String,
+        @AuthenticationPrincipal tokenData: TokenData, // usuário logado pelo token
         @RequestBody request: SelectOrganizationRequest
-    ): AuthResponse {
-        val token = authHeader.removePrefix("Bearer ")
+    ): ResponseEntity<AuthResponse> {
 
-        val tokenData = jwtService.generateAccessFromTemp(
-            token,
-            request.organizacaoId
-        )
+        val loginResponse = try {
+            authService.selectOrganization(
+                usuarioId = tokenData.usuarioId,
+                organizacaoId = request.organizacaoId
+            )
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
+        }
 
-        return AuthResponse(
-            token = tokenData.token,
+        val authResponse = AuthResponse(
+            token = loginResponse.tempToken,
             usuarioId = tokenData.usuarioId,
-            vinculoId = tokenData.vinculoId,
-            organizacaoId = tokenData.organizacaoId,
-            role = tokenData.role
+            vinculoId = loginResponse.organizacoes.firstOrNull { it.organizacaoId == request.organizacaoId }?.organizacaoId,
+            organizacaoId = request.organizacaoId,
+            role = loginResponse.organizacoes.firstOrNull { it.organizacaoId == request.organizacaoId }?.role?.name
         )
+
+        return ResponseEntity.ok(authResponse)
     }
 }
 

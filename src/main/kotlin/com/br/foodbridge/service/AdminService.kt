@@ -2,110 +2,141 @@ package com.br.foodbridge.service
 
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.controller.dto.usuario.UsuarioDTO
-import com.br.foodbridge.controller.dto.usuario.UsuarioOrganizacaoDTO
 import com.br.foodbridge.domain.enums.*
+import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.Usuario
 import com.br.foodbridge.domain.repository.*
+import com.br.foodbridge.exception.custom.BusinessException
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
+import com.br.foodbridge.exception.custom.ValidationException
 
 @Service
 class AdminService(
     private val organizacaoRepository: OrganizacaoRepository,
     private val usuarioRepository: UsuarioRepository,
 ) {
-    // LISTAR ORGANIZAÇÕES
-// Listagens
-    fun listarOrganizacoes(): List<OrganizacaoDTO> = organizacaoRepository.findAll().map{
-        OrganizacaoDTO(
-            id = it.id,
-            nome = it.nome,
-            status = it.status,
-            usuarios = it.usuarios,
-            cnpj = it.cnpj,
-            email = it.email,
-            telefone = it.telefone,
-            voluntarios = it.voluntarios,
-            endereco = it.endereco,
-        )
-    }
 
 
-    fun listarOrganizacoesPendentes(): List<OrganizacaoDTO> {
-        return organizacaoRepository.findAll().map {
-            OrganizacaoDTO(
-                id = it.id!!,
-                nome = it.nome,
-                status = it.status,
-                usuarios = it.usuarios,
-                cnpj = it.cnpj,
-                email = it.email,
-                telefone = it.telefone,
-                voluntarios = it.voluntarios,
-                endereco = it.endereco,
-            )
-        }
+    fun listarOrganizacoes(): List<OrganizacaoDTO> =
+        organizacaoRepository.findAll().map { mapToOrganizacaoDTO(it) }
+
+    fun listarOrganizacoesPendentes(): List<OrganizacaoDTO> =
+        organizacaoRepository.findAll()
             .filter { it.status == StatusOrganizacao.DOCUMENTOS_PENDENTES }
-    }
+            .map { mapToOrganizacaoDTO(it) }
 
-    // LISTAR USUÁRIOS (VÍNCULOS)
-    fun listarUsuarios(): List<UsuarioDTO> {
-        return usuarioRepository.findAll().map {
-            UsuarioDTO(
-                id = it.id,
-                nome = it.nome,
-                email = it.email,
-                status = it.status
-            )}
-    }
-
-
-    fun listarUsuariosPendentes(): List<UsuarioDTO> {
-        return usuarioRepository.findAll().map{
-            UsuarioDTO(
-            id = it.id!!,
-            nome = it.nome,
-            email = it.email,
-            status = it.status,
-        )}
-            .filter { it.status == UserStatus.PENDENTE_VERIFICACAO }
-    }
-
-    // Aprovar ou reprovar organização (só admin)
     fun aprovarOrganizacao(id: Long) {
-        val org = organizacaoRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Organização não encontrada") }
-        val updated = org.copy(status = StatusOrganizacao.VERIFICADO)
-        organizacaoRepository.save(updated)
+
+        val org = findOrganizacaoById(id)
+
+        val atualizado = org.copy(
+            status = StatusOrganizacao.VERIFICADO
+        )
+
+        organizacaoRepository.save(atualizado)
     }
 
     fun reprovarOrganizacao(id: Long) {
-        val org = organizacaoRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Organização não encontrada") }
-        val updated = org.copy(status = StatusOrganizacao.INATIVO)
-        organizacaoRepository.save(updated)
+
+        val org = findOrganizacaoById(id)
+
+        val atualizado = org.copy(
+            status = StatusOrganizacao.INATIVO
+        )
+
+        organizacaoRepository.save(atualizado)
     }
 
-    fun aprovarUsuario(userId: Long, aprovadorId: Long): Usuario? {
-        val usuario = usuarioRepository.findById(userId)
-            .orElseThrow { IllegalArgumentException("Usuario não encontrado") }
+    fun listarUsuarios(): List<UsuarioDTO> =
+        usuarioRepository.findAll().map { mapToUsuarioDTO(it) }
 
-        usuario.status = UserStatus.VERIFICADO;
-        usuario.approvedAt = LocalDateTime.now()
+    fun listarUsuariosPendentes(): List<UsuarioDTO> =
+        usuarioRepository.findAll()
+            .filter { it.status == UserStatus.PENDENTE_VERIFICACAO }
+            .map { mapToUsuarioDTO(it) }
 
-        usuarioRepository.save(usuario)
-        return usuario
+    fun aprovarUsuario(userId: Long, aprovadorId: Long?): Usuario {
+
+        if (aprovadorId == null || aprovadorId <= 0) {
+            throw ValidationException("ID do aprovador inválido")
+        }
+
+        val usuario = findUsuarioById(userId)
+
+        val atualizado = usuario.copy(
+            status = UserStatus.VERIFICADO,
+            approvedAt = LocalDateTime.now()
+        )
+
+        return usuarioRepository.save(atualizado)
     }
 
-    fun reprovarUsuario(userId: Long, reprovadorId: Long): Usuario? {
-        println("reprovar Usuario "+userId)
-        val usuario = usuarioRepository.findById(userId)
-            .orElseThrow { IllegalArgumentException("Usuário não encontrado") }
-        usuario.approvedAt = null;
-        usuario.status = UserStatus.INATIVO;
+    fun reprovarUsuario(userId: Long, reprovadorId: Long?): Usuario {
 
-        usuarioRepository.save(usuario)
-        return usuario
+        if (reprovadorId == null || reprovadorId <= 0) {
+            throw ValidationException("ID do reprovador inválido")
+        }
+
+        val usuario = findUsuarioById(userId)
+
+        val atualizado = usuario.copy(
+            status = UserStatus.INATIVO,
+            approvedAt = null
+        )
+
+        return usuarioRepository.save(atualizado)
     }
 
+    private fun findOrganizacaoById(id: Long?): Organizacao {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        return organizacaoRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Organização não encontrada") }
+    }
+
+    private fun findUsuarioById(id: Long?): Usuario {
+
+        if (id == null || id <= 0) {
+            throw ValidationException("ID do usuário inválido")
+        }
+
+        return usuarioRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Usuário não encontrado") }
+    }
+
+    private fun mapToOrganizacaoDTO(org: Organizacao): OrganizacaoDTO {
+
+        val id = org.id
+            ?: throw BusinessException("Organização sem ID")
+
+        return OrganizacaoDTO(
+            id = id,
+            nome = org.nome,
+            status = org.status,
+            usuarios = org.usuarios,
+            cnpj = org.cnpj,
+            email = org.email,
+            telefone = org.telefone,
+            voluntarios = org.voluntarios,
+            endereco = org.endereco
+        )
+    }
+
+    private fun mapToUsuarioDTO(usuario: Usuario): UsuarioDTO {
+
+        val id = usuario.id
+            ?: throw BusinessException("Usuário sem ID")
+
+        return UsuarioDTO(
+            id = id,
+            nome = usuario.nome,
+            email = usuario.email,
+            status = usuario.status
+        )
+    }
 }

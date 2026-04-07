@@ -8,6 +8,7 @@ data class VoluntarioDTO(
     val id: Long?,
     val nome: String,
     val telefone: String,
+    val cpf: String,
     val email: String,
     @field:NotNull("Endereço é obrigatório")
     @field:Valid

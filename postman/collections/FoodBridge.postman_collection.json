@@ -700,9 +700,39 @@
           "id": "63cfa5ac-5cef-41eb-9b93-c59d7f9aae6d",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjIsInJvbGUiOiJPTkciLCJib25kIjoyLCJpYXQiOjE3NzQ0ODA1NTcsImV4cCI6MTc3NDU2Njk1N30.NqfG07_CF7U6Bm6KU4zJaqVsQOMlvu_rReRiSeX6HyI",
+                "type": "text",
+                "uuid": "5f5c4c13-15cb-49c0-81a9-cddfc581e5b3"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "uuid": "0ff4a952-bf1b-4e04-b794-dee6e5f1ba45"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": ""
+              "raw": "http://localhost:8080/doacao",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "doacao"
+              ]
             }
           },
           "response": []
@@ -711,10 +741,32 @@
           "name": "DELETAR Doacao",
           "id": "99db0078-c30a-47ba-a2b4-9458b0736946",
           "request": {
-            "method": "GET",
-            "header": [],
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "type": "text",
+                "uuid": "9b983124-ca09-4d02-a56b-07e1922e59fa"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "uuid": "3b426638-e2f9-4141-8ec0-d5932fcdc3c2"
+              }
+            ],
             "url": {
-              "raw": ""
+              "raw": "http://localhost:8080/doacao/{{id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "doacao",
+                "{{id}}"
+              ]
             }
           },
           "response": []

@@ -9,6 +9,9 @@ import com.br.foodbridge.domain.model.Usuario
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ValidationException
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -18,37 +21,80 @@ class OrganizacaoService(
     private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository
 ) {
 
-    fun aprovarUsuarioOrganizacao(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
+    fun aprovarUsuarioOrganizacao(
+        vinculoId: Long,
+        organizacaoIdToken: Long?,
+        roleToken: String?
+    ) {
         val vinculo = getVinculoOrThrow(vinculoId)
-        validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
-        vinculo.status = StatusOrganizacao.VERIFICADO
-        vinculo.approvedAt = LocalDateTime.now()
-        usuarioOrganizacaoRepository.save(vinculo)
+
+        val organizacaoId = vinculo.organizacao?.id
+            ?: throw BusinessException("Vínculo inválido sem organização")
+
+        validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
+
+        val atualizado = vinculo.copy(
+            status = StatusOrganizacao.VERIFICADO,
+            approvedAt = LocalDateTime.now()
+        )
+
+        usuarioOrganizacaoRepository.save(atualizado)
     }
 
-    fun reprovarUsuario(vinculoId: Long, usuarioId: Long, organizacaoId: Long?, role: String?) {
+    fun reprovarUsuario(
+        vinculoId: Long,
+        organizacaoIdToken: Long?,
+        roleToken: String?
+    ) {
         val vinculo = getVinculoOrThrow(vinculoId)
-        validarAcessoAprovacao(vinculo.organizacao?.id!!, organizacaoId, role)
-        vinculo.status = StatusOrganizacao.INATIVO
-        usuarioOrganizacaoRepository.save(vinculo)
+
+        val organizacaoId = vinculo.organizacao?.id
+            ?: throw BusinessException("Vínculo inválido sem organização")
+
+        validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
+
+        val atualizado = vinculo.copy(
+            status = StatusOrganizacao.INATIVO
+        )
+
+        usuarioOrganizacaoRepository.save(atualizado)
+    }
+
+    fun findByCnpj(cnpj: String?): Organizacao? {
+        if (cnpj.isNullOrBlank()) {
+            throw ValidationException("CNPJ é obrigatório")
+        }
+
+        return organizacaoRepository.findByCnpj(cnpj)
     }
 
     fun cadastrarOuVincularOrganizacao(
         usuario: Usuario,
         request: CreateUpdateOrganizacaoRequest
     ): Organizacao {
-        // Busca ou cria organização
-        val organizacao = organizacaoRepository.findByCnpj(request.cnpj) ?: criarOrganizacao(request)
 
-        // Verifica se já existe vínculo
-        val vinculoExistente = usuarioOrganizacaoRepository
-            .findByUsuarioIdAndOrganizacaoId(usuario.id!!, organizacao.id!!)
-
-        if (vinculoExistente != null) {
-            throw IllegalArgumentException("Usuário já vinculado a esta organização")
+        if (usuario.id == null) {
+            throw BusinessException("Usuário inválido")
         }
 
-        //  Cria vínculo
+        if (request.cnpj.isBlank()) {
+            throw ValidationException("CNPJ é obrigatório")
+        }
+
+        if (request.nome.isBlank()) {
+            throw ValidationException("Nome da organização é obrigatório")
+        }
+
+        val organizacao = organizacaoRepository.findByCnpj(request.cnpj)
+            ?: criarOrganizacao(request)
+
+        val vinculoExistente = usuarioOrganizacaoRepository
+            .findByUsuarioIdAndOrganizacaoId(usuario.id, organizacao.id!!)
+
+        if (vinculoExistente != null) {
+            throw BusinessException("Usuário já vinculado a esta organização")
+        }
+
         val vinculo = UsuarioOrganizacao(
             usuario = usuario,
             organizacao = organizacao,
@@ -56,21 +102,25 @@ class OrganizacaoService(
             status = StatusOrganizacao.VERIFICADO,
             createdAt = LocalDateTime.now()
         )
+
         usuarioOrganizacaoRepository.save(vinculo)
+
         return organizacao
     }
 
     private fun criarOrganizacao(request: CreateUpdateOrganizacaoRequest): Organizacao {
+
         val endereco = Endereco(
-            request.endereco.linha1,
-            request.endereco.linha2,
-            request.endereco.numero,
-            request.endereco.cep,
-            request.endereco.bairro,
-            request.endereco.cidade,
-            request.endereco.estado,
-            request.endereco.pais
+            linha1 = request.endereco.linha1,
+            linha2 = request.endereco.linha2,
+            numero = request.endereco.numero,
+            cep = request.endereco.cep,
+            bairro = request.endereco.bairro,
+            cidade = request.endereco.cidade,
+            estado = request.endereco.estado,
+            pais = request.endereco.pais
         )
+
         val nova = Organizacao(
             nome = request.nome,
             cnpj = request.cnpj,
@@ -87,18 +137,20 @@ class OrganizacaoService(
         return organizacaoRepository.save(nova)
     }
 
-    // CONSULTAS
+    fun findById(id: Long?): Organizacao {
 
-    fun findById(id: Long): Organizacao =
-        organizacaoRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Organização não encontrada") }
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
 
-    fun findAll(): List<Organizacao> =
-        organizacaoRepository.findAll()
+        return organizacaoRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Organização não encontrada") }
+    }
 
-    // UPDATE
+    fun findAll(): List<Organizacao> = organizacaoRepository.findAll()
 
     fun update(id: Long, request: CreateUpdateOrganizacaoRequest): Organizacao {
+
         val org = findById(id)
 
         val atualizado = org.copy(
@@ -108,32 +160,49 @@ class OrganizacaoService(
             email = request.email,
             website = request.website
         )
+
         return organizacaoRepository.save(atualizado)
     }
 
-    // DELETE - Ideia não excluir, mas gerar uma solicitação para o admin inabilitar (STATUS.INATIVO)
-    fun delete(id: Long, vinculoId: Long) {
-        val org = findById(id)
-        organizacaoRepository.delete(org)
+    fun inativarOrganizacao(id: Long) {
 
+        val org = findById(id)
+
+        val atualizado = org.copy(
+            status = StatusOrganizacao.INATIVO
+        )
+
+        organizacaoRepository.save(atualizado)
     }
 
     // HELPERS
-    private fun getVinculoOrThrow(id: Long): UsuarioOrganizacao =
-        usuarioOrganizacaoRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Vínculo não encontrado") }
+
+    private fun getVinculoOrThrow(id: Long): UsuarioOrganizacao {
+
+        if (id <= 0) {
+            throw ValidationException("ID do vínculo inválido")
+        }
+
+        return usuarioOrganizacaoRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Vínculo não encontrado") }
+    }
 
     private fun validarAcessoAprovacao(
         organizacaoIdAlvo: Long,
         organizacaoIdToken: Long?,
         roleToken: String?
     ) {
+
+        if (organizacaoIdToken == null) {
+            throw ValidationException("Organização do token é obrigatória")
+        }
+
         if (organizacaoIdToken != organizacaoIdAlvo) {
-            throw IllegalArgumentException("Usuário não pertence à organização")
+            throw BusinessException("Usuário não pertence à organização")
         }
 
         if (roleToken != OrganizacaoRole.ADMIN.name) {
-            throw IllegalArgumentException("Apenas administradores podem realizar essa ação")
+            throw BusinessException("Apenas administradores podem realizar essa ação")
         }
     }
 }

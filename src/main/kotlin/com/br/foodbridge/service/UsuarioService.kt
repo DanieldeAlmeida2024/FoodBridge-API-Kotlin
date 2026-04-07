@@ -1,42 +1,49 @@
 package com.br.foodbridge.service
 
 import com.br.foodbridge.controller.dto.mapper.UsuarioMapper
-import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.controller.dto.usuario.CreateUpdateUserRequest
 import com.br.foodbridge.controller.dto.usuario.UsuarioResponse
-import com.br.foodbridge.domain.enums.StatusOrganizacao
-import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.Usuario
-import com.br.foodbridge.domain.model.UsuarioOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioRepository
-
-import com.br.foodbridge.service.utils.JwtService
+import com.br.foodbridge.exception.custom.BusinessException
+import com.br.foodbridge.exception.custom.ValidationException
+import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
+
 
 
 @Service
 class UsuarioService(
     private val usuarioRepository: UsuarioRepository,
-    private val organizacaoRepository: OrganizacaoRepository,
     private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtService: JwtService
 ) {
 
     fun findByIdEntity(userId: Long?): Usuario {
+        if (userId == null) {
+            throw ValidationException("ID do usuário é obrigatório")
+        }
+
         return usuarioRepository.findById(userId)
-            .orElseThrow { IllegalArgumentException("Usuário não encontrado") }
+            .orElseThrow { ResourceNotFoundException("Usuário não encontrado") }
     }
 
-    // CREATE usuário
     fun createUser(request: CreateUpdateUserRequest): Usuario {
+
+        if (request.email.isBlank()) {
+            throw ValidationException("Email é obrigatório")
+        }
+
+        if (request.senha.isBlank()) {
+            throw ValidationException("Senha é obrigatória")
+        }
+
         if (usuarioRepository.existsByEmail(request.email)) {
-            throw IllegalArgumentException("Email já cadastrado")
+            throw BusinessException("Email já cadastrado")
         }
 
         val usuario = Usuario(
@@ -48,42 +55,66 @@ class UsuarioService(
         return usuarioRepository.save(usuario)
     }
 
-    // UPDATE usuário logado
     fun update(usuarioId: Long, request: CreateUpdateUserRequest): UsuarioResponse {
-        val usuarioLogado = findByIdEntity(usuarioId)
 
-        val atualizado = usuarioLogado.copy(
-            nome = request.nome ?: usuarioLogado.nome,
-            email = request.email ?: usuarioLogado.email,
-            senha = if (request.senha.isNotBlank()) passwordEncoder.encode(request.senha) else usuarioLogado.senha
+        val usuario = findByIdEntity(usuarioId)
+
+        if (!request.email.isNullOrBlank() &&
+            request.email != usuario.email &&
+            usuarioRepository.existsByEmail(request.email)
+        ) {
+            throw BusinessException("Email já cadastrado")
+        }
+
+        val senhaAtualizada = when {
+            request.senha.isNullOrBlank() -> usuario.senha
+            else -> passwordEncoder.encode(request.senha)
+        }
+
+        val atualizado = usuario.copy(
+            nome = request.nome ?: usuario.nome,
+            email = request.email ?: usuario.email,
+            senha = senhaAtualizada
         )
 
         val saved = usuarioRepository.save(atualizado)
+
         return UsuarioMapper.toResponse(saved)
     }
 
-    // DELETE usuário logado
     fun delete(usuarioId: Long) {
-        val usuarioLogado = findByIdEntity(usuarioId)
 
-        // Remove vínculos antes de deletar
-        val vinculos = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioLogado.id!!)
-        usuarioOrganizacaoRepository.deleteAll(vinculos)
+        val usuario = findByIdEntity(usuarioId)
 
-        usuarioRepository.delete(usuarioLogado)
+        val vinculos = usuarioOrganizacaoRepository.findAllByUsuarioId(usuario.id!!)
+
+        if (vinculos.isNotEmpty()) {
+            usuarioOrganizacaoRepository.deleteAll(vinculos)
+        }
+
+        usuarioRepository.delete(usuario)
     }
 
 
-    // Listar organizações do usuário logado
     fun listarOrganizacoesDoUsuario(usuarioId: Long): List<OrganizacaoResumoDTO> {
+
+        if (usuarioId <= 0) {
+            throw ValidationException("ID do usuário inválido")
+        }
+
         val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioId)
 
-        return vinculacoes.map {
+        return vinculacoes.map { vinculacao ->
+
+            val organizacao = vinculacao.organizacao
+                ?: throw BusinessException("Vínculo com organização inválido")
+
             OrganizacaoResumoDTO(
-                organizacaoId = it.organizacao?.id!!,
-                nome = it.organizacao?.nome,
-                role = it.role,
-                status = it.status
+                organizacaoId = organizacao.id
+                    ?: throw BusinessException("Organização sem ID"),
+                nome = organizacao.nome,
+                role = vinculacao.role,
+                status = vinculacao.status
             )
         }
     }

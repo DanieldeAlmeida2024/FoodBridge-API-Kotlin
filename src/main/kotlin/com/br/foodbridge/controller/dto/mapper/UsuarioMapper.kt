@@ -10,7 +10,6 @@ object UsuarioMapper {
             id = usuario.id!!,
             nome = usuario.nome,
             email = usuario.email,
-            senha = usuario.senha,
             status = usuario.status,
         )
     }

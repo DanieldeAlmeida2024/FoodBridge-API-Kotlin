@@ -6,6 +6,5 @@ data class UsuarioResponse(
     val id: Long?,
     val nome: String?,
     val email: String?,
-    val senha: String?,
     val status: UserStatus?
 )
