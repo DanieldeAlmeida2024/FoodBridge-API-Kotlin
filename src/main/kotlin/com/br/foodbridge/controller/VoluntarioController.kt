@@ -84,10 +84,7 @@ class VoluntarioController(
         return ResponseEntity.noContent().build()
     }
 
-    // ======================
-    // MAPPER
-    // ======================
-
+    // Mapper
     private fun toResponse(voluntario: Voluntario): VoluntarioDTO {
 
         val id = voluntario.id

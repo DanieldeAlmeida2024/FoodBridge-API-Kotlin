@@ -119,10 +119,7 @@ class DoacaoService(
         )
     }
 
-    // ======================
     // HELPERS
-    // ======================
-
     private fun findDoacaoById(id: Long?): Doacao {
 
         if (id == null || id <= 0) {

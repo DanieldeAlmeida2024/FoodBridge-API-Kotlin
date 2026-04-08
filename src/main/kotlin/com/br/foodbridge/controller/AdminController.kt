@@ -16,10 +16,6 @@ class AdminController(
     private val adminService: AdminService,
 ) {
 
-    // ======================
-    // ORGANIZAÇÕES
-    // ======================
-
     @GetMapping("/organizacoes")
     fun listarOrganizacoes(): ResponseEntity<List<OrganizacaoDTO>> {
         return ResponseEntity.ok(adminService.listarOrganizacoes())
@@ -49,10 +45,6 @@ class AdminController(
 
         return ResponseEntity.noContent().build()
     }
-
-    // ======================
-    // USUÁRIOS
-    // ======================
 
     @GetMapping("/usuarios")
     fun listarUsuarios(): ResponseEntity<List<UsuarioDTO>> {

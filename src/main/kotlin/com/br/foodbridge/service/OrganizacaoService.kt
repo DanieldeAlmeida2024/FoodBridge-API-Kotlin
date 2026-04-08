@@ -176,7 +176,6 @@ class OrganizacaoService(
     }
 
     // HELPERS
-
     private fun getVinculoOrThrow(id: Long): UsuarioOrganizacao {
 
         if (id <= 0) {

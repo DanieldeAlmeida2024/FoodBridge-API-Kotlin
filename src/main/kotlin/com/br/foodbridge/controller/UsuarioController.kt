@@ -85,10 +85,7 @@ class UsuarioController(
         return ResponseEntity.noContent().build()
     }
 
-    // ======================
-    // MAPPER
-    // ======================
-
+    // Mapper
     private fun toResponse(usuario: Usuario): UsuarioResponse {
 
         val id = usuario.id

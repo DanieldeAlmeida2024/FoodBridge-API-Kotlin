@@ -126,10 +126,7 @@ class AuthService(
         )
     }
 
-    // ======================
     // HELPERS
-    // ======================
-
     private fun getVinculoOrThrow(
         usuarioId: Long,
         organizacaoId: Long

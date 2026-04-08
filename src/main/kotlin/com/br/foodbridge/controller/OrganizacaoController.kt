@@ -148,10 +148,7 @@ class OrganizacaoController(
         return ResponseEntity.noContent().build()
     }
 
-    // ======================
-    // MAPPER
-    // ======================
-
+    // Mapper
     private fun toResponse(org: Organizacao): OrganizacaoDTO {
 
         val id = org.id

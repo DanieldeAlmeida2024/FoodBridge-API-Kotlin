@@ -24,9 +24,6 @@ class AuthController(
     private val jwtService: JwtService
 ) {
 
-    // ===============================
-    // LOGIN
-    // ===============================
     @PostMapping("/login")
     fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<LoginResponse> {
         val loginResponse = authService.login(request)
@@ -42,12 +39,9 @@ class AuthController(
         return ResponseEntity.ok(authResponse)
     }
 
-    // ===============================
-    // SELECT ORGANIZATION (TOKEN TEMPORÁRIO -> TOKEN FINAL)
-    // ===============================
     @PostMapping("/select-org")
     fun selectOrg(
-        @AuthenticationPrincipal tokenData: TokenData, // usuário logado pelo token
+        @AuthenticationPrincipal tokenData: TokenData,
         @RequestBody request: SelectOrganizationRequest
     ): ResponseEntity<AuthResponse> {
 

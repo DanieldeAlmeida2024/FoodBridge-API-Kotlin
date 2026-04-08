@@ -103,9 +103,6 @@ class DoacaoController(
         return ResponseEntity.noContent().build()
     }
 
-    // ======================
-    // HELPERS
-    // ======================
 
     private fun validarOrganizacao(tokenData: TokenData) {
         if (tokenData.organizacaoId == null) {
@@ -113,6 +110,7 @@ class DoacaoController(
         }
     }
 
+    // Mapper
     private fun toResponse(doacao: Doacao): DoacaoDTO {
         return DoacaoDTO(
             tipoComida = doacao.tipoComida,
