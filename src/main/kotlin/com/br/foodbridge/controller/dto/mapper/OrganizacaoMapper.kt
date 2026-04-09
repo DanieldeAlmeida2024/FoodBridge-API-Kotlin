@@ -15,5 +15,6 @@ object OrganizacaoMapper {
         usuarios = org.usuarios,
         voluntarios = org.voluntarios,
         endereco = org.endereco,
+        role = org.role
     )
 }

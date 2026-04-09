@@ -53,7 +53,8 @@ class AuthService(
 
         val adminOrg = vinculacoes.firstOrNull {
             it.role == OrganizacaoRole.ADMIN &&
-                    it.status == StatusOrganizacao.VERIFICADO
+                    it.status == StatusOrganizacao.VERIFICADO &&
+                        it.organizacao?.status == StatusOrganizacao.VERIFICADO
         }
 
         val accessToken: String?

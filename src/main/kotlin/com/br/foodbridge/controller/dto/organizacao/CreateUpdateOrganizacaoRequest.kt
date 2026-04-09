@@ -1,5 +1,6 @@
 package com.br.foodbridge.controller.dto.organizacao
 
+import com.br.foodbridge.annotation.ValidOrganizacaoRole
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.model.Endereco
@@ -20,7 +21,10 @@ data class CreateUpdateOrganizacaoRequest(
     val email: String,
     val website: String?,
     @field:NotBlank("É obrigatório selecionar um tipo de organização")
+
+    @field:ValidOrganizacaoRole
     val role: OrganizacaoRole,
+
     val status: StatusOrganizacao = StatusOrganizacao.REVISAO,
     @field:NotNull("Endereço é obrigatório")
     @field:Valid

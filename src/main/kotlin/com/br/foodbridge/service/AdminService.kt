@@ -123,7 +123,8 @@ class AdminService(
             email = org.email,
             telefone = org.telefone,
             voluntarios = org.voluntarios,
-            endereco = org.endereco
+            endereco = org.endereco,
+            role = org.role
         )
     }
 

@@ -1,5 +1,6 @@
 package com.br.foodbridge.controller.dto.organizacao
 
+import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.model.Endereco
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
@@ -16,6 +17,7 @@ data class OrganizacaoDTO(
     val id: Long?,
     val nome: String,
     val usuarios: MutableList<UsuarioOrganizacao>,
+    val role: OrganizacaoRole?,
     val voluntarios: MutableList<VoluntarioOrganizacao>,
     @field:NotNull("Endereço é obrigatório")
     @field:Valid
