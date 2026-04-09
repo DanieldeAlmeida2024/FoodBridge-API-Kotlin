@@ -24,7 +24,7 @@ class OrganizacaoService(
     fun aprovarUsuarioOrganizacao(
         vinculoId: Long,
         organizacaoIdToken: Long?,
-        roleToken: String?
+        roleToken: OrganizacaoRole
     ) {
         val vinculo = getVinculoOrThrow(vinculoId)
 
@@ -44,7 +44,7 @@ class OrganizacaoService(
     fun reprovarUsuario(
         vinculoId: Long,
         organizacaoIdToken: Long?,
-        roleToken: String?
+        roleToken: OrganizacaoRole?
     ) {
         val vinculo = getVinculoOrThrow(vinculoId)
 
@@ -189,7 +189,7 @@ class OrganizacaoService(
     private fun validarAcessoAprovacao(
         organizacaoIdAlvo: Long,
         organizacaoIdToken: Long?,
-        roleToken: String?
+        roleToken: OrganizacaoRole?
     ) {
 
         if (organizacaoIdToken == null) {
@@ -200,7 +200,7 @@ class OrganizacaoService(
             throw BusinessException("Usuário não pertence à organização")
         }
 
-        if (roleToken != OrganizacaoRole.ADMIN.name) {
+        if (roleToken != OrganizacaoRole.ADMIN.name as OrganizacaoRole) {
             throw BusinessException("Apenas administradores podem realizar essa ação")
         }
     }

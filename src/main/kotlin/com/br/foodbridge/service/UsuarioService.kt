@@ -51,7 +51,6 @@ class UsuarioService(
             email = request.email,
             senha = passwordEncoder.encode(request.senha)
         )
-
         return usuarioRepository.save(usuario)
     }
 

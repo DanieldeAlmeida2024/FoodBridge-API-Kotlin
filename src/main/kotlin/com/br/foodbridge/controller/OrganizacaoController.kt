@@ -1,10 +1,10 @@
 package com.br.foodbridge.controller
 
-import com.br.foodbridge.controller.dto.mapper.OrganizacaoMapper.toResponse
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
@@ -127,7 +127,7 @@ class OrganizacaoController(
         organizacaoService.aprovarUsuarioOrganizacao(
             vinculoId,
             tokenData.organizacaoId,
-            tokenData.role
+            tokenData.role as OrganizacaoRole
         )
 
         return ResponseEntity.noContent().build()
@@ -142,7 +142,7 @@ class OrganizacaoController(
         organizacaoService.reprovarUsuario(
             vinculoId,
             tokenData.organizacaoId,
-            tokenData.role
+            tokenData.role as OrganizacaoRole?
         )
 
         return ResponseEntity.noContent().build()

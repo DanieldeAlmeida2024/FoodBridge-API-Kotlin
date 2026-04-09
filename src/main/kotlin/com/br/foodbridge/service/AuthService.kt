@@ -6,6 +6,7 @@ import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.model.UsuarioOrganizacao
+import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioRepository
 import com.br.foodbridge.exception.custom.BusinessException
@@ -20,7 +21,8 @@ class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
     private val usuarioRepository: UsuarioRepository,
-    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository
+    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository,
+    private val organizacaoRepository: OrganizacaoRepository
 ) {
 
     fun login(request: LoginRequest): LoginResponse {
@@ -36,6 +38,9 @@ class AuthService(
         val usuario = usuarioRepository.findByEmail(request.email)
             ?: throw ResourceNotFoundException("Usuário não encontrado")
 
+        val usuarioStatus = usuario.status
+            ?: throw ResourceNotFoundException("Usuário não encontrado")
+
         if (!passwordEncoder.matches(request.senha, usuario.senha)) {
             throw BusinessException("Credenciais inválidas")
         }
@@ -44,7 +49,6 @@ class AuthService(
             ?: throw BusinessException("Usuário inválido")
 
         val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioId)
-
         val organizacoes = mapearOrganizacoes(vinculacoes)
 
         val adminOrg = vinculacoes.firstOrNull {
@@ -52,8 +56,11 @@ class AuthService(
                     it.status == StatusOrganizacao.VERIFICADO
         }
 
-        val token = if (adminOrg != null) {
+        val accessToken: String?
+        val tempToken: String?
 
+        if (adminOrg != null) {
+            // 🔥 ADMIN entra direto com ACCESS
             val organizacaoId = adminOrg.organizacao?.id
                 ?: throw BusinessException("Organização inválida")
 
@@ -62,19 +69,28 @@ class AuthService(
             val vinculoId = vinculo.id
                 ?: throw BusinessException("Vínculo inválido")
 
-            jwtService.generateAccessToken(
+            val usuarioStatus = usuario.status
+                ?: throw BusinessException("Usuário sem Status")
+
+            accessToken = jwtService.generateAccessToken(
                 usuarioId = usuarioId,
                 organizacaoId = organizacaoId,
                 vinculoId = vinculoId,
-                role = adminOrg.role.name
+                role = adminOrg.role.name,
+                status = usuarioStatus
             )
 
+            tempToken = null
+
         } else {
-            jwtService.generateTempToken(usuarioId)
+            // 🔑 Usuário precisa escolher organização
+            accessToken = null
+            tempToken = jwtService.generateTempToken(usuarioId, usuarioStatus)
         }
 
         return LoginResponse(
-            tempToken = token,
+            accessToken = accessToken,
+            tempToken = tempToken,
             nome = usuario.nome,
             email = usuario.email,
             organizacoes = organizacoes,
@@ -99,18 +115,24 @@ class AuthService(
             .findByUsuarioIdAndOrganizacaoId(usuarioId, organizacaoId)
             ?: throw ResourceNotFoundException("Usuário não vinculado a essa organização")
 
+        val organizacao = organizacaoRepository
+            .findOrganizacaoById(organizacaoId)
+            ?: throw ResourceNotFoundException("Organização não existe")
+
         if (vinculo.status != StatusOrganizacao.VERIFICADO) {
             throw BusinessException("Usuário ainda não aprovado nessa organização")
         }
 
-        val vinculoId = vinculo.id
-            ?: throw BusinessException("Vínculo inválido")
+        if (organizacao.status != StatusOrganizacao.VERIFICADO) {
+            throw BusinessException("A Organização ainda não foi aprovada por um administrador")
+        }
 
         val token = jwtService.generateAccessToken(
             usuarioId = usuario.id!!,
             organizacaoId = organizacaoId,
-            vinculoId = vinculoId,
-            role = vinculo.role.name
+            vinculoId = vinculo.id!!,
+            role = vinculo.role.name,
+            status = usuario.status!!
         )
 
         val organizacoes = mapearOrganizacoes(
@@ -118,7 +140,8 @@ class AuthService(
         )
 
         return LoginResponse(
-            tempToken = token,
+            accessToken = token,
+            tempToken = null,
             nome = usuario.nome,
             email = usuario.email,
             organizacoes = organizacoes,

@@ -5,5 +5,6 @@ data class TokenData(
     val usuarioId: Long,
     val vinculoId: Long?,
     val organizacaoId: Long?,
-    val role: String?
+    val role: String?,
+    val status: String
 )

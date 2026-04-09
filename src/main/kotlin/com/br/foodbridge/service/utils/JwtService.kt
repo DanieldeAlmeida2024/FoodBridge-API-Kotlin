@@ -27,6 +27,7 @@ class JwtService(
         private const val CLAIM_ORG_ID = "organizacaoId"
         private const val CLAIM_ROLE = "role"
         private const val CLAIM_BOND = "bond"
+        private const val CLAIM_STATUS = "status"
 
         const val TOKEN_TYPE_TEMP = "TEMP"
         const val TOKEN_TYPE_ACCESS = "ACCESS"
@@ -47,11 +48,13 @@ class JwtService(
             .body
 
     //  GERAÇÃO DE TOKENS
-
-    fun generateTempToken(usuarioId: Long): String =
+    fun generateTempToken(usuarioId: Long, usuarioStatus: UserStatus): String =
         buildToken(
             subject = usuarioId.toString(),
-            claims = mapOf(CLAIM_TYPE to TOKEN_TYPE_TEMP),
+            claims = mapOf(
+                CLAIM_TYPE to TOKEN_TYPE_TEMP,
+                CLAIM_STATUS to usuarioStatus,
+                ),
             expiration = TEMP_EXPIRATION
         )
 
@@ -59,7 +62,8 @@ class JwtService(
         usuarioId: Long,
         organizacaoId: Long,
         vinculoId: Long,
-        role: String
+        role: String,
+        status: UserStatus
     ): String =
         buildToken(
             subject = usuarioId.toString(),
@@ -67,7 +71,8 @@ class JwtService(
                 CLAIM_TYPE to TOKEN_TYPE_ACCESS,
                 CLAIM_ORG_ID to organizacaoId,
                 CLAIM_ROLE to role,
-                CLAIM_BOND to vinculoId
+                CLAIM_BOND to vinculoId,
+                CLAIM_STATUS to status
             ),
             expiration = jwtConfig.expiration
         )
@@ -97,6 +102,10 @@ class JwtService(
     fun extractTempTokenData(token: String): TokenData {
         val claims = parse(token)
 
+        val status = claims[CLAIM_STATUS]?.toString()
+            ?: throw IllegalStateException("Token sem status")
+
+
         require(extractTokenType(token) == TOKEN_TYPE_TEMP) {
             "Token inválido (não é TEMP)"
         }
@@ -106,7 +115,8 @@ class JwtService(
             usuarioId = claims.subject.toLong(),
             vinculoId = null,
             organizacaoId = null,
-            role = null
+            role = null,
+            status = status
         )
     }
 
@@ -125,12 +135,16 @@ class JwtService(
         val role = claims[CLAIM_ROLE]?.toString()
             ?: throw IllegalStateException("Token sem role")
 
+        val status = claims[CLAIM_STATUS]?.toString()
+            ?: throw IllegalStateException("Token sem status")
+
         return TokenData(
             token = token,
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
             vinculoId = vinculoId,
-            role = role
+            role = role,
+            status = status
         )
     }
 
@@ -175,7 +189,8 @@ class JwtService(
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
             vinculoId = vinculo.id,
-            role = vinculo.role.name
+            role = vinculo.role.name,
+            status = usuario.status!!
         )
 
         return TokenData(
@@ -183,7 +198,8 @@ class JwtService(
             usuarioId = usuarioId,
             organizacaoId = organizacaoId,
             vinculoId = vinculo.id,
-            role = vinculo.role.name
+            role = vinculo.role.name,
+            status = usuario.status as String
         )
     }
 }

@@ -19,7 +19,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"danieldealmeida368@outlook.com\",\r\n    \"senha\": \"123\"\r\n}",
+              "raw": "{\r\n    \"email\": \"danieldealmeida222@outlook.com\",\r\n    \"senha\": \"123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -85,7 +85,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQ0NDc1MjcsImV4cCI6MTc3NDQ0NzgyN30.kX6JbLDgLCFAfruo1SRPO9ax8w7EwbvdevmiC3X6wWQ",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzU2NjI5NDMsImV4cCI6MTc3NTY2MzI0M30.A4ZuuY0Pc8QPPCnuMNkOixoeIWPPT1LcZ1-KHqhBLhc",
                 "type": "text"
               },
               {
@@ -96,7 +96,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"organizacaoId\": 2\r\n}",
+              "raw": "{\r\n    \"organizacaoId\": 3\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -129,7 +129,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NTY2MjYxMCwiZXhwIjoxNzc1NzQ5MDEwfQ.OpLAGtI3ZIyLf6AeUsIV4TrOWXS4Fm5VY1VS2NA20Xc",
                 "type": "text"
               },
               {
@@ -214,11 +214,11 @@
             "disableBodyPruning": true
           },
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NTY2MjYxMCwiZXhwIjoxNzc1NzQ5MDEwfQ.OpLAGtI3ZIyLf6AeUsIV4TrOWXS4Fm5VY1VS2NA20Xc",
                 "type": "text"
               },
               {
@@ -260,7 +260,7 @@
             "disableBodyPruning": true
           },
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
@@ -310,7 +310,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NTY2MTQ5OSwiZXhwIjoxNzc1NzQ3ODk5fQ.AjepM-hV5EyiKcAR18WIQXgt7kfPvECMmLA0kbSk7xs",
                 "type": "text"
               },
               {
@@ -354,7 +354,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDA2NjMxMCwiZXhwIjoxNzc0MTUyNzEwfQ.skTB4I6WUTblDA2grY7zdANeljmhftww2upK3IHOWxo",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NTY2MTQ5OSwiZXhwIjoxNzc1NzQ3ODk5fQ.AjepM-hV5EyiKcAR18WIQXgt7kfPvECMmLA0kbSk7xs",
                 "type": "text"
               },
               {
@@ -395,11 +395,11 @@
             "disableBodyPruning": true
           },
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NDQ0NzQ2MCwiZXhwIjoxNzc0NTMzODYwfQ.Qnf2ccq2HtfFsMHYOfErzr5x82hrgv2tvttFMB50e38",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjEsInJvbGUiOiJBRE1JTiIsImJvbmQiOjEsImlhdCI6MTc3NTY2MjYxMCwiZXhwIjoxNzc1NzQ5MDEwfQ.OpLAGtI3ZIyLf6AeUsIV4TrOWXS4Fm5VY1VS2NA20Xc",
                 "type": "text"
               },
               {
@@ -441,7 +441,7 @@
             "disableBodyPruning": true
           },
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
@@ -491,7 +491,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzQ0NDcyNjUsImV4cCI6MTc3NDQ0NzU2NX0.u293thIlVGymgjxqZF0pRzRS41vMyNXXE7eLBgesLHQ",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwidHlwZSI6IlRFTVAiLCJpYXQiOjE3NzU2NjI3MzksImV4cCI6MTc3NTY2MzAzOX0.eoWBL66qQtgktloEZeTFP2qjtll0iOh13XcbyjHzf1Q",
                 "type": "text"
               },
               {
@@ -547,7 +547,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Daniel Almeida\",\r\n  \"email\": \"danieldealmeida368@outlook.com\",\r\n  \"senha\": \"123\"\r\n}",
+              "raw": "{\r\n  \"nome\": \"Daniel Almeida\",\r\n  \"email\": \"danieldealmeida222@outlook.com\",\r\n  \"senha\": \"123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -555,15 +555,14 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/usuarios/criar",
+              "raw": "http://localhost:8080/usuarios",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "port": "8080",
               "path": [
-                "usuarios",
-                "criar"
+                "usuarios"
               ]
             }
           },
@@ -580,7 +579,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjIsInJvbGUiOiJPTkciLCJib25kIjoyLCJpYXQiOjE3NzQ0NDc1NDEsImV4cCI6MTc3NDUzMzk0MX0.bU00ydEJfkpv6aU5e5h35plvY6zpwgF0WUTIqK5zczM",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwidHlwZSI6IkFDQ0VTUyIsIm9yZ2FuaXphY2FvSWQiOjMsInJvbGUiOiJPTkciLCJib25kIjozLCJpYXQiOjE3NzU2NjI5NzQsImV4cCI6MTc3NTc0OTM3NH0.okNCnO6BXOpK3n5abUqZ8o_9cqcNED8-IQgREh08V4g",
                 "type": "text"
               },
               {

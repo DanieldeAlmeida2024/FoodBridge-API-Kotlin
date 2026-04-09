@@ -41,7 +41,8 @@ class DataInitializer(
                 telefone = "000000000",
                 role = OrganizacaoRole.ADMIN,
                 email = adminConfig.email,
-                endereco = enderecoAdmin
+                endereco = enderecoAdmin,
+                status = StatusOrganizacao.VERIFICADO
             )
         )
 
@@ -49,7 +50,8 @@ class DataInitializer(
             Usuario(
                 nome = "Administrador",
                 email = adminConfig.email,
-                senha = passwordEncoder.encode(adminConfig.password)
+                senha = passwordEncoder.encode(adminConfig.password),
+                status = UserStatus.VERIFICADO
             )
         )
 

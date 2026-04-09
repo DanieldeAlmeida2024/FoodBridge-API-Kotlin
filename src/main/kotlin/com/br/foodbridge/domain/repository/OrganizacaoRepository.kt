@@ -10,4 +10,5 @@ interface OrganizacaoRepository : JpaRepository<Organizacao, Long> {
     fun findByCnpj(cnpj: String): Organizacao?
     fun existsByCnpj(cnpj: String): Boolean
     fun findByEmail(email: String): Organizacao?
+    fun findOrganizacaoById(id: Long): Organizacao?
 }

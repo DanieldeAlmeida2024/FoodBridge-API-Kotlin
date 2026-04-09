@@ -64,7 +64,7 @@ class AdminController(
 
         val adminId = tokenData.usuarioId
             ?: throw ValidationException("Usuário inválido no token")
-
+        println(adminId)
         adminService.aprovarUsuario(id, adminId)
 
         return ResponseEntity.noContent().build()

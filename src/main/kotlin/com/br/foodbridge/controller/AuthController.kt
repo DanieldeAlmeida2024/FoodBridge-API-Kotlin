@@ -5,6 +5,8 @@ import com.br.foodbridge.controller.dto.auth.LoginRequest
 import com.br.foodbridge.controller.dto.auth.LoginResponse
 import com.br.foodbridge.controller.dto.auth.SelectOrganizationRequest
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.domain.enums.UserStatus
+import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.service.AuthService
 import com.br.foodbridge.service.utils.JwtService
 import jakarta.validation.Valid
@@ -20,49 +22,58 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val authService: AuthService,
-    private val jwtService: JwtService
+    private val authService: AuthService
 ) {
 
     @PostMapping("/login")
-    fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<LoginResponse> {
-        val loginResponse = authService.login(request)
+    fun login(
+        @RequestBody @Valid request: LoginRequest
+    ): ResponseEntity<LoginResponse> {
 
-        val authResponse = LoginResponse(
-            tempToken = loginResponse.tempToken,
-            organizacoes = loginResponse.organizacoes,
-            email = loginResponse.email,
-            status = loginResponse.status,
-            nome = loginResponse.nome,
-        )
+        val response = authService.login(request)
 
-        return ResponseEntity.ok(authResponse)
+        return ResponseEntity.ok(response)
     }
 
     @PostMapping("/select-org")
     fun selectOrg(
         @AuthenticationPrincipal tokenData: TokenData,
-        @RequestBody request: SelectOrganizationRequest
-    ): ResponseEntity<AuthResponse> {
+        @RequestBody @Valid request: SelectOrganizationRequest
+    ): ResponseEntity<out Any?> {
 
-        val loginResponse = try {
-            authService.selectOrganization(
-                usuarioId = tokenData.usuarioId,
-                organizacaoId = request.organizacaoId
-            )
-        } catch (e: IllegalArgumentException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
+        // ✅ Validação de status do usuário
+        println(tokenData.status)
+        if (tokenData.status != "VERIFICADO") {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(AuthResponseError("Usuário ainda não foi autorizado"))
         }
 
-        val authResponse = AuthResponse(
-            token = loginResponse.tempToken,
+        // ✅ Seleção da organização pelo serviço
+        val loginResponse = authService.selectOrganization(
             usuarioId = tokenData.usuarioId,
-            vinculoId = loginResponse.organizacoes.firstOrNull { it.organizacaoId == request.organizacaoId }?.organizacaoId,
-            organizacaoId = request.organizacaoId,
-            role = loginResponse.organizacoes.firstOrNull { it.organizacaoId == request.organizacaoId }?.role?.name
+            organizacaoId = request.organizacaoId
         )
 
-        return ResponseEntity.ok(authResponse)
+        // ✅ Busca a organização selecionada no contexto do usuário
+        val organizacaoSelecionada = loginResponse.organizacoes
+            .firstOrNull { it.organizacaoId == request.organizacaoId }
+            ?: throw BusinessException("Organização não encontrada no contexto do usuário")
+
+        // ✅ Criação da resposta
+        val response = AuthResponse(
+            token = loginResponse.accessToken
+                ?: throw BusinessException("Token de acesso não gerado"),
+            usuarioId = tokenData.usuarioId,
+            vinculoId = organizacaoSelecionada.organizacaoId,
+            organizacaoId = request.organizacaoId,
+            role = organizacaoSelecionada.role.name
+        )
+
+        return ResponseEntity.ok(response)
     }
+
+    // Classe de erro personalizada para respostas 403
+    data class AuthResponseError(val mensagem: String)
 }
 
