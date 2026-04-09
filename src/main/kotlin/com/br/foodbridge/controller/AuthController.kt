@@ -41,7 +41,6 @@ class AuthController(
         @RequestBody @Valid request: SelectOrganizationRequest
     ): ResponseEntity<out Any?> {
 
-        // ✅ Validação de status do usuário
         println(tokenData.status)
         if (tokenData.status != "VERIFICADO") {
             return ResponseEntity
@@ -49,18 +48,15 @@ class AuthController(
                 .body(AuthResponseError("Usuário ainda não foi autorizado"))
         }
 
-        // ✅ Seleção da organização pelo serviço
         val loginResponse = authService.selectOrganization(
             usuarioId = tokenData.usuarioId,
             organizacaoId = request.organizacaoId
         )
 
-        // ✅ Busca a organização selecionada no contexto do usuário
         val organizacaoSelecionada = loginResponse.organizacoes
             .firstOrNull { it.organizacaoId == request.organizacaoId }
             ?: throw BusinessException("Organização não encontrada no contexto do usuário")
 
-        // ✅ Criação da resposta
         val response = AuthResponse(
             token = loginResponse.accessToken
                 ?: throw BusinessException("Token de acesso não gerado"),

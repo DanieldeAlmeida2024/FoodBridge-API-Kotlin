@@ -120,12 +120,22 @@ class AuthService(
             .findOrganizacaoById(organizacaoId)
             ?: throw ResourceNotFoundException("Organização não existe")
 
+
         if (vinculo.status != StatusOrganizacao.VERIFICADO) {
             throw BusinessException("Usuário ainda não aprovado nessa organização")
         }
 
         if (organizacao.status != StatusOrganizacao.VERIFICADO) {
             throw BusinessException("A Organização ainda não foi aprovada por um administrador")
+        }
+
+        when (organizacao.role) {
+            OrganizacaoRole.DOADOR,
+            OrganizacaoRole.PRODUTOR,
+            OrganizacaoRole.DISTRIBUIDOR,
+            OrganizacaoRole.ONG ->
+            {}
+            else -> throw BusinessException("Organização com role inválido")
         }
 
         val token = jwtService.generateAccessToken(
