@@ -1,9 +1,11 @@
 package com.br.foodbridge.service
 
 import com.br.foodbridge.controller.dto.doacao.DoacaoDTO
+import com.br.foodbridge.domain.enums.StatusDoacao
 import com.br.foodbridge.domain.model.Doacao
-import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.repository.DoacaoRepository
+import com.br.foodbridge.domain.repository.RequisicaoDoacaoRepository
+import com.br.foodbridge.domain.enums.StatusReivindicacao
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
@@ -12,7 +14,8 @@ import org.springframework.stereotype.Service
 @Service
 class DoacaoService(
     private val doacaoRepository: DoacaoRepository,
-    private val organizacaoService: OrganizacaoService
+    private val organizacaoService: OrganizacaoService,
+    private val requisicaoDoacaoRepository: RequisicaoDoacaoRepository
 ) {
 
     fun criarDoacao(request: DoacaoDTO, organizacaoId: Long?): Doacao {
@@ -117,6 +120,30 @@ class DoacaoService(
             endereco = doacao.endereco,
             organizacao = organizacao
         )
+    }
+
+    fun findDoacaoEntityById(id: Long?): Doacao = findDoacaoById(id)
+
+    fun atualizarStatusComBaseNasRequisicoes(doacao: Doacao): Doacao {
+        val quantidadeAprovada = requisicaoDoacaoRepository
+            .findByDoacaoAndStatus(
+                doacao,
+                StatusReivindicacao.APROVADO
+            )
+            .sumOf { it.quantidadeSolicitada }
+
+        val novoStatus = when {
+            quantidadeAprovada <= 0.0 -> if (doacao.status == StatusDoacao.PUBLICADO) {
+                StatusDoacao.PUBLICADO
+            } else {
+                StatusDoacao.DISPONIVEL
+            }
+            quantidadeAprovada < doacao.quantidade -> StatusDoacao.PARCIALMENTE_REIVINDICADO
+            else -> StatusDoacao.TOTALMENTE_REIVINDICADO
+        }
+
+        val atualizado = doacao.copy(status = novoStatus)
+        return doacaoRepository.save(atualizado)
     }
 
     // HELPERS

@@ -1,0 +1,22 @@
+# Dados do banco
+spring.datasource.url= # conexao_db
+spring.datasource.username= # username_db
+spring.datasource.password= # password_db
+spring.datasource.driver-class-name= # driver_db
+
+# Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.format_sql=true
+
+# Nome da aplicação
+spring.application.name= # foodbridge
+
+jwt.secret= # Sua_secret
+jwt.expiration=86400000 # 24h
+
+# Usuário ADMIN
+app.admin.email= # email_adm
+app.admin.password= # senha_adm
+# Verificar configurações adicionais em /config/DataInitializer
