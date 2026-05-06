@@ -4,6 +4,7 @@ import com.br.foodbridge.domain.enums.StatusDoacao
 import com.br.foodbridge.domain.enums.TipoDoacao
 import com.br.foodbridge.domain.enums.Unidade
 import com.br.foodbridge.domain.model.Endereco
+import com.br.foodbridge.domain.model.JanelaHorario
 import com.br.foodbridge.domain.model.Organizacao
 import jakarta.validation.Valid
 import org.jetbrains.annotations.NotNull
@@ -15,6 +16,7 @@ data class DoacaoDTO(
     val quantidade: Double,
     val unidade: Unidade,
     val dataExpiracao: LocalDateTime,
+    val janelasDisponiveis: List<JanelaHorario> = emptyList(),
     val status: StatusDoacao?,
     @field:NotNull("Endereço é obrigatório")
     @field:Valid

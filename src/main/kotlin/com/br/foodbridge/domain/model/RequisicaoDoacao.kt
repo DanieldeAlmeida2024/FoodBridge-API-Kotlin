@@ -28,6 +28,9 @@ data class RequisicaoDoacao(
     @ManyToOne(fetch = FetchType.LAZY)
     val organizacaoSolicitante: Organizacao = Organizacao(),
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    val voluntario: Voluntario? = null,
+
     @Column(nullable = false)
     val quantidadeSolicitada: Double = 0.0,
 
@@ -45,5 +48,8 @@ data class RequisicaoDoacao(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(nullable = true)
-    val respondedAt: LocalDateTime? = null
+    val respondedAt: LocalDateTime? = null,
+
+    @Column(nullable = true)
+    val completedAt: LocalDateTime? = null
 )

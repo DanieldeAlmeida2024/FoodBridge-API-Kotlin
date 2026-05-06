@@ -23,9 +23,12 @@ class AdminService(
         organizacaoRepository.findAll().map { mapToOrganizacaoDTO(it) }
 
     fun listarOrganizacoesPendentes(): List<OrganizacaoDTO> =
-        organizacaoRepository.findAll()
-            .filter { it.status == StatusOrganizacao.DOCUMENTOS_PENDENTES }
-            .map { mapToOrganizacaoDTO(it) }
+        organizacaoRepository.findAllByStatusIn(
+            listOf(
+                StatusOrganizacao.DOCUMENTOS_PENDENTES,
+                StatusOrganizacao.REVISAO
+            )
+        ).map(::mapToOrganizacaoDTO)
 
     fun aprovarOrganizacao(id: Long) {
 

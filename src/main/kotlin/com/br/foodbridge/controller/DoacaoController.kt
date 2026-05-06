@@ -55,6 +55,20 @@ class DoacaoController(
         )
     }
 
+    @GetMapping("/disponiveis")
+    fun listarDisponiveis(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<List<DoacaoDTO>> {
+
+        validarOrganizacao(tokenData)
+
+        val lista = doacaoService
+            .listarDoacoesDisponiveis(tokenData.organizacaoId)
+            .map { toResponse(it) }
+
+        return ResponseEntity.ok(lista)
+    }
+
     @GetMapping
     fun listar(
         @AuthenticationPrincipal tokenData: TokenData
@@ -118,6 +132,7 @@ class DoacaoController(
             quantidade = doacao.quantidade,
             unidade = doacao.unidade,
             dataExpiracao = doacao.dataExpiracao,
+            janelasDisponiveis = doacao.janelasDisponiveis,
             status = doacao.status,
             endereco = doacao.endereco,
             organizacao = doacao.organizacao

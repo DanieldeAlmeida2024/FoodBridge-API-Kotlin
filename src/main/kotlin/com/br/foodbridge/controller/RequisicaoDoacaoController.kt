@@ -1,6 +1,7 @@
 package com.br.foodbridge.controller
 
 import com.br.foodbridge.controller.dto.auth.TokenData
+import com.br.foodbridge.controller.dto.requisicao.AprovarRequisicaoDoacaoRequest
 import com.br.foodbridge.controller.dto.requisicao.CreateRequisicaoDoacaoRequest
 import com.br.foodbridge.controller.dto.requisicao.RequisicaoDoacaoDTO
 import com.br.foodbridge.domain.model.RequisicaoDoacao
@@ -74,9 +75,10 @@ class RequisicaoDoacaoController(
     @PatchMapping("/{id}/aprovar")
     fun aprovar(
         @AuthenticationPrincipal tokenData: TokenData,
-        @PathVariable id: Long
+        @PathVariable id: Long,
+        @RequestBody @Valid request: AprovarRequisicaoDoacaoRequest
     ): ResponseEntity<RequisicaoDoacaoDTO> {
-        val requisicao = requisicaoDoacaoService.aprovar(id, tokenData.organizacaoId, tokenData.role)
+        val requisicao = requisicaoDoacaoService.aprovar(id, request.voluntarioId, tokenData.organizacaoId, tokenData.role)
         return ResponseEntity.ok(toResponse(requisicao))
     }
 
@@ -98,6 +100,15 @@ class RequisicaoDoacaoController(
         return ResponseEntity.ok(toResponse(requisicao))
     }
 
+    @PatchMapping("/{id}/concluir")
+    fun concluir(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long
+    ): ResponseEntity<RequisicaoDoacaoDTO> {
+        val requisicao = requisicaoDoacaoService.concluir(id, tokenData.organizacaoId, tokenData.role)
+        return ResponseEntity.ok(toResponse(requisicao))
+    }
+
     private fun toResponse(requisicao: RequisicaoDoacao): RequisicaoDoacaoDTO {
         val id = requisicao.id ?: throw BusinessException("Requisição sem ID")
         val doacaoId = requisicao.doacao.id ?: throw BusinessException("Doação sem ID")
@@ -113,13 +124,16 @@ class RequisicaoDoacaoController(
             organizacaoSolicitanteNome = requisicao.organizacaoSolicitante.nome,
             organizacaoDoadoraId = organizacaoDoadoraId,
             organizacaoDoadoraNome = requisicao.doacao.organizacao.nome,
+            voluntarioId = requisicao.voluntario?.id,
+            voluntarioNome = requisicao.voluntario?.nome,
             quantidadeSolicitada = requisicao.quantidadeSolicitada,
             observacao = requisicao.observacao,
             status = requisicao.status,
             statusDoacao = requisicao.doacao.status,
             createdAt = requisicao.createdAt,
             updatedAt = requisicao.updatedAt,
-            respondedAt = requisicao.respondedAt
+            respondedAt = requisicao.respondedAt,
+            completedAt = requisicao.completedAt
         )
     }
 }

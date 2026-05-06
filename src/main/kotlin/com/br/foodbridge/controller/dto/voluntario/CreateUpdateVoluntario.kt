@@ -1,16 +1,6 @@
 package com.br.foodbridge.controller.dto.voluntario
 
-import com.br.foodbridge.domain.enums.StatusVoluntario
 import com.br.foodbridge.domain.model.Endereco
-import com.br.foodbridge.domain.model.VoluntarioOrganizacao
-import jakarta.persistence.Column
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -25,7 +15,7 @@ data class CreateUpdateVoluntario(
     @field:NotBlank(message ="Nome é obrigatório")
     val nome: String,
 
-    @field:Pattern(regexp = "\\d{12}",message ="Telefone é obrigatório")
+    @field:Pattern(regexp = "\\d{10,13}", message = "Telefone deve conter entre 10 e 13 digitos")
     val telefone: String,
 
     @field:Email(message ="É obrigatório o cadastro de um e-mail")

@@ -66,6 +66,10 @@ class VoluntarioService(
             return voluntarioExistente
         }
 
+        if (voluntarioRepository.existsByEmail(request.email)) {
+            throw BusinessException("Email ja cadastrado para outro voluntario")
+        }
+
         val endereco = Endereco(
             linha1 = request.endereco.linha1,
             linha2 = request.endereco.linha2,
@@ -109,6 +113,15 @@ class VoluntarioService(
     }
 
     fun findAll(): List<Voluntario> = voluntarioRepository.findAll()
+
+    fun findByCpf(cpf: String?): Voluntario {
+        if (cpf.isNullOrBlank()) {
+            throw ValidationException("CPF do voluntario e obrigatorio")
+        }
+
+        return voluntarioRepository.findByCpf(cpf)
+            ?: throw ResourceNotFoundException("Voluntario nao encontrado")
+    }
 
     fun update(id: Long, request: CreateUpdateVoluntario): Voluntario {
 

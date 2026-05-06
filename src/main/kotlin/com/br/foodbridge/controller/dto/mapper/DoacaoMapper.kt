@@ -10,6 +10,7 @@ object DoacaoMapper {
         quantidade = doacao.quantidade,
         unidade = doacao.unidade,
         dataExpiracao = doacao.dataExpiracao,
+        janelasDisponiveis = doacao.janelasDisponiveis,
         status = doacao.status,
         endereco = doacao.endereco,
         organizacao = doacao.organizacao

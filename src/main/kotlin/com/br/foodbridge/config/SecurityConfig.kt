@@ -26,6 +26,7 @@ class SecurityConfig(
                 auth
                     // Rotas públicas
                     .requestMatchers("/auth/login").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/dashboards/publico").permitAll()
                     .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
                     .requestMatchers("/error").permitAll()
 

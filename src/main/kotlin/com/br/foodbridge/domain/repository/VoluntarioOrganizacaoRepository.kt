@@ -16,5 +16,5 @@ interface VoluntarioOrganizacaoRepository : JpaRepository<VoluntarioOrganizacao,
     fun findByVoluntarioIdAndOrganizacaoId(
         voluntarioId: Long,
         organizacaoId: Long
-    ): VoluntarioOrganizacao
+    ): VoluntarioOrganizacao?
 }

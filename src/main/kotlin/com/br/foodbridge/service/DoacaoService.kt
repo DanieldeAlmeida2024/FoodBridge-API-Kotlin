@@ -28,6 +28,8 @@ class DoacaoService(
             throw ValidationException("Quantidade deve ser maior que zero")
         }
 
+        validarJanelasDisponiveis(request)
+
         val organizacao = organizacaoService.findById(organizacaoId)
 
         val nova = Doacao(
@@ -36,6 +38,7 @@ class DoacaoService(
             quantidade = request.quantidade,
             unidade = request.unidade,
             dataExpiracao = request.dataExpiracao,
+            janelasDisponiveis = request.janelasDisponiveis,
             status = request.status,
             endereco = request.endereco,
             organizacao = organizacao
@@ -55,6 +58,17 @@ class DoacaoService(
         return doacaoRepository.findByOrganizacao(organizacao)
     }
 
+    fun listarDoacoesDisponiveis(organizacaoId: Long?): List<Doacao> {
+        val statusDisponiveis = listOf(
+            StatusDoacao.PUBLICADO,
+            StatusDoacao.DISPONIVEL,
+            StatusDoacao.PARCIALMENTE_REIVINDICADO
+        )
+
+        return doacaoRepository.findByStatusIn(statusDisponiveis)
+            .filter { it.organizacao.id != organizacaoId }
+    }
+
     fun editarDoacao(id: Long?, request: DoacaoDTO, organizacaoId: Long?): Doacao {
 
         if (id == null || id <= 0) {
@@ -71,12 +85,15 @@ class DoacaoService(
             throw BusinessException("Doação não pertence a esta organização")
         }
 
+        validarJanelasDisponiveis(request)
+
         val atualizado = doacao.copy(
             tipoComida = request.tipoComida,
             descricaoComida = request.descricaoComida,
             quantidade = request.quantidade,
             unidade = request.unidade,
             dataExpiracao = request.dataExpiracao,
+            janelasDisponiveis = request.janelasDisponiveis,
             status = request.status,
             endereco = request.endereco
         )
@@ -116,6 +133,7 @@ class DoacaoService(
             quantidade = doacao.quantidade,
             unidade = doacao.unidade,
             dataExpiracao = doacao.dataExpiracao,
+            janelasDisponiveis = doacao.janelasDisponiveis,
             status = doacao.status,
             endereco = doacao.endereco,
             organizacao = organizacao
@@ -126,13 +144,18 @@ class DoacaoService(
 
     fun atualizarStatusComBaseNasRequisicoes(doacao: Doacao): Doacao {
         val quantidadeAprovada = requisicaoDoacaoRepository
-            .findByDoacaoAndStatus(
+            .findByDoacaoAndStatusIn(
                 doacao,
-                StatusReivindicacao.APROVADO
+                listOf(StatusReivindicacao.APROVADO, StatusReivindicacao.CONCLUIDO)
             )
             .sumOf { it.quantidadeSolicitada }
 
+        val quantidadeConcluida = requisicaoDoacaoRepository
+            .findByDoacaoAndStatus(doacao, StatusReivindicacao.CONCLUIDO)
+            .sumOf { it.quantidadeSolicitada }
+
         val novoStatus = when {
+            quantidadeConcluida >= doacao.quantidade -> StatusDoacao.COMPLETO
             quantidadeAprovada <= 0.0 -> if (doacao.status == StatusDoacao.PUBLICADO) {
                 StatusDoacao.PUBLICADO
             } else {
@@ -155,5 +178,16 @@ class DoacaoService(
 
         return doacaoRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Doação não encontrada") }
+    }
+
+    private fun validarJanelasDisponiveis(request: DoacaoDTO) {
+        if (request.janelasDisponiveis.isEmpty()) {
+            throw ValidationException("Informe ao menos uma janela de horario disponivel para coleta")
+        }
+
+        val janelaInvalida = request.janelasDisponiveis.any { it.fim <= it.inicio }
+        if (janelaInvalida) {
+            throw ValidationException("A janela de horario deve terminar apos o inicio")
+        }
     }
 }

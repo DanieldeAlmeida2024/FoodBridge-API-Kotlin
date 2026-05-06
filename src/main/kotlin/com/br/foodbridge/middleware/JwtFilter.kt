@@ -25,7 +25,7 @@ class JwtFilter(
 
     private val pathMatcher = AntPathMatcher()
 
-    private val publicPaths = listOf("/auth/login", "/usuarios/criar")
+    private val publicPaths = listOf("/auth/login", "/usuarios/criar", "/dashboards/publico")
     private val tempOnlyRoutes = listOf(
         RouteRule("POST", "/organizacoes"),
         RouteRule("GET", "/organizacoes/cnpj/**"),

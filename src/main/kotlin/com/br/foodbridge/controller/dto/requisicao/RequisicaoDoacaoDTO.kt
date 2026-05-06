@@ -11,11 +11,14 @@ data class RequisicaoDoacaoDTO(
     val organizacaoSolicitanteNome: String,
     val organizacaoDoadoraId: Long,
     val organizacaoDoadoraNome: String,
+    val voluntarioId: Long?,
+    val voluntarioNome: String?,
     val quantidadeSolicitada: Double,
     val observacao: String?,
     val status: StatusReivindicacao,
     val statusDoacao: StatusDoacao?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val respondedAt: LocalDateTime?
+    val respondedAt: LocalDateTime?,
+    val completedAt: LocalDateTime?
 )

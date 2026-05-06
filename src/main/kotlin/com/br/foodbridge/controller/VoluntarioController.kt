@@ -50,6 +50,17 @@ class VoluntarioController(
         return ResponseEntity.ok(toResponse(voluntario))
     }
 
+    @GetMapping("/cpf/{cpf}")
+    fun buscarPorCpf(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable cpf: String
+    ): ResponseEntity<VoluntarioDTO> {
+
+        val voluntario = voluntarioService.findByCpf(cpf)
+
+        return ResponseEntity.ok(toResponse(voluntario))
+    }
+
     @GetMapping
     fun listar(): ResponseEntity<List<VoluntarioDTO>> {
 

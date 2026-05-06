@@ -13,6 +13,11 @@ interface RequisicaoDoacaoRepository : JpaRepository<RequisicaoDoacao, Long> {
     fun findByDoacaoOrganizacao(organizacao: Organizacao): List<RequisicaoDoacao>
     fun findByDoacao(doacao: Doacao): List<RequisicaoDoacao>
     fun findByDoacaoAndStatus(doacao: Doacao, status: StatusReivindicacao): List<RequisicaoDoacao>
+    fun findByDoacaoAndStatusIn(doacao: Doacao, status: Collection<StatusReivindicacao>): List<RequisicaoDoacao>
+    fun findByOrganizacaoSolicitanteAndStatusIn(
+        organizacao: Organizacao,
+        status: Collection<StatusReivindicacao>
+    ): List<RequisicaoDoacao>
     fun existsByDoacaoAndOrganizacaoSolicitanteAndStatus(
         doacao: Doacao,
         organizacaoSolicitante: Organizacao,

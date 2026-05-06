@@ -41,6 +41,10 @@ data class Doacao(
     @Column(nullable = true)
     val dataExpiracao: LocalDateTime = LocalDateTime.now(),
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    val janelasDisponiveis: List<JanelaHorario> = emptyList(),
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val status: StatusDoacao? = StatusDoacao.RASCUNHO,
