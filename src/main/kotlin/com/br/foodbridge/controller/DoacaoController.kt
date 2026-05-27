@@ -143,6 +143,7 @@ class DoacaoController(
 
     private fun toResponse(doacao: Doacao): DoacaoDTO {
         return DoacaoDTO(
+            id = doacao.id,
             tipoComida = doacao.tipoComida,
             descricaoComida = doacao.descricaoComida,
             quantidade = doacao.quantidade,

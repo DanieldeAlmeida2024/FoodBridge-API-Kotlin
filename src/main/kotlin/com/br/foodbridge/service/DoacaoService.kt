@@ -130,6 +130,7 @@ class DoacaoService(
             ?: throw BusinessException("Doação sem organização")
 
         return DoacaoDTO(
+            id = doacao.id,
             tipoComida = doacao.tipoComida,
             descricaoComida = doacao.descricaoComida,
             quantidade = doacao.quantidade,

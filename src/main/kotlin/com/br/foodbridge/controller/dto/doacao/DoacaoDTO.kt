@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull as JetBrainsNotNull
 import java.time.LocalDateTime
 
 data class DoacaoDTO(
+    val id: Long? = null,
     val tipoComida: TipoDoacao,
     val descricaoComida: String,
     val quantidade: Double,

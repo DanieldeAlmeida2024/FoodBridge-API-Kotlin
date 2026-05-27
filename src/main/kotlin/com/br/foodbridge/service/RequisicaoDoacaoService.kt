@@ -89,13 +89,37 @@ class RequisicaoDoacaoService(
     }
 
     @Transactional
-    fun aprovar(id: Long?, voluntarioId: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
+    fun vincularVoluntario(id: Long?, voluntarioId: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
+        validarRoleSolicitante(roleToken)
+
+        val requisicao = findById(id)
+
+        if (requisicao.organizacaoSolicitante.id != organizacaoId) {
+            throw BusinessException("A requisição não pertence à sua organização")
+        }
+
+        val statusPermitidos = setOf(StatusReivindicacao.PENDENTE, StatusReivindicacao.APROVADO)
+        if (requisicao.status !in statusPermitidos) {
+            throw BusinessException("Não é possível vincular voluntário nesta requisição")
+        }
+
+        val voluntario = validarVoluntarioColeta(voluntarioId, requisicao.organizacaoSolicitante)
+
+        return requisicaoDoacaoRepository.save(
+            requisicao.copy(
+                voluntario = voluntario,
+                updatedAt = LocalDateTime.now()
+            )
+        )
+    }
+
+    @Transactional
+    fun aprovar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
         val requisicao = findById(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
         validarPendente(requisicao)
-        val voluntario = validarVoluntarioColeta(voluntarioId, requisicao.organizacaoSolicitante)
 
         val disponivel = quantidadeDisponivel(requisicao.doacao)
         if (requisicao.quantidadeSolicitada > disponivel) {
@@ -104,7 +128,6 @@ class RequisicaoDoacaoService(
 
         val atualizado = requisicao.copy(
             status = StatusReivindicacao.APROVADO,
-            voluntario = voluntario,
             updatedAt = LocalDateTime.now(),
             respondedAt = LocalDateTime.now()
         )

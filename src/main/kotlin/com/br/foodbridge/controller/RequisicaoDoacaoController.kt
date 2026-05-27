@@ -72,13 +72,27 @@ class RequisicaoDoacaoController(
         return ResponseEntity.ok(toResponse(requisicao))
     }
 
-    @PatchMapping("/{id}/aprovar")
-    fun aprovar(
+    @PatchMapping("/{id}/vincular-voluntario")
+    fun vincularVoluntario(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long,
         @RequestBody @Valid request: AprovarRequisicaoDoacaoRequest
     ): ResponseEntity<RequisicaoDoacaoDTO> {
-        val requisicao = requisicaoDoacaoService.aprovar(id, request.voluntarioId, tokenData.organizacaoId, tokenData.role)
+        val requisicao = requisicaoDoacaoService.vincularVoluntario(
+            id,
+            request.voluntarioId,
+            tokenData.organizacaoId,
+            tokenData.role
+        )
+        return ResponseEntity.ok(toResponse(requisicao))
+    }
+
+    @PatchMapping("/{id}/aprovar")
+    fun aprovar(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long
+    ): ResponseEntity<RequisicaoDoacaoDTO> {
+        val requisicao = requisicaoDoacaoService.aprovar(id, tokenData.organizacaoId, tokenData.role)
         return ResponseEntity.ok(toResponse(requisicao))
     }
 
