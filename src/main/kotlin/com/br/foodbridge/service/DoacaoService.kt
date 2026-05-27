@@ -1,6 +1,7 @@
 package com.br.foodbridge.service
 
 import com.br.foodbridge.controller.dto.doacao.DoacaoDTO
+import com.br.foodbridge.controller.dto.doacao.FecharDoacaoRequest
 import com.br.foodbridge.domain.enums.StatusDoacao
 import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.domain.repository.DoacaoRepository
@@ -10,6 +11,7 @@ import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class DoacaoService(
@@ -136,8 +138,48 @@ class DoacaoService(
             janelasDisponiveis = doacao.janelasDisponiveis,
             status = doacao.status,
             endereco = doacao.endereco,
-            organizacao = organizacao
+            organizacao = organizacao,
+            quantidadeColetadaFinal = doacao.quantidadeColetadaFinal,
+            fechadoAt = doacao.fechadoAt,
+            observacaoFechamento = doacao.observacaoFechamento
         )
+    }
+
+    fun fecharDoacao(id: Long?, request: FecharDoacaoRequest, organizacaoId: Long?): Doacao {
+
+        if (organizacaoId == null || organizacaoId <= 0) {
+            throw ValidationException("ID da organização inválido")
+        }
+
+        val doacao = findDoacaoById(id)
+
+        if (doacao.organizacao?.id != organizacaoId) {
+            throw BusinessException("Doação não pertence a esta organização")
+        }
+
+        val statusFechaveis = setOf(
+            StatusDoacao.PUBLICADO,
+            StatusDoacao.DISPONIVEL,
+            StatusDoacao.PARCIALMENTE_REIVINDICADO,
+            StatusDoacao.TOTALMENTE_REIVINDICADO
+        )
+
+        if (doacao.status !in statusFechaveis) {
+            throw BusinessException("A doação não pode ser fechada no status atual: ${doacao.status}")
+        }
+
+        if (request.quantidadeColetada > doacao.quantidade) {
+            throw ValidationException("Quantidade coletada não pode ser maior que a quantidade total da doação")
+        }
+
+        val fechado = doacao.copy(
+            status = StatusDoacao.COMPLETO,
+            quantidadeColetadaFinal = request.quantidadeColetada,
+            fechadoAt = LocalDateTime.now(),
+            observacaoFechamento = request.observacao
+        )
+
+        return doacaoRepository.save(fechado)
     }
 
     fun findDoacaoEntityById(id: Long?): Doacao = findDoacaoById(id)

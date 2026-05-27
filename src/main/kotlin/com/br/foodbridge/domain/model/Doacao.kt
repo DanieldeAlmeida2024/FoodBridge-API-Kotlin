@@ -55,5 +55,14 @@ data class Doacao(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
-    val organizacao: Organizacao = Organizacao()
+    val organizacao: Organizacao = Organizacao(),
+
+    @Column(nullable = true)
+    val quantidadeColetadaFinal: Double? = null,
+
+    @Column(nullable = true)
+    val fechadoAt: LocalDateTime? = null,
+
+    @Column(nullable = true)
+    val observacaoFechamento: String? = null
 )

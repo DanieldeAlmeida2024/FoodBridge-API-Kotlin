@@ -2,6 +2,8 @@ package com.br.foodbridge.controller.dto.requisicao
 
 import com.br.foodbridge.domain.enums.StatusDoacao
 import com.br.foodbridge.domain.enums.StatusReivindicacao
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
 data class RequisicaoDoacaoDTO(
@@ -22,3 +24,17 @@ data class RequisicaoDoacaoDTO(
     val respondedAt: LocalDateTime?,
     val completedAt: LocalDateTime?
 )
+data class CreateRequisicaoDoacaoRequest(
+    @field:NotNull(message = "ID da doação é obrigatório")
+    val doacaoId: Long?,
+
+    @field:DecimalMin(value = "0.1", message = "Quantidade solicitada deve ser maior que zero")
+    val quantidadeSolicitada: Double,
+
+    val observacao: String? = null
+)
+data class AprovarRequisicaoDoacaoRequest(
+    @field:NotNull(message = "ID do voluntario e obrigatorio")
+    val voluntarioId: Long?
+)
+

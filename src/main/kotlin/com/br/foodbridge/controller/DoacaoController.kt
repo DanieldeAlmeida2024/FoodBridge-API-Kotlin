@@ -2,6 +2,7 @@ package com.br.foodbridge.controller
 
 import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.controller.dto.doacao.DoacaoDTO
+import com.br.foodbridge.controller.dto.doacao.FecharDoacaoRequest
 import com.br.foodbridge.controller.dto.mapper.DoacaoMapper.toResponse
 import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.exception.custom.BusinessException
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -103,6 +105,21 @@ class DoacaoController(
         return ResponseEntity.ok(toResponse(atualizado))
     }
 
+    @PatchMapping("/{id}/fechar")
+    fun fechar(
+        @AuthenticationPrincipal tokenData: TokenData,
+        @PathVariable id: Long,
+        @RequestBody @Valid request: FecharDoacaoRequest
+    ): ResponseEntity<DoacaoDTO> {
+
+        val organizacaoId = tokenData.organizacaoId
+            ?: throw BusinessException("Usuário não vinculado a uma organização")
+
+        val doacao = doacaoService.fecharDoacao(id, request, organizacaoId)
+
+        return ResponseEntity.ok(toResponse(doacao))
+    }
+
     @DeleteMapping("/{id}")
     fun deletar(
         @AuthenticationPrincipal tokenData: TokenData,
@@ -124,7 +141,6 @@ class DoacaoController(
         }
     }
 
-    // Mapper
     private fun toResponse(doacao: Doacao): DoacaoDTO {
         return DoacaoDTO(
             tipoComida = doacao.tipoComida,
@@ -135,7 +151,10 @@ class DoacaoController(
             janelasDisponiveis = doacao.janelasDisponiveis,
             status = doacao.status,
             endereco = doacao.endereco,
-            organizacao = doacao.organizacao
+            organizacao = doacao.organizacao,
+            quantidadeColetadaFinal = doacao.quantidadeColetadaFinal,
+            fechadoAt = doacao.fechadoAt,
+            observacaoFechamento = doacao.observacaoFechamento
         )
     }
 }
