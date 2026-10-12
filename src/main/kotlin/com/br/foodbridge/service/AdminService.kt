@@ -16,6 +16,7 @@ import com.br.foodbridge.exception.custom.ValidationException
 class AdminService(
     private val organizacaoRepository: OrganizacaoRepository,
     private val usuarioRepository: UsuarioRepository,
+    private val usuarioOrganizacaoRepository: UsuarioOrganizacaoRepository,
 ) {
 
 
@@ -34,11 +35,32 @@ class AdminService(
 
         val org = findOrganizacaoById(id)
 
+        val agora = LocalDateTime.now()
+
         val atualizado = org.copy(
-            status = StatusOrganizacao.VERIFICADO
+            status = StatusOrganizacao.VERIFICADO,
+            verificationDate = agora
         )
 
         organizacaoRepository.save(atualizado)
+
+        val vinculos = usuarioOrganizacaoRepository
+            .findAllByOrganizacaoId(id)
+
+        vinculos
+            .filter { it.status == StatusOrganizacao.REVISAO }
+            .forEach { vinculo ->
+                val usuario = vinculo.usuario
+
+                if (usuario?.status == UserStatus.VERIFICADO) {
+                    usuarioOrganizacaoRepository.save(
+                        vinculo.copy(
+                            status = StatusOrganizacao.VERIFICADO,
+                            approvedAt = agora
+                        )
+                    )
+                }
+            }
     }
 
     fun reprovarOrganizacao(id: Long) {
@@ -46,10 +68,24 @@ class AdminService(
         val org = findOrganizacaoById(id)
 
         val atualizado = org.copy(
-            status = StatusOrganizacao.INATIVO
+            status = StatusOrganizacao.INATIVO,
+            verificationDate = null
         )
 
         organizacaoRepository.save(atualizado)
+
+        val vinculos = usuarioOrganizacaoRepository
+            .findAll()
+            .filter { it.organizacao?.id == id }
+
+        vinculos.forEach { vinculo ->
+            usuarioOrganizacaoRepository.save(
+                vinculo.copy(
+                    status = StatusOrganizacao.INATIVO,
+                    approvedAt = null
+                )
+            )
+        }
     }
 
     fun listarUsuarios(): List<UsuarioDTO> =
@@ -67,13 +103,33 @@ class AdminService(
         }
 
         val usuario = findUsuarioById(userId)
+        val agora = LocalDateTime.now()
 
         val atualizado = usuario.copy(
             status = UserStatus.VERIFICADO,
-            approvedAt = LocalDateTime.now()
+            approvedAt = agora
         )
 
-        return usuarioRepository.save(atualizado)
+        val usuarioSalvo = usuarioRepository.save(atualizado)
+
+        val vinculos = usuarioOrganizacaoRepository
+            .findAllByUsuarioId(userId)
+
+        vinculos
+            .filter {
+                it.organizacao?.status == StatusOrganizacao.VERIFICADO &&
+                    it.status == StatusOrganizacao.REVISAO
+            }
+            .forEach { vinculo ->
+                usuarioOrganizacaoRepository.save(
+                    vinculo.copy(
+                        status = StatusOrganizacao.VERIFICADO,
+                        approvedAt = agora
+                    )
+                )
+            }
+
+        return usuarioSalvo
     }
 
     fun reprovarUsuario(userId: Long, reprovadorId: Long?): Usuario {

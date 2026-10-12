@@ -33,6 +33,15 @@ class OrganizacaoService(
 
         validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
 
+        val organizacao = vinculo.organizacao
+            ?: throw BusinessException("Vínculo inválido sem organização")
+
+        if (organizacao.status != StatusOrganizacao.VERIFICADO) {
+            throw BusinessException(
+                "A organização ainda não foi aprovada por um administrador"
+            )
+        }
+
         val atualizado = vinculo.copy(
             status = StatusOrganizacao.VERIFICADO,
             approvedAt = LocalDateTime.now()
@@ -54,7 +63,8 @@ class OrganizacaoService(
         validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
 
         val atualizado = vinculo.copy(
-            status = StatusOrganizacao.INATIVO
+            status = StatusOrganizacao.INATIVO,
+            approvedAt = null
         )
 
         usuarioOrganizacaoRepository.save(atualizado)
@@ -85,13 +95,63 @@ class OrganizacaoService(
             throw ValidationException("Nome da organização é obrigatório")
         }
 
-        val organizacao = organizacaoRepository.findByCnpj(request.cnpj)
-            ?: criarOrganizacao(request)
+        val organizacaoPorCnpj = organizacaoRepository.findByCnpj(request.cnpj)
+
+        val organizacao = if (organizacaoPorCnpj != null) {
+            if (
+                organizacaoPorCnpj.email != request.email &&
+                organizacaoPorCnpj.status != StatusOrganizacao.INATIVO
+            ) {
+                throw BusinessException(
+                    "O CNPJ informado já está vinculado a uma organização com outro e-mail"
+                )
+            }
+
+            if (organizacaoPorCnpj.status == StatusOrganizacao.INATIVO) {
+                organizacaoRepository.save(
+                    organizacaoPorCnpj.copy(
+                        nome = request.nome,
+                        description = request.description,
+                        telefone = request.telefone,
+                        email = request.email,
+                        website = request.website,
+                        role = request.role,
+                        status = StatusOrganizacao.REVISAO,
+                        verificationDate = null
+                    )
+                )
+            } else {
+                organizacaoPorCnpj
+            }
+        } else {
+            val organizacaoPorEmail = organizacaoRepository.findByEmail(request.email)
+
+            if (organizacaoPorEmail != null) {
+                throw BusinessException(
+                    "O e-mail informado já está vinculado a outra organização"
+                )
+            }
+
+            criarOrganizacao(request)
+        }
 
         val vinculoExistente = usuarioOrganizacaoRepository
             .findByUsuarioIdAndOrganizacaoId(usuario.id, organizacao.id!!)
 
         if (vinculoExistente != null) {
+            if (vinculoExistente.status == StatusOrganizacao.INATIVO) {
+                val reativado = vinculoExistente.copy(
+                    role = request.role,
+                    status = StatusOrganizacao.REVISAO,
+                    approvedAt = null,
+                    createdAt = LocalDateTime.now()
+                )
+
+                usuarioOrganizacaoRepository.save(reativado)
+
+                return organizacao
+            }
+
             throw BusinessException("Usuário já vinculado a esta organização")
         }
 
@@ -99,7 +159,7 @@ class OrganizacaoService(
             usuario = usuario,
             organizacao = organizacao,
             role = request.role,
-            status = StatusOrganizacao.VERIFICADO,
+            status = StatusOrganizacao.REVISAO,
             createdAt = LocalDateTime.now()
         )
 
@@ -175,7 +235,6 @@ class OrganizacaoService(
         organizacaoRepository.save(atualizado)
     }
 
-    // HELPERS
     private fun getVinculoOrThrow(id: Long): UsuarioOrganizacao {
 
         if (id <= 0) {
@@ -200,7 +259,7 @@ class OrganizacaoService(
             throw BusinessException("Usuário não pertence à organização")
         }
 
-        if (roleToken != OrganizacaoRole.ADMIN.name as OrganizacaoRole) {
+        if (roleToken != OrganizacaoRole.ADMIN) {
             throw BusinessException("Apenas administradores podem realizar essa ação")
         }
     }

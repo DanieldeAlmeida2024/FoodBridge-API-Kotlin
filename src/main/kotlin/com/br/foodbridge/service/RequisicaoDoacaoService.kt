@@ -98,9 +98,8 @@ class RequisicaoDoacaoService(
             throw BusinessException("A requisição não pertence à sua organização")
         }
 
-        val statusPermitidos = setOf(StatusReivindicacao.PENDENTE, StatusReivindicacao.APROVADO)
-        if (requisicao.status !in statusPermitidos) {
-            throw BusinessException("Não é possível vincular voluntário nesta requisição")
+        if (requisicao.status != StatusReivindicacao.APROVADO) {
+            throw BusinessException("O voluntário só pode ser vinculado após a aprovação da requisição")
         }
 
         val voluntario = validarVoluntarioColeta(voluntarioId, requisicao.organizacaoSolicitante)

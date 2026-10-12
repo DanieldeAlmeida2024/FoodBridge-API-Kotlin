@@ -5,6 +5,7 @@ import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.controller.dto.usuario.CreateUpdateUserRequest
 import com.br.foodbridge.controller.dto.usuario.UsuarioResponse
 import com.br.foodbridge.domain.model.Usuario
+import com.br.foodbridge.domain.enums.StatusOrganizacao
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.domain.repository.UsuarioRepository
@@ -113,7 +114,17 @@ class UsuarioService(
                     ?: throw BusinessException("Organização sem ID"),
                 nome = organizacao.nome,
                 role = vinculacao.role,
-                status = vinculacao.status
+                status = when {
+                    organizacao.status == StatusOrganizacao.VERIFICADO &&
+                        vinculacao.status == StatusOrganizacao.VERIFICADO ->
+                        StatusOrganizacao.VERIFICADO
+
+                    vinculacao.status != StatusOrganizacao.VERIFICADO ->
+                        vinculacao.status
+
+                    else ->
+                        organizacao.status
+                }
             )
         }
     }

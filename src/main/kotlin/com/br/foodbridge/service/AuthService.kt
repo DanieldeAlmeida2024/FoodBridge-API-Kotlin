@@ -185,7 +185,17 @@ class AuthService(
                 organizacaoId = organizacaoId,
                 nome = organizacao.nome,
                 role = it.role,
-                status = it.status
+                status = when {
+                    organizacao.status == StatusOrganizacao.VERIFICADO &&
+                        it.status == StatusOrganizacao.VERIFICADO ->
+                        StatusOrganizacao.VERIFICADO
+
+                    it.status != StatusOrganizacao.VERIFICADO ->
+                        it.status
+
+                    else ->
+                        organizacao.status
+                }
             )
         }
     }
