@@ -7,6 +7,8 @@ import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusDoacao
 import com.br.foodbridge.domain.enums.StatusReivindicacao
 import com.br.foodbridge.domain.enums.StatusVoluntario
+import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.enums.Unidade
 import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.domain.repository.DoacaoRepository
 import com.br.foodbridge.domain.repository.OrganizacaoRepository
@@ -15,14 +17,17 @@ import com.br.foodbridge.domain.repository.VoluntarioOrganizacaoRepository
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(readOnly = true)
 class DashboardService(
     private val doacaoRepository: DoacaoRepository,
     private val organizacaoRepository: OrganizacaoRepository,
     private val requisicaoDoacaoRepository: RequisicaoDoacaoRepository,
     private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository,
-    private val organizacaoService: OrganizacaoService
+    private val organizacaoService: OrganizacaoService,
+    private val impactoCalculator: ImpactoAlimentarCalculator
 ) {
 
     fun publico(): DashboardPublicoDTO {
@@ -30,13 +35,21 @@ class DashboardService(
             listOf(StatusDoacao.PUBLICADO, StatusDoacao.DISPONIVEL, StatusDoacao.PARCIALMENTE_REIVINDICADO)
         )
         val organizacoes = organizacaoRepository.findAll()
+            .filter { it.status == StatusOrganizacao.VERIFICADO }
+        val concluidas = doacaoRepository.findByStatusIn(listOf(StatusDoacao.COMPLETO))
+        val saldoDisponivel = disponiveis.map { it.unidade to quantidadeDisponivel(it) }
+        val coletas = requisicaoDoacaoRepository.findByStatus(StatusReivindicacao.CONCLUIDO)
 
         return DashboardPublicoDTO(
             doacoesDisponiveis = disponiveis.size,
-            quantidadeDisponivel = disponiveis.sumOf { quantidadeDisponivel(it) },
+            quantidadeDisponivel = saldoDisponivel.sumOf { it.second },
             organizacoesDoadoras = organizacoes.count { it.role in rolesDoadoras },
             ongsAtivas = organizacoes.count { it.role == OrganizacaoRole.ONG },
-            doacoesConcluidas = doacaoRepository.findByStatusIn(listOf(StatusDoacao.COMPLETO)).size
+            doacoesConcluidas = concluidas.size,
+            disponivelPorUnidade = Unidade.entries.associateWith { unidade ->
+                saldoDisponivel.filter { it.first == unidade }.sumOf { it.second }
+            },
+            impacto = impactoCalculator.calcular(coletas, concluidas)
         )
     }
 
@@ -58,7 +71,8 @@ class DashboardService(
             coletasConcluidas = requisicoes.count { it.status == StatusReivindicacao.CONCLUIDO },
             quantidadeDoada = requisicoes
                 .filter { it.status == StatusReivindicacao.CONCLUIDO }
-                .sumOf { it.quantidadeSolicitada }
+                .sumOf { it.quantidadeSolicitada },
+            impacto = impactoCalculator.calcular(doacoesFechadas = doacoes, requisicoes = requisicoes)
         )
     }
 
@@ -86,7 +100,8 @@ class DashboardService(
             voluntariosAtivos = voluntariosAtivos,
             quantidadeRecebida = requisicoes
                 .filter { it.status == StatusReivindicacao.CONCLUIDO }
-                .sumOf { it.quantidadeSolicitada }
+                .sumOf { it.quantidadeSolicitada },
+            impacto = impactoCalculator.calcular(requisicoes)
         )
     }
 

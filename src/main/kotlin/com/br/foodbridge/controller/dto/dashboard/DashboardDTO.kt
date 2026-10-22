@@ -1,11 +1,15 @@
 package com.br.foodbridge.controller.dto.dashboard
 
+import com.br.foodbridge.domain.enums.Unidade
+
 data class DashboardPublicoDTO(
     val doacoesDisponiveis: Int,
     val quantidadeDisponivel: Double,
     val organizacoesDoadoras: Int,
     val ongsAtivas: Int,
-    val doacoesConcluidas: Int
+    val doacoesConcluidas: Int,
+    val disponivelPorUnidade: Map<Unidade, Double>,
+    val impacto: ImpactoAlimentarDTO
 )
 
 data class DashboardDoadorDTO(
@@ -16,7 +20,8 @@ data class DashboardDoadorDTO(
     val requisicoesPendentes: Int,
     val coletasAguardando: Int,
     val coletasConcluidas: Int,
-    val quantidadeDoada: Double
+    val quantidadeDoada: Double,
+    val impacto: ImpactoAlimentarDTO
 )
 
 data class DashboardOngDTO(
@@ -26,5 +31,6 @@ data class DashboardOngDTO(
     val requisicoesCanceladas: Int,
     val doacoesDisponiveis: Int,
     val voluntariosAtivos: Int,
-    val quantidadeRecebida: Double
+    val quantidadeRecebida: Double,
+    val impacto: ImpactoAlimentarDTO
 )

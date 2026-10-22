@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface RequisicaoDoacaoRepository : JpaRepository<RequisicaoDoacao, Long> {
+    fun findByStatus(status: StatusReivindicacao): List<RequisicaoDoacao>
     fun findByOrganizacaoSolicitante(organizacao: Organizacao): List<RequisicaoDoacao>
     fun findByDoacaoOrganizacao(organizacao: Organizacao): List<RequisicaoDoacao>
     fun findByDoacao(doacao: Doacao): List<RequisicaoDoacao>
