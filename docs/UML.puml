@@ -1,0 +1,13 @@
+@startuml
+actor Cliente
+component "Spring Security + JwtFilter" as Seguranca
+component Controller
+component Service
+component Repository
+artifact PostgreSQL
+Cliente --> Seguranca
+Seguranca --> Controller
+Controller --> Service
+Service --> Repository
+Repository --> PostgreSQL
+@enduml
