@@ -19,6 +19,30 @@ jobs:
     name: Compilar e testar Kotlin / Java 21
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: foodbridge_ci
+          POSTGRES_USER: foodbridge_ci
+          POSTGRES_PASSWORD: senha_apenas_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U foodbridge_ci -d foodbridge_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5432/foodbridge_ci
+      SPRING_DATASOURCE_USERNAME: foodbridge_ci
+      SPRING_DATASOURCE_PASSWORD: senha_apenas_ci
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: 'false'
+      JWT_SECRET: chave_para_testes_ci_somente_nao_utilizar_em_producao_2026
+      JWT_EXPIRATION: '86400000'
+      APP_ADMIN_EMAIL: admin-ci@example.test
+      APP_ADMIN_PASSWORD: senha_ci_descartavel
     steps:
       - name: Checkout
         uses: actions/checkout@v4
