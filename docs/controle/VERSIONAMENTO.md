@@ -22,7 +22,7 @@
 ## Incremento de segurança na mesma versão 1.2.0 — DELETE + integração HTTP
 
 - `DELETE /organizacoes/{id}` (API-27) passa pela mesma política transacional de autorização do contexto administrativo, eliminando a possibilidade de `ADMIN` válido da organização A inativar a organização B.
-- `OrganizacaoAutorizacaoHttpIntegrationTest.kt`: **7 testes Spring MockMvc + banco PostgreSQL do CI** cobrindo PUT/DELETE cross-tenant, DELETE permitido, vínculo revogado, role insuficiente e PATCH aprovação/reprovação cross-tenant. A suíte ainda exige resultado de CI no commit da revisão.
+- `OrganizacaoAutorizacaoHttpIntegrationTest.kt`: **7 testes Spring MockMvc + banco PostgreSQL do CI** cobrindo PUT/DELETE cross-tenant, DELETE permitido, vínculo revogado, role insuficiente e PATCH aprovação/reprovação cross-tenant. A suíte passou no [GitHub Actions #43090289433](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090289433) (Java 21 + PostgreSQL efêmero); Oracle skipped.
 - Os cinco testes unitários do primeiro commit do PR continuam preservados; os sete são testes de integração adicionais (não novos cenários do catálogo de 165).
 - Esta alteração é parte da proposta documental 1.2.0 do PR #4, **não está mesclada nem publicada**. O PR #5 é dependente desta branch e precisa sincronizar o novo HEAD antes de merge.
 
@@ -45,3 +45,7 @@
 ## Fonte e procedência
 
 Os anexos de entrada foram: `Plano_de_Testes_FoodBridge(1).md`, `Matriz_de_Rastreabilidade(1).md` e correspondente PDF. O pacote atual separa seus capítulos e preserva os casos identificados. Fontes PlantUML foram reconstruídas no PR e devem ser revisadas contra o código.
+
+
+### Evidência formal da revisão HTTP
+[CI #43090289433](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090289433) — **`clean test bootJar` aprovado**, com 7 métodos HTTP adicionais e os testes unitários já existentes; `deploy-oracle` ignorado. Não substitui pentest, integração com frontend ou auditoria dos demais endpoints. Evidência associada ao commit `e86443d94bb0544b007f731c9bea31fc37a33cc5`.

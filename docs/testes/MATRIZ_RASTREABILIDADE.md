@@ -68,7 +68,7 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 | ID de rota | Problema/riscos | Alteração de produção | Unitário no CI #43081581178 | Validação ainda necessária |
 |---|---|---|---|---|
 | API-26 PUT /organizacoes/{id} | R03, ORG-10, SEG-03 | `TokenData` + validação de administrador/vínculo atual por tenant | Quatro métodos: tenant diverso, role, revogação e caso permitido | API real 403/200, concorrência e política do gestor |
-| API-27 DELETE /organizacoes/{id} | R03, ORG-12/13, SEG-03 | `TokenData` + revalidação ADMIN vigente e tenant antes de inativar | 4 métodos HTTP para própria/terceira/role/vínculo revogado | Revisar política de gestor e JPA/JSON |
+| API-27 DELETE /organizacoes/{id} | R03, ORG-12/13, SEG-03 | `TokenData` + revalidação ADMIN vigente e tenant antes de inativar | 4 métodos HTTP aprovados no CI #43090289433 | Revisar política de gestor e JPA/JSON |
 | API-28 PATCH aprovar vínculo | R02/R03, ORG-14 | Sem cast inválido, validação do vínculo-alvo por tenant | Um método cross-tenant | MockMvc: ADMIN válido 204, negado 403, sem cast/500 |
 | API-29 PATCH reprovar vínculo | R02/R03, ORG-15 | Sem cast inválido, mesma validação de tenant | **Não há método dedicado novo** | Teste positivo/negativo HTTP e serviço |
 

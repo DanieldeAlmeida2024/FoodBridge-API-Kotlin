@@ -28,15 +28,17 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 
 | Teste | Rota | Esperado | Status antes do run |
 |---|---|---|---|
-| putDeOutraOrganizacaoDevolve403ESemMutacao | PUT org B | 403, B inalterada | Pendente |
-| deleteDeOutraOrganizacaoDevolve403ESemInativar | DELETE org B | 403, B VERIFICADO | Pendente |
-| deleteDaPropriaOrganizacaoVerificadaDevolve204 | DELETE org A | 204, A INATIVO | Pendente |
-| tokenDeVinculoRevogadoNaoPodeInativarOrganizacao | DELETE org A com link INATIVO | 403 | Pendente |
-| membroNaoAdminNaoPodeInativarOrganizacao | DELETE org A com papel ONG | 403 | Pendente |
-| patchAprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH aprovar vínculo B | 403, vínculo não alterado | Pendente |
-| patchReprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH reprovar vínculo B | 403, vínculo não alterado | Pendente |
+| putDeOutraOrganizacaoDevolve403ESemMutacao | PUT org B | 403, B inalterada | Aprovado no CI #43090289433 |
+| deleteDeOutraOrganizacaoDevolve403ESemInativar | DELETE org B | 403, B VERIFICADO | Aprovado no CI #43090289433 |
+| deleteDaPropriaOrganizacaoVerificadaDevolve204 | DELETE org A | 204, A INATIVO | Aprovado no CI #43090289433 |
+| tokenDeVinculoRevogadoNaoPodeInativarOrganizacao | DELETE org A com link INATIVO | 403 | Aprovado no CI #43090289433 |
+| membroNaoAdminNaoPodeInativarOrganizacao | DELETE org A com papel ONG | 403 | Aprovado no CI #43090289433 |
+| patchAprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH aprovar vínculo B | 403, vínculo não alterado | Aprovado no CI #43090289433 |
+| patchReprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH reprovar vínculo B | 403, vínculo não alterado | Aprovado no CI #43090289433 |
 
 **Os sete métodos são integração automatizada adicional, não alteram o total de 165 cenários planejados.** Falta teste positivo de PATCH, teste de role/status mutável, OpenAPI e revisão de serialização de DTO.
+
+**Execução confirmada:** `./gradlew clean test bootJar` aprovado no [run #43090289433](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090289433) para a revisão com sete testes HTTP e banco PostgreSQL 16 efêmero. Os 165 casos são **planejados**, e não inteiramente executados.
 
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.
