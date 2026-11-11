@@ -86,6 +86,15 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 
 R04 = **mitigação parcial na branch**, testes unitários aprovados no CI #43084884716, não liberação de produção; R11 = fronteira transacional implementada sem teste SQL; R20 = aberto por ausência de reativação/consentimento. O catálogo permanece com 49 endpoints e 165 casos base, agora com critérios VOL revistos. Ver [UML 18](../uml/18_sequencia_isolamento_voluntarios.puml).
 
+## Rastreabilidade incorporada da revisão HTTP do PR #4
+
+| API | Risco | Evidência | Dependências |
+|---|---|---|---|
+| API-27 `DELETE /organizacoes/{id}` | R03 (inativação cross-tenant) | `OrganizacaoAutorizacaoHttpIntegrationTest`: nega outro tenant, não-ADMIN e vínculo revogado; autoriza própria organização; CI #43090697810 | RBAC gestor e API em homologação |
+| API-26/28/29 | R02/R03 | Suíte HTTP confirma bloqueio de PUT e PATCH de outros tenants; CI #43090697810 | Testes positivos de aprovação/reprovação |
+| API-44..49 | R04 | 13 unitários CI #43085607706, proteção de CPF por tenant | HTTP/PostgreSQL/consentimento pendentes |
+
+**O commit de reconciliação precisa executar as duas suítes no mesmo SHA**, mantendo 49 endpoints e 165 critérios de aceitação base.
 ## Cenários transversais end-to-end
 
 - **E2E-01 Onboarding:** cadastrar usuário → login TEMP → cadastrar organização → admin aprovar usuário e organização → login TEMP → selecionar organização → obter ACCESS → GET /usuarios/me.

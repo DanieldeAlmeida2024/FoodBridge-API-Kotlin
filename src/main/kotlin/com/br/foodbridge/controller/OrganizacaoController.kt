@@ -109,11 +109,7 @@ class OrganizacaoController(
         @PathVariable id: Long
     ): ResponseEntity<Void> {
 
-        if (tokenData.role != "ADMIN") {
-            throw BusinessException("Apenas administradores podem inativar a organização")
-        }
-
-        organizacaoService.inativarOrganizacao(id)
+        organizacaoService.inativarOrganizacao(id, tokenData)
 
         return ResponseEntity.noContent().build()
     }

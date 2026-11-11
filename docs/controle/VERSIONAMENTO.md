@@ -30,6 +30,13 @@
 - **Não encerrados:** controle de gestores por papel (RBAC), consentimento/reativação do titular, ofuscação/retirada de CPF do DTO, validação de CPF/email, testes reais de Postgres e política LGPD.
 - A versão 1.2.0 do PR #4 e a versão 2.0.0 deste PR **não são releases publicados**.
 
+## Reconciliação com a revisão HTTP do PR #4 — merge técnico de branches
+
+- **Parent adicional neste merge:** [commit `8475d82`](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/commit/8475d82cc73a10a3afce66578b5b6e130fe9f2f6) do PR #4; o PR #5 mantém a revisão 2.0.0 proposta de voluntários e inclui todas as regras/documentos do PR #4.
+- `DELETE /organizacoes/{id}`: agora exige ADMIN vigente e tenant correspondente no banco, não só role no JWT.
+- A integração adicionada no PR #4 contém **7 testes MockMvc/PostgreSQL** (PUT, DELETE e PATCH cross-tenant e casos permitidos/revogados), aprovados em [CI #43090697810](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090697810).
+- Os **13 testes unitários de voluntários** mantêm resultado aprovado em CI #43085607706. O merge precisa de um **novo CI completo** antes de review; não marcar como homologado por herança de resultados anteriores.
+- Documentos 1.2.0 (organizações) e 2.0.0 (voluntários) representam a **linha proposta combinada**, não versões lançadas. 
 ## Histórico
 
 | Versão | Data | Alteração | Evidência |

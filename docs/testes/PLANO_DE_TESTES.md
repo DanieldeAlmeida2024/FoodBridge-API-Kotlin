@@ -52,6 +52,11 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 - **VOL-10:** reativação exige novo fluxo auditado, **não implementado**; manter 409.
 - **VOL-12:** listagem retorna **somente voluntários com vínculo ATIVO na organização autenticada**.
 
+## Consolidação da suite HTTP da autorização organizacional — integração do PR #4
+
+- **7 testes HTTP já aprovados no PR #4** via [run #43090697810](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090697810): PUT de outro tenant 403, DELETE de outro tenant 403, DELETE autorizado 204, DELETE com vínculo revogado 403, DELETE com role não-ADMIN 403, PATCH aprovar/reprovar vínculo de outro tenant 403.
+- O arquivo `OrganizacaoAutorizacaoHttpIntegrationTest.kt` foi incorporado integralmente ao PR #5 juntamente com o código do DELETE. As regras de proteção de CPF e voluntários continuam com 13 unitários adicionados.
+- **Exigir novo run CI** no SHA do commit de integração, com PostgreSQL 16 do workflow, antes do merge de qualquer PR. Sem declaração de E2E com frontend ou produção.
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.
 **Ferramentas propostas:** JUnit 5 + Spring Boot Test + MockK/Mockito + MockMvc, Testcontainers PostgreSQL, JaCoCo, OWASP ZAP (ambiente autorizado), k6, Detekt/ktlint, Newman e GitHub Actions. Estas ferramentas são propostas; não foram encontradas todas configuradas no commit.

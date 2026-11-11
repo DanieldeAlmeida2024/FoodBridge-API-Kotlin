@@ -40,6 +40,11 @@
 
 **Evidência:** 13 testes unitários novos aprovados no [CI #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716), sem execução de HTTP/PostgreSQL real. Os 165 casos do plano original permanecem com identificação, mas os critérios VOL-02, VOL-07, VOL-08, VOL-10 e VOL-12 são substituídos nesta versão. [Documento próprio de política](POLITICA_DADOS_VOLUNTARIOS.md).
 
+## Atualização combinada — autorização organizacional e voluntários
+
+O PR #5 incorpora a revisão atualizada do PR #4 (merge técnico, não merge na main). O serviço `OrganizacaoService.inativarOrganizacao(id, tokenData)` usa a mesma consulta de vínculo administrativo atual para o **DELETE** da organização, bloqueando administradores autenticados em outro tenant. O controller deixa de confiar apenas em `role==ADMIN`. Os sete testes HTTP com `@SpringBootTest + @AutoConfigureMockMvc` estão preservados na branch de voluntários e foram aprovados isoladamente no CI #43090697810.
+
+**Impacto e dependência:** `PUT`, `DELETE` e os dois `PATCH` de aprovação de organização exigem vínculo ADMIN verificado, enquanto os seis endpoints de voluntários exigem vínculo do usuário verificado e registro do voluntário ATIVO no mesmo tenant. Testes integrados de ambas as famílias no mesmo commit devem ser executados; nenhuma mudança foi publicada na Oracle.
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.
 

@@ -66,6 +66,16 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 
 **Estado:** proposta em branch empilhada no PR #4. Os 13 testes unitários foram aprovados no [CI #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716), mas **não encerram os riscos sem testes de integração e revisão**. Nenhuma correção foi integrada ou publicada.
 
+## Reconciliação R03/R04 — branch empilhada sobre o PR #4 atualizado
+
+| Item | Política de código combinada | Evidência |
+|---|---|---|
+| R03 — DELETE cross-tenant | `inativarOrganizacao` exige `TokenData`, vínculo ADMIN vigente da organização-alvo | 7 HTTP/SQL tests do PR #4 aprovados no CI #43090697810 |
+| R02 — PATCH com cast inválido | sem cast, e vínculos-alvo limitados ao tenant | Tests negativos integrados no mesmo job |
+| R04 — voluntário/cadastro | GET/PUT/POST/PATCH tenant-scoped e CPF não cria vínculo automático entre organizações | 13 unitários do PR #5 aprovados no CI #43085607706 |
+| Regressão combinada | Novo merge contém os dois conjuntos de correções | **Novo CI do HEAD da branch exigido** |
+
+Nenhum risco é dado como encerrado em produção; PRs #4/#5 não foram mesclados na main.
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.

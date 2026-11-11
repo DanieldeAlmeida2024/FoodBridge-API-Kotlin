@@ -33,7 +33,7 @@ O catálogo histórico contém 16 diagramas PlantUML. A revisão 1.2.0 acrescent
 - `14_implantacao_logica.puml` — Diagrama lógico de implantação.
 - `15_atividade_aprovacoes.puml` — Processo de verificação administrativa.
 - `16_atividade_fechamento_doacao.puml` — Atividade de fechamento manual.
-- `17_sequencia_autorizacao_organizacao.puml` — Guarda do service, revalidação no banco e bloqueio de operações cross-tenant (novo na branch PR #4).
+- `17_sequencia_autorizacao_organizacao.puml` — Guarda do service e revalidação por tenant para PUT, DELETE e PATCH, mais integração HTTP do PR #4.
 - `18_sequencia_isolamento_voluntarios.puml` — Operações GET/PUT/POST/PATCH com verificação de vínculos, anti-CPF cross-tenant e escopo da coleta.
 
 ## Camadas e código-fonte
