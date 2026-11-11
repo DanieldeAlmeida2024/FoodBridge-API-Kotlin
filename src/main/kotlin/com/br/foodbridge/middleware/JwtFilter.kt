@@ -1,8 +1,6 @@
 package com.br.foodbridge.middleware
 
 import com.br.foodbridge.controller.dto.auth.TokenData
-import com.br.foodbridge.domain.enums.OrganizacaoRole
-import com.br.foodbridge.domain.enums.UserStatus
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.service.utils.JwtService
 import jakarta.servlet.FilterChain
@@ -55,7 +53,7 @@ class JwtFilter(
         try {
             val tokenType = jwtService.extractTokenType(token)
 
-            val isTempRoute = isTempRoute(request.method, request.requestURI)
+            val isTempRoute = isTempRoute(request.method, request.requestURI.removePrefix(request.contextPath))
 
             val tokenData = extractTokenData(token, tokenType)
 
@@ -107,10 +105,11 @@ class JwtFilter(
             throw BusinessException("Usuário não verificado")
     }
 
-    private fun buildAuthorities(tokenType: String, data: TokenData) = listOf(
+    private fun buildAuthorities(tokenType: String, data: TokenData): List<GrantedAuthority> = listOf(
         SimpleGrantedAuthority("TOKEN_$tokenType"),
         SimpleGrantedAuthority("ROLE_${data.role}"),
         SimpleGrantedAuthority("STATUS_${data.status}")
+    )
 
     data class RouteRule(val method: String, val pattern: String)
 }
