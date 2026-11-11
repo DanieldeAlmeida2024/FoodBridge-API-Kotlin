@@ -1,8 +1,10 @@
 package com.br.foodbridge.service
 
+import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
+import com.br.foodbridge.domain.enums.UserStatus
 import com.br.foodbridge.domain.model.Endereco
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.Usuario
@@ -12,6 +14,7 @@ import com.br.foodbridge.domain.repository.UsuarioOrganizacaoRepository
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ValidationException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -23,15 +26,17 @@ class OrganizacaoService(
 
     fun aprovarUsuarioOrganizacao(
         vinculoId: Long,
-        organizacaoIdToken: Long?,
-        roleToken: OrganizacaoRole
+        tokenData: TokenData
     ) {
-        val vinculo = getVinculoOrThrow(vinculoId)
+        validarAdministradorOrganizacao(tokenData, tokenData.organizacaoId
+            ?: throw AccessDeniedException("Organização não informada no token"))
 
+        val vinculo = getVinculoOrThrow(vinculoId)
         val organizacaoId = vinculo.organizacao?.id
             ?: throw BusinessException("Vínculo inválido sem organização")
-
-        validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
+        if (organizacaoId != tokenData.organizacaoId) {
+            throw AccessDeniedException("Vínculo pertence a outra organização")
+        }
 
         val organizacao = vinculo.organizacao
             ?: throw BusinessException("Vínculo inválido sem organização")
@@ -52,15 +57,17 @@ class OrganizacaoService(
 
     fun reprovarUsuario(
         vinculoId: Long,
-        organizacaoIdToken: Long?,
-        roleToken: OrganizacaoRole?
+        tokenData: TokenData
     ) {
-        val vinculo = getVinculoOrThrow(vinculoId)
+        validarAdministradorOrganizacao(tokenData, tokenData.organizacaoId
+            ?: throw AccessDeniedException("Organização não informada no token"))
 
+        val vinculo = getVinculoOrThrow(vinculoId)
         val organizacaoId = vinculo.organizacao?.id
             ?: throw BusinessException("Vínculo inválido sem organização")
-
-        validarAcessoAprovacao(organizacaoId, organizacaoIdToken, roleToken)
+        if (organizacaoId != tokenData.organizacaoId) {
+            throw AccessDeniedException("Vínculo pertence a outra organização")
+        }
 
         val atualizado = vinculo.copy(
             status = StatusOrganizacao.INATIVO,
@@ -209,8 +216,9 @@ class OrganizacaoService(
 
     fun findAll(): List<Organizacao> = organizacaoRepository.findAll()
 
-    fun update(id: Long, request: CreateUpdateOrganizacaoRequest): Organizacao {
+    fun update(id: Long, request: CreateUpdateOrganizacaoRequest, tokenData: TokenData): Organizacao {
 
+        validarAdministradorOrganizacao(tokenData, id)
         val org = findById(id)
 
         val atualizado = org.copy(
@@ -245,22 +253,30 @@ class OrganizacaoService(
             .orElseThrow { ResourceNotFoundException("Vínculo não encontrado") }
     }
 
-    private fun validarAcessoAprovacao(
-        organizacaoIdAlvo: Long,
-        organizacaoIdToken: Long?,
-        roleToken: OrganizacaoRole?
-    ) {
-
-        if (organizacaoIdToken == null) {
-            throw ValidationException("Organização do token é obrigatória")
+    /**
+     * Política conservadora até existir um papel de gestor separado do tipo da organização.
+     * Valida o vínculo no banco, e não apenas os claims do JWT, para bloquear vínculos revogados.
+     */
+    private fun validarAdministradorOrganizacao(tokenData: TokenData, organizacaoIdAlvo: Long) {
+        if (tokenData.organizacaoId != organizacaoIdAlvo ||
+            tokenData.role != OrganizacaoRole.ADMIN.name ||
+            tokenData.vinculoId == null ||
+            tokenData.status != UserStatus.VERIFICADO.name
+        ) {
+            throw AccessDeniedException("Operação restrita ao administrador da organização")
         }
 
-        if (organizacaoIdToken != organizacaoIdAlvo) {
-            throw BusinessException("Usuário não pertence à organização")
-        }
+        val vinculo = usuarioOrganizacaoRepository
+            .findByUsuarioIdAndOrganizacaoId(tokenData.usuarioId, organizacaoIdAlvo)
+            ?: throw AccessDeniedException("Vínculo com organização não encontrado")
 
-        if (roleToken != OrganizacaoRole.ADMIN) {
-            throw BusinessException("Apenas administradores podem realizar essa ação")
+        if (vinculo.id != tokenData.vinculoId ||
+            vinculo.role != OrganizacaoRole.ADMIN ||
+            vinculo.status != StatusOrganizacao.VERIFICADO ||
+            vinculo.organizacao?.status != StatusOrganizacao.VERIFICADO ||
+            vinculo.usuario?.status != UserStatus.VERIFICADO
+        ) {
+            throw AccessDeniedException("Vínculo administrativo não está vigente")
         }
     }
 }

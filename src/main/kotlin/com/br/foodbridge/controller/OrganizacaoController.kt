@@ -4,7 +4,6 @@ import com.br.foodbridge.controller.dto.organizacao.OrganizacaoDTO
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.controller.dto.auth.TokenData
 import com.br.foodbridge.controller.dto.organizacao.CreateUpdateOrganizacaoRequest
-import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
@@ -94,11 +93,12 @@ class OrganizacaoController(
 
     @PutMapping("/{id}")
     fun atualizar(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long,
         @RequestBody request: CreateUpdateOrganizacaoRequest
     ): ResponseEntity<OrganizacaoDTO> {
 
-        val atualizado = organizacaoService.update(id, request)
+        val atualizado = organizacaoService.update(id, request, tokenData)
 
         return ResponseEntity.ok(toResponse(atualizado))
     }
@@ -124,11 +124,7 @@ class OrganizacaoController(
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
 
-        organizacaoService.aprovarUsuarioOrganizacao(
-            vinculoId,
-            tokenData.organizacaoId,
-            tokenData.role as OrganizacaoRole
-        )
+        organizacaoService.aprovarUsuarioOrganizacao(vinculoId, tokenData)
 
         return ResponseEntity.noContent().build()
     }
@@ -139,11 +135,7 @@ class OrganizacaoController(
         @PathVariable vinculoId: Long
     ): ResponseEntity<Void> {
 
-        organizacaoService.reprovarUsuario(
-            vinculoId,
-            tokenData.organizacaoId,
-            tokenData.role as OrganizacaoRole?
-        )
+        organizacaoService.reprovarUsuario(vinculoId, tokenData)
 
         return ResponseEntity.noContent().build()
     }

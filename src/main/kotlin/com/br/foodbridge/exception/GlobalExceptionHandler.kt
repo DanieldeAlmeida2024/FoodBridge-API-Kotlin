@@ -3,6 +3,7 @@ package com.br.foodbridge.exception
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
+import org.springframework.security.access.AccessDeniedException
 import com.br.foodbridge.exception.response.ErrorResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,6 +15,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDenied(ex: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ErrorResponse(mensagem = "Acesso negado", codigo = 403)
+        )
+    }
 
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleNotFound(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
