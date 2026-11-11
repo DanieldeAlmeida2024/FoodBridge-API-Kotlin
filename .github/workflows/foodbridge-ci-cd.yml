@@ -1,0 +1,140 @@
+name: FoodBridge API - CI e deploy Oracle
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: foodbridge-api-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-e-testes:
+    name: Compilar e testar Kotlin / Java 21
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: foodbridge_ci
+          POSTGRES_USER: foodbridge_ci
+          POSTGRES_PASSWORD: senha_apenas_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U foodbridge_ci -d foodbridge_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5432/foodbridge_ci
+      SPRING_DATASOURCE_USERNAME: foodbridge_ci
+      SPRING_DATASOURCE_PASSWORD: senha_apenas_ci
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: 'false'
+      JWT_SECRET: chave_para_testes_ci_somente_nao_utilizar_em_producao_2026
+      JWT_EXPIRATION: '86400000'
+      APP_ADMIN_EMAIL: admin-ci@example.test
+      APP_ADMIN_PASSWORD: senha_ci_descartavel
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Gradle com cache e validacao de wrapper
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar, testar e gerar o JAR
+        shell: bash
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace clean test bootJar
+          test -s build/libs/foodbridge-0.0.1-SNAPSHOT.jar
+
+      - name: Publicar relatorios de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: foodbridge-relatorios
+          path: |
+            build/reports/tests/
+            build/test-results/test/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Guardar JAR aprovado
+        uses: actions/upload-artifact@v4
+        with:
+          name: foodbridge-api-jar
+          path: build/libs/foodbridge-0.0.1-SNAPSHOT.jar
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy-oracle:
+    name: Publicar na VM Oracle
+    needs: [build-e-testes]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: oracle-production
+    env:
+      OCI_SSH_HOST: ${{ vars.OCI_SSH_HOST }}
+      OCI_SSH_USER: ${{ vars.OCI_SSH_USER }}
+      OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+      OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Checkout do script de deploy
+        uses: actions/checkout@v4
+
+      - name: Recuperar o mesmo JAR aprovado pelo CI
+        uses: actions/download-artifact@v4
+        with:
+          name: foodbridge-api-jar
+          path: pacote/
+
+      - name: Verificar configuracao e preparar SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          for nome in OCI_SSH_HOST OCI_SSH_USER OCI_SSH_PRIVATE_KEY OCI_SSH_KNOWN_HOSTS; do
+            if [[ -z "${!nome:-}" ]]; then
+              echo "::error::Configuracao ausente: ${nome}. Consulte docs/DEPLOY_ORACLE.md"
+              exit 1
+            fi
+          done
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$HOME/.ssh/foodbridge_deploy"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/foodbridge_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/foodbridge_deploy" > /dev/null
+          test -s pacote/foodbridge-0.0.1-SNAPSHOT.jar
+
+      - name: Transferir JAR e aplicar com rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes)
+          REMOTO="${OCI_SSH_USER}@${OCI_SSH_HOST}"
+          JAR="pacote/foodbridge-0.0.1-SNAPSHOT.jar"
+          SOMA="$(sha256sum "$JAR" | cut -d' ' -f1)"
+          DESTINO_TEMP="$(ssh "${SSH_OPTS[@]}" "$REMOTO" 'mktemp /tmp/foodbridge-deploy.XXXXXXXX.jar')"
+          scp "${SSH_OPTS[@]}" "$JAR" "$REMOTO:$DESTINO_TEMP"
+          ssh "${SSH_OPTS[@]}" "$REMOTO" "bash -s -- '$SOMA' '$DESTINO_TEMP'" < deploy/oracle/atualizar-api.sh
+
+      - name: Remover chave temporaria
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.ssh/foodbridge_deploy"
