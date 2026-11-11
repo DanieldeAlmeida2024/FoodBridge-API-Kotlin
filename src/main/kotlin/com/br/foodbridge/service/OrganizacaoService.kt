@@ -232,8 +232,9 @@ class OrganizacaoService(
         return organizacaoRepository.save(atualizado)
     }
 
-    fun inativarOrganizacao(id: Long) {
+    fun inativarOrganizacao(id: Long, tokenData: TokenData) {
 
+        validarAdministradorOrganizacao(tokenData, id)
         val org = findById(id)
 
         val atualizado = org.copy(
