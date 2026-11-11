@@ -46,7 +46,7 @@ sudo systemctl cat foodbridge.service
 sudo test -s /etc/foodbridge/application.properties && echo "Configuração externa encontrada"
 ```
 
-O script copia a configuração local existente para `/etc/foodbridge/application.properties` (modo `0600`), se ainda não existir, e registra `SPRING_CONFIG_ADDITIONAL_LOCATION` no systemd. Ele **não reinicia** o serviço, e não expõe senhas no GitHub.
+O script copia a configuração local existente para `/etc/foodbridge/application.properties` (dono `root`, grupo `opc`, modo `0640`; diretório `0750`), se ainda não existir, e registra `SPRING_CONFIG_ADDITIONAL_LOCATION` no systemd. Ele **não reinicia** o serviço, e não expõe senhas no GitHub.
 
 Se o arquivo local de origem não existir, configure `/etc/foodbridge/application.properties` manualmente e repita a preparação. Antes do primeiro deploy, revise `spring.jpa.hibernate.ddl-auto`: em produção prefira migrações e `validate`, após checar o esquema real. Faça backup do PostgreSQL **separadamente** antes de alterações de banco.
 
