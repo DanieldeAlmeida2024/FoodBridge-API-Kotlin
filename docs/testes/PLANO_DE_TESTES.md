@@ -1,12 +1,24 @@
 # FoodBridge — plano mestre de testes
 
-> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.2.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
 
 
 **Escopo de referência:** 165 cenários planejados no documento do usuário de 29/10/2026. **Não afirmar que esses 165 foram executados.** Os testes de CI do repositório cobrem apenas parte do plano; ver seção “Estado de execução”.
+
+## Execução de regressão — R05 / REQ-15, 1.2.0 proposta
+
+- **Arquivo:** `src/test/kotlin/com/br/foodbridge/service/RequisicaoDoacaoConcorrenciaIntegrationTest.kt`.
+- **Camada:** `@SpringBootTest` com PostgreSQL real disponibilizado pelo `foodbridge-ci-cd.yml`, não `Mockito` nem banco em memória.
+- **Transações:** duas threads distintas e `CountDownLatch`, sem `@Transactional` no método do teste; cada aprovação utiliza sua transação de serviço.
+- **Fixture:** doação de 10 kg, duas organizações ONG diferentes e duas requisições `PENDENTE` de 7 kg.
+- **Asserções:** um sucesso, uma exceção de regra de estoque, uma requisição APROVADO, outra PENDENTE, total aprovado 7 kg.
+- **Status:** implementação no PR; evidência de execução CI deverá ser registrada por commit após run, não suposta antes.
+- **Casos relacionados pendentes:** reduzir quantidade comprometida, fechamento manual, cancelamento em corrida, deadlock, timeout de lock e reaplicação sob carga.
+
+**Não alterar o total de 165 casos de aceitação planejados**, pois REQ-15 já integra a baseline. O método automatizado é a primeira execução reproduzível de seu cenário.
 
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.

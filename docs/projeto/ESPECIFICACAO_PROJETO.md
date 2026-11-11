@@ -1,10 +1,20 @@
 # FoodBridge — especificação do projeto
 
-> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.2.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
 
+
+## Revisão de consistência de estoque — 1.2.0 proposta
+
+**Modelo de serialização:** o saldo disponível de uma doação é recurso compartilhado entre ONGs. `RequisicaoDoacaoService.aprovar` consulta **apenas o ID** da doação da requisição, obtém lock pessimista exclusivo sobre a linha `doacoes` e só então lê a requisição, valida status/tenant e soma `APROVADO + CONCLUIDO`. O lock é retido durante a transação até o commit. Isso evita a anomalia *check-then-act* quando duas requisições independentes disputam uma única oferta. Lock na linha da requisição, isoladamente, seria insuficiente.
+
+**Política de escritores:** `rejeitar`, `cancelar`, `concluir`, `editarDoacao`, `deletarDoacao` e `fecharDoacao` também obedecem ao mutex de doação. PUT recusa redução de quantidade abaixo do saldo comprometido, e DELETE recusa excluir item com requisições, preservando consistência/histórico.
+
+**Critério REQ-15:** duas ONGs tentam aprovar 7 kg cada de 10 kg. Exatamente uma aprovação deve persistir, a outra deve permanecer pendente, e nunca deve haver 14 kg aprovados. A suite `RequisicaoDoacaoConcorrenciaIntegrationTest.kt` exerce **PostgreSQL real do CI** e valida a persistência após ambas as transações; essa execução precisa ser comprovada pelo run verde da revisão.
+
+**Limites:** `Double` continua exigindo política de precisão por unidade; fechar doação com coletas parciais requer contrato próprio; não tratar esse patch como correção de todos os fluxos de requisição. A documentação histórica dos 49 endpoints permanece preservada; nenhuma nova rota foi adicionada. Versão documental não equivale a release.
 
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.

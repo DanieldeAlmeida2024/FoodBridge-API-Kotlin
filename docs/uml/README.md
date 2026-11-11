@@ -1,6 +1,6 @@
 # FoodBridge — arquitetura e catálogo UML
 
-> **FoodBridge / Arquitetura / UML** · Documento **FB-UML-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Arquitetura / UML** · Documento **FB-UML-001** · Versão **1.2.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -16,7 +16,7 @@
 ## Catálogo de diagramas
 
 ## 8. UML — catálogo e interpretação
-Os 16 diagramas PlantUML completos estão em `UML/`; para navegação rápida, o Word incorpora cinco imagens esquemáticas correspondentes. Diagramas de estados descrevem transições observadas, sem assumir validação central inexistente.
+O catálogo histórico contém 16 fontes PlantUML. O diagrama #09 foi revisado neste PR para apresentar o bloqueio transacional real da aprovação, sem alterar o número de fontes. Diagramas de estados descrevem transições observadas, sem assumir validação central inexistente.
 - `01_casos_de_uso_geral.puml` — Casos de uso de todos os papéis e módulos.
 - `02_componentes_backend.puml` — Arquitetura em componentes e dependências.
 - `03_modelo_de_dominio_classes.puml` — Modelo de classes e cardinalidades JPA.
@@ -25,7 +25,7 @@ Os 16 diagramas PlantUML completos estão em `UML/`; para navegação rápida, o
 - `06_maquina_estados_usuario.puml` — Estados do usuário.
 - `07_maquina_estados_organizacao.puml` — Estados da organização.
 - `08_maquina_estados_doacao.puml` — Estados possíveis de doação e fragilidade de status controlado pelo cliente.
-- `09_sequencia_solicitacao_aprovacao.puml` — Sequência solicitar e aprovar doação.
+- `09_sequencia_solicitacao_aprovacao.puml` — Revisado para duas ONGs concorrentes, lock exclusivo na doação e revalidação de estoque (R05/REQ-15).
 - `10_maquina_estados_requisicao.puml` — FSM de solicitação.
 - `11_sequencia_coleta_conclusao.puml` — Vinculação de voluntário e conclusão de coleta.
 - `12_casos_uso_voluntarios.puml` — Casos de uso de voluntários e superfície de autorização.

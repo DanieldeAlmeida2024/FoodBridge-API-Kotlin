@@ -1,6 +1,6 @@
 # FoodBridge — matriz de rastreabilidade
 
-> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.2.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -62,6 +62,18 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 |VOL|`GET /voluntarios`|`VOL-07,VOL-12`|
 |VOL|`PUT /voluntarios/{id}`|`VOL-08,VOL-05`|
 |VOL|`PATCH /voluntarios/{id}/desativar`|`VOL-09,VOL-11`|
+
+## Rastreabilidade incremental — concorrência R05
+
+| Contrato | Requisito/caso | Mudança | Evidência pendente |
+|---|---|---|---|
+| PATCH `/requisicoes/{id}/aprovar` | R05 / REQ-15 / E2E-05 | Bloquear linha da doação antes de carregar requisição e somar estoque; operação atômica | `RequisicaoDoacaoConcorrenciaIntegrationTest` em PostgreSQL real do CI |
+| PATCH `/requisicoes/{id}/rejeitar`, `/cancelar`, `/concluir` | REQ-16/17/21 | Serializar mudanças de requisições pela mesma doação | Integração de transições concorrentes |
+| PUT `/doacoes/{id}` | DOA-12/20 | Lock; impedir redução abaixo do saldo aprovado/concluído | Integração de regra e rollback |
+| DELETE `/doacoes/{id}` | DOA-18/19 | Lock; impedir exclusão com requisições | Integração de integridade |
+| PATCH `/doacoes/{id}/fechar` | DOA-13/16 | Lock antes do fechamento | Testes parciais de fechamento ainda pendentes |
+
+**Branch:** `fix/p0-doacao-concorrencia-20261111`, baseada em `main` para CI independente. Os PRs #4/#5 continuam pendentes e requerem reconciliação das versões documentais. [UML atualizado](../uml/09_sequencia_solicitacao_aprovacao.puml).
 
 ## Cenários transversais end-to-end
 

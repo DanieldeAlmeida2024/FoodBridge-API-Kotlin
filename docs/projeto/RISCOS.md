@@ -1,6 +1,6 @@
 # FoodBridge — riscos técnicos e não conformidades a validar
 
-> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.2.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -39,6 +39,18 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 |---|---|---|
 | R01 — logs JWT | Correção do filtro integrada; exigir regressão para toda a aplicação | PR #1; inspeção do `JwtFilter`; CI passou |
 | R02–R20 | **Pendente de nova inspeção e testes**; não declarar corrigido | Remeter aos IDs do plano de testes; abrir tickets por risco P0 |
+
+## R05 — atualização nesta branch
+
+| Item | Estado de implementação | Gate para encerramento |
+|---|---|---|
+| R05 / REQ-15 — oversubscription | Código implementa lock `PESSIMISTIC_WRITE` na entidade doação, leitura da requisição posterior ao lock, reavaliação de saldo e transação única | Teste concorrente com PostgreSQL efêmero aprovado e revisão de flush/rollback |
+| Race entre rejeição/cancelamento e aprovação | Operações passam a lockar a mesma doação antes de alterar status | Teste interleaving de cada transição e tratamento de deadlocks |
+| Reduzir quantidade já comprometida | `editarDoacao` revalida saldo comprometido enquanto mantém lock | Teste de PUT com 7 kg reservados e tentativa de redução para 6 kg |
+| Excluir doação com solicitações | `deletarDoacao` recusa exclusão se existem requisições | Teste de integridade FK + histórico |
+| R10/R17 | **Abertos:** fechamento e precisão `Double` | Evolução de FSM e `BigDecimal`/unidades sem alterar semântica silenciosamente |
+
+A mitigação exige código + teste Postgres + CI verde; não declarar encerrado somente por documentação. Outras branches de autorização (#4/#5) mantêm histórico independente e deverão ser reconciliadas antes do merge.
 
 ## Critério para encerramento
 
