@@ -55,3 +55,6 @@ A mitigação exige código + teste Postgres + CI verde; não declarar encerrado
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.
+
+
+**Atualização do R05 (CI):** a suíte `clean test bootJar` passou em [run #43088958325](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43088958325), com PostgreSQL 16 provisionado pelo workflow. **Mitigação técnica em branch, não liberação de produção**; investigar interleavings não cobertos e política de quantidades Double.

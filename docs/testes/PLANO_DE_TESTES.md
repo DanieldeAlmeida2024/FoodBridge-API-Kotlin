@@ -15,7 +15,7 @@
 - **Transações:** duas threads distintas e `CountDownLatch`, sem `@Transactional` no método do teste; cada aprovação utiliza sua transação de serviço.
 - **Fixture:** doação de 10 kg, duas organizações ONG diferentes e duas requisições `PENDENTE` de 7 kg.
 - **Asserções:** um sucesso, uma exceção de regra de estoque, uma requisição APROVADO, outra PENDENTE, total aprovado 7 kg.
-- **Status:** implementação no PR; evidência de execução CI deverá ser registrada por commit após run, não suposta antes.
+- **Status:** job `Gradle test` aprovado no [CI #43088958325](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43088958325), com PostgreSQL 16 efêmero. Ainda não há prova de teste sob carga persistente.
 - **Casos relacionados pendentes:** reduzir quantidade comprometida, fechamento manual, cancelamento em corrida, deadlock, timeout de lock e reaplicação sob carga.
 
 **Não alterar o total de 165 casos de aceitação planejados**, pois REQ-15 já integra a baseline. O método automatizado é a primeira execução reproduzível de seu cenário.
