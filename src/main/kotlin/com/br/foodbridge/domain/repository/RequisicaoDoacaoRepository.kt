@@ -6,10 +6,16 @@ import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.RequisicaoDoacao
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 @Repository
 interface RequisicaoDoacaoRepository : JpaRepository<RequisicaoDoacao, Long> {
     fun findByStatus(status: StatusReivindicacao): List<RequisicaoDoacao>
+
+    /** Projeção do ID antes do lock: não carrega uma requisição stale no persistence context. */
+    @Query("select r.doacao.id from RequisicaoDoacao r where r.id = :requisicaoId")
+    fun findDoacaoIdByRequisicaoId(@Param("requisicaoId") requisicaoId: Long): Long?
     fun findByOrganizacaoSolicitante(organizacao: Organizacao): List<RequisicaoDoacao>
     fun findByDoacaoOrganizacao(organizacao: Organizacao): List<RequisicaoDoacao>
     fun findByDoacao(doacao: Doacao): List<RequisicaoDoacao>

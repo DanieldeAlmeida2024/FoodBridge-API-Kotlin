@@ -9,6 +9,7 @@ import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.RequisicaoDoacao
 import com.br.foodbridge.domain.repository.RequisicaoDoacaoRepository
+import com.br.foodbridge.domain.repository.DoacaoRepository
 import com.br.foodbridge.domain.repository.VoluntarioOrganizacaoRepository
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
@@ -23,7 +24,8 @@ class RequisicaoDoacaoService(
     private val doacaoService: DoacaoService,
     private val organizacaoService: OrganizacaoService,
     private val voluntarioService: VoluntarioService,
-    private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository
+    private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository,
+    private val doacaoRepository: DoacaoRepository
 ) {
 
     fun criar(request: CreateRequisicaoDoacaoRequest, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
@@ -116,9 +118,12 @@ class RequisicaoDoacaoService(
     fun aprovar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        // A primeira leitura da requisição ocorre DEPOIS do lock da doação.
+        // Aprovações do mesmo lote jamais calculam saldo em paralelo.
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
         validarPendente(requisicao)
+        validarDoacaoRequisitavel(requisicao.doacao)
 
         val disponivel = quantidadeDisponivel(requisicao.doacao)
         if (requisicao.quantidadeSolicitada > disponivel) {
@@ -136,10 +141,11 @@ class RequisicaoDoacaoService(
         return salvo
     }
 
+    @Transactional
     fun rejeitar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
         validarPendente(requisicao)
 
@@ -156,7 +162,7 @@ class RequisicaoDoacaoService(
     fun concluir(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
 
         if (requisicao.status != StatusReivindicacao.APROVADO) {
@@ -178,10 +184,11 @@ class RequisicaoDoacaoService(
         return salvo
     }
 
+    @Transactional
     fun cancelar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleSolicitante(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
 
         if (requisicao.organizacaoSolicitante.id != organizacaoId) {
             throw BusinessException("A requisição não pertence à organização solicitante")
@@ -204,6 +211,19 @@ class RequisicaoDoacaoService(
             listOf(StatusReivindicacao.APROVADO, StatusReivindicacao.CONCLUIDO)
         )
             .sumOf { it.quantidadeSolicitada }
+    }
+
+    private fun findByIdComDoacaoBloqueada(id: Long?): RequisicaoDoacao {
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da requisição inválido")
+        }
+
+        val doacaoId = requisicaoDoacaoRepository.findDoacaoIdByRequisicaoId(id)
+            ?: throw ResourceNotFoundException("Requisição não encontrada")
+        doacaoRepository.findByIdForUpdate(doacaoId)
+            ?: throw ResourceNotFoundException("Doação não encontrada")
+
+        return findById(id)
     }
 
     private fun findById(id: Long?): RequisicaoDoacao {
