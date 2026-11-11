@@ -19,12 +19,25 @@ if ! sudo -n test -s "$CONFIG"; then
     echo "Não continue enquanto a configuração do banco/JWT/ADMIN não estiver disponível fora do JAR." >&2
     exit 1
   }
-  sudo -n install -d -m 0700 /etc/foodbridge
-  sudo -n install -m 0600 -- "$ORIGEM" "$CONFIG"
-  echo "Configuração copiada para $CONFIG com permissões 0600."
+  sudo -n install -d -o root -g opc -m 0750 /etc/foodbridge
+  sudo -n install -o root -g opc -m 0640 -- "$ORIGEM" "$CONFIG"
+  echo "Configuração copiada para $CONFIG com permissões root:opc 0640."
 else
   echo "Mantendo configuração de produção já existente: $CONFIG"
 fi
+
+# O unit systemd existente roda como User=opc: permitir leitura apenas a esse grupo.
+[[ "$(sudo -n systemctl show foodbridge.service -p User --value)" == "opc" ]] || {
+  echo "foodbridge.service não roda como opc. Revise o usuário do serviço antes do deploy." >&2
+  exit 1
+}
+sudo -n chown root:opc /etc/foodbridge "$CONFIG"
+sudo -n chmod 0750 /etc/foodbridge
+sudo -n chmod 0640 "$CONFIG"
+sudo -n -u opc test -r "$CONFIG" || {
+  echo "A API (usuário opc) não consegue ler $CONFIG." >&2
+  exit 1
+}
 
 sudo -n install -d -m 0755 /etc/systemd/system/foodbridge.service.d
 printf '%s\n' '[Service]' 'Environment="SPRING_CONFIG_ADDITIONAL_LOCATION=file:/etc/foodbridge/"' |
