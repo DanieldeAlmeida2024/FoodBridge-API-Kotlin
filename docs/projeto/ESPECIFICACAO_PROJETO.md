@@ -1,10 +1,27 @@
 # FoodBridge — especificação do projeto
 
-> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.2.0** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
 
+
+## Atualização de segurança — PR #4 (proposta, ainda não integrada à main)
+
+**Fonte de código:** [commit 9d96afb](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/commit/9d96afb6e86a0fbb5044c21eaf7619fb6d311a62). Esta seção atualiza somente o comportamento da branch de correção; as demais tabelas do documento preservam o inventário histórico.
+
+- `PUT /organizacoes/{id}` (API-26): `OrganizacaoService.update` agora recebe `TokenData` e **antes de consultar ou persistir** verifica `organizacaoId` do token contra o ID-alvo, `role == ADMIN`, `vinculoId`, status de usuário verificado e vínculo vigente do usuário/organização. A consulta ao repositório compara ID, role, status do vínculo, status do usuário e organização.
+- `PATCH /organizacoes/usuarios/{vinculoId}/aprovar` (API-28) e `/reprovar` (API-29): removido o cast inválido de `TokenData.role: String?` para `OrganizacaoRole`. As duas operações validam o administrador pelo banco **e** que o vínculo-alvo pertença à organização do contexto.
+- `GlobalExceptionHandler`: `AccessDeniedException` recebe HTTP 403 com resposta neutra.
+- **Restrições atuais:** o enum `OrganizacaoRole` ainda representa tipo organizacional e papel de membro sem separação de função de gestor. Como medida temporária e conservadora, **somente vínculo ADMIN verificado** tem permissão de atualização/aprovação; gestão por DOADOR/ONG/PRODUTOR/DISTRIBUIDOR exige decisão de RBAC e evolução segura do contrato.
+- **Não coberto:** `GET /organizacoes/{id}`, informações de `Voluntario`/CPF, `DELETE` em nível de vínculo, revogação de outros endpoints, DTOs JPA aninhados e autorização de outros módulos. Não extrapolar o resultado destes testes.
+- **Evidência:** cinco novos métodos em `OrganizacaoServiceAutorizacaoTest`; build e testes aprovados no [CI #43081581178](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43081581178). Nenhum teste de integração PostgreSQL/HTTP nem deploy foi validado.
+
+| Rota | Guarda original do inventário | Guarda adicionada na branch de PR #4 | Status |
+|---|---|---|---|
+| API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; integrar |
+| API-28 `PATCH .../{vinculoId}/aprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código + unitários parciais; integrar |
+| API-29 `PATCH .../{vinculoId}/reprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código compilado; falta caso específico |
 
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.

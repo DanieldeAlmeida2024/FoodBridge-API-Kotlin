@@ -1,12 +1,26 @@
 # FoodBridge — plano mestre de testes
 
-> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.2.0** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
 
 
 **Escopo de referência:** 165 cenários planejados no documento do usuário de 29/10/2026. **Não afirmar que esses 165 foram executados.** Os testes de CI do repositório cobrem apenas parte do plano; ver seção “Estado de execução”.
+
+## Registro de execução incremental — mitigação R02/R03 (PR #4)
+
+**Baseline do código:** `9d96afb6e86a0fbb5044c21eaf7619fb6d311a62`. **CI:** [run 43081581178](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43081581178), job Kotlin/Java 21 = **success**, Oracle = **skipped**.
+
+| Método de teste JUnit 5 | Comportamento verificado | IDs relacionados | Evidência |
+|---|---|---|---|
+| `usuarioDeOutraOrganizacaoNaoAlteraCadastro` | PUT do tenant diferente lança `AccessDeniedException`, sem consultar alvo | ORG-10, SEG-03 | Unitário incluído no CI aprovado |
+| `membroSemPapelAdministrativoNaoAlteraCadastro` | Role não-ADMIN bloqueada | SEG-02 | Unitário incluído no CI aprovado |
+| `vinculoRevogadoInvalidaTokenAindaAssinado` | Vínculo INATIVO impede PUT apesar do JWT | AUT-15, ORG-10 | Unitário incluído no CI aprovado |
+| `administradorVerificadoAlteraApenasSuaOrganizacao` | Vínculo ADMIN/VERIFICADO permite atualização da própria organização | ORG-10 | Unitário incluído no CI aprovado |
+| `administradorNaoPodeAprovarVinculoDeOutraOrganizacao` | Aprovação cross-tenant bloqueada, sem `save` | ORG-14, SEG-03 | Unitário incluído no CI aprovado |
+
+Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e **não** executam os 165 cenários planejados abaixo. Antes de merge, complementar com MockMvc + PostgreSQL real para API-26/28/29 (403/204), teste de reprovação na mesma organização, papel indevido, usuário suspenso, mudanças de vínculo em corrida e serialização dos DTOs. Ver [matriz](MATRIZ_RASTREABILIDADE.md).
 
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.

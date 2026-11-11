@@ -1,6 +1,6 @@
 # FoodBridge — riscos técnicos e não conformidades a validar
 
-> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.2.0** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -39,6 +39,19 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 |---|---|---|
 | R01 — logs JWT | Correção do filtro integrada; exigir regressão para toda a aplicação | PR #1; inspeção do `JwtFilter`; CI passou |
 | R02–R20 | **Pendente de nova inspeção e testes**; não declarar corrigido | Remeter aos IDs do plano de testes; abrir tickets por risco P0 |
+
+## Revisão de riscos na branch de segurança (PR #4, 11/11/2026)
+
+| ID | Situação em PR #4 | Evidência objetiva | Bloqueio restante |
+|---|---|---|---|
+| R02 — cast `String → OrganizacaoRole` | **Mitigação implementada, PR não integrado** | Remoção do cast nos dois PATCHs; compilação/testes CI #43081581178 aprovados | Testar HTTP de aprovar **e** reprovar com autenticação real |
+| R03 — PUT cross-tenant | **Mitigação implementada, PR não integrado** | Revalidação do vínculo no banco; testes unitários de organização diversa, não-admin, revogação e operação permitida | Integração PostgreSQL/MockMvc; revisão de papéis |
+| R07/R18 — tokens desatualizados | **Mitigação parcial somente nestas mutações** | Service consulta status do usuário/vínculo/organização antes de escrever/aprovar | Outros endpoints ainda podem aceitar JWT antigo; política de revogação central pendente |
+| R04 — CPF e voluntários | **Aberto** | Não alterado no PR | Guards por tenant e minimização de dados |
+| R15 — DTO com JPA aninhado | **Aberto** | Não alterado no PR | DTOs de resposta estáveis sem relações internas |
+| Modelo de gestor | **Pendente de decisão** | ADMIN é o único papel administrativo disponível nesta regra | Separar tipo de organização de papel do membro, sem ampliação implícita de acesso |
+
+**Não classificar R02/R03 como encerrados** apenas pelo CI unitário. O PR permanece rascunho e não foi publicado em produção.
 
 ## Critério para encerramento
 

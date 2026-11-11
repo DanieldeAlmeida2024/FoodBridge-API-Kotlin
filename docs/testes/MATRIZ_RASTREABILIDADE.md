@@ -1,6 +1,6 @@
 # FoodBridge — matriz de rastreabilidade
 
-> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.1.0** · Revisão **2026-11-11**
+> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.2.0** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -62,6 +62,16 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 |VOL|`GET /voluntarios`|`VOL-07,VOL-12`|
 |VOL|`PUT /voluntarios/{id}`|`VOL-08,VOL-05`|
 |VOL|`PATCH /voluntarios/{id}/desativar`|`VOL-09,VOL-11`|
+
+## Atualização de rastreabilidade no PR #4 — sem recontar casos planejados
+
+| ID de rota | Problema/riscos | Alteração de produção | Unitário no CI #43081581178 | Validação ainda necessária |
+|---|---|---|---|---|
+| API-26 PUT /organizacoes/{id} | R03, ORG-10, SEG-03 | `TokenData` + validação de administrador/vínculo atual por tenant | Quatro métodos: tenant diverso, role, revogação e caso permitido | API real 403/200, concorrência e política do gestor |
+| API-28 PATCH aprovar vínculo | R02/R03, ORG-14 | Sem cast inválido, validação do vínculo-alvo por tenant | Um método cross-tenant | MockMvc: ADMIN válido 204, negado 403, sem cast/500 |
+| API-29 PATCH reprovar vínculo | R02/R03, ORG-15 | Sem cast inválido, mesma validação de tenant | **Não há método dedicado novo** | Teste positivo/negativo HTTP e serviço |
+
+**Estado:** mitigação em branch [PR #4](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/4), compilação e unitários CI **passaram**, PR **não integrado**, Oracle **não publicado**. Os 49 endpoints e os 165 casos planejados continuam inalterados em quantidade. Para a sequência do guarda, ver [UML 17](../uml/17_sequencia_autorizacao_organizacao.puml).
 
 ## Cenários transversais end-to-end
 

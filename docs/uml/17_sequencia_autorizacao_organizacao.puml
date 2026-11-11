@@ -1,0 +1,46 @@
+@startuml
+title FoodBridge API — Autorização organizacional (proposta PR #4)
+actor "Usuário autenticado" as User
+participant "OrganizacaoController" as Controller
+participant "OrganizacaoService" as Service
+database "UsuarioOrganizacaoRepository" as Repo
+database "OrganizacaoRepository" as OrgRepo
+participant "GlobalExceptionHandler" as Handler
+User -> Controller : PUT /organizacoes/{id} ou PATCH /usuarios/{vinculoId}/...
+Controller -> Service : operação + TokenData do JWT
+Service -> Service : conferir organizacaoId, role ADMIN,
+vinculoId e status VERIFICADO
+alt claims insuficientes ou tenant diferente
+  Service -> Handler : AccessDeniedException
+  Handler --> User : 403 Acesso negado
+else claims compatíveis
+  Service -> Repo : findByUsuarioIdAndOrganizacaoId(usuarioId, orgId)
+  Repo --> Service : vínculo atual ou null
+  Service -> Service : comparar ID do vínculo,
+role/status de vínculo, usuário e organização
+  alt vínculo ausente/revogado/inválido
+    Service -> Handler : AccessDeniedException
+    Handler --> User : 403 Acesso negado
+  else vínculo administrativo verificado
+    alt PUT organização
+      Service -> OrgRepo : findById(id) + save(campos editáveis)
+      Service --> User : 200 OrganizaçãoDTO
+    else PATCH aprovação/reprovação
+      Service -> Repo : findById(vinculoId)
+      Service -> Service : confirmar que vínculo-alvo é do orgId
+      alt vínculo de outra organização
+        Service -> Handler : AccessDeniedException
+        Handler --> User : 403 Acesso negado
+      else vínculo do mesmo tenant
+        Service -> Repo : save(status atualizado)
+        Service --> User : 204
+      end
+    end
+  end
+end
+note bottom
+Modelo atual usa OrganizacaoRole.ADMIN como permissão transitória.
+Ainda não implementado: papel GESTOR por tenant,
+integracao HTTP/PostgreSQL, guarda dos voluntários/CPF.
+end note
+@enduml
