@@ -62,3 +62,8 @@ Os anexos de entrada foram: `Plano_de_Testes_FoodBridge(1).md`, `Matriz_de_Rastr
 ### Gate de integração combinado PR #4 + PR #5
 
 **Commit de reconciliação:** `bf70c5aaa19a058fe7a429b7cb975a26b981d6cc`, com dois pais (PR #5 e HEAD revisado do PR #4). Os arquivos de autorização organizacional foram mantidos na revisão mais recente, os documentos e testes de voluntários foram preservados. É exigido CI de Java 21/Gradle/PostgreSQL para esta árvore combinada, não somente para commits anteriores. O PR #5 permanecerá como dependente do PR #4 após a execução de CI.
+
+
+### Resultado do gate combinado após reconciliação de branches
+
+[GitHub Actions #43091491145](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43091491145) executou `./gradlew clean test bootJar` com **success** no commit `638a15583ed4488062253527ce74686898f5c8aa` (código de PR #4 + PR #5 e banco PostgreSQL 16 no workflow). Publicação Oracle **skipped**. A revisão é CI-approved, **não** representa homologação de segurança ou deploy.

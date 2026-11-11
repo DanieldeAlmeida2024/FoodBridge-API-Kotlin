@@ -79,3 +79,6 @@ Nenhum risco é dado como encerrado em produção; PRs #4/#5 não foram mesclado
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.
+
+
+**Gate combinado PR #4 + PR #5:** [CI #43091491145](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43091491145) aprovado para o código agregado no commit `638a1558`. Isso confirma compilação e testes automatizados, **não encerra R02/R03/R04 em produção** nem os riscos de PII e RBAC ainda descritos.

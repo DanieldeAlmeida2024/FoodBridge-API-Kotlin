@@ -989,3 +989,8 @@ Para cada caso registrar: ID, commit, ambiente, fixture, data, executor, input J
 ## Gestão de execução
 
 Registrar para cada ID: data, commit testado, ambiente, versão documental, fixture sintética, executor, saída observada, evidência sanitizada, PASS/FAIL/BLOCKED e issue/PR correlatos. A [matriz de rastreabilidade](MATRIZ_RASTREABILIDADE.md) vincula o endpoint aos casos.
+
+
+## Evidência consolidada após merge técnico PR #4 + #5
+
+O CI [#43091491145](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43091491145) retornou **success** para Kotlin/Java 21/Gradle sobre o commit `638a15583ed4488062253527ce74686898f5c8aa`, contendo simultaneamente os **7 testes HTTP/PostgreSQL de organizações** e os **13 unitários de voluntários** (além dos testes anteriores). Oracle skipped. Os 165 casos do plano permanecem critérios de aceitação, não 165 E2E executados. Ainda faltam testes HTTP/PostgreSQL de voluntários e consentimento/gestores.
