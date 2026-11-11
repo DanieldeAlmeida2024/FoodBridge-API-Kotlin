@@ -24,23 +24,23 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 
 ## Registro incremental — voluntários e proteção de dados (v2.0.0 proposta)
 
-**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **13 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o status de CI será preenchido após o run do PR.
+**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **13 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o CI [run #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716) executou o build/teste Kotlin Java 21 com sucesso; Oracle foi ignorado.
 
 | Método JUnit | Controle | Caso original | Execução |
 |---|---|---|---|
-| `consultaPorIdDeOutraOrganizacaoNaoRevelaDados` | GET ID sem vínculo no tenant retorna 404 | VOL-07 | Pendente de CI |
-| `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | CPF de outro tenant retorna 404 | VOL-07 | Pendente de CI |
-| `listarRetornaApenasVinculosAtivosDaOrganizacao` | Consulta lista somente ATIVO do tenant | VOL-12 | Pendente de CI |
-| `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Revogação de vínculo invalida acesso apesar de JWT | AUT-15, SEG-03 | Pendente de CI |
-| `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | CPF existente não cadastra novo vínculo sem prova | VOL-02 (critério revisto) | Pendente de CI |
-| `atualizarVoluntarioSemVinculoNaoPersisteAlteracao` | PUT sem vínculo não persiste | VOL-08 | Pendente de CI |
-| `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | PUT recusa alterar entidade global compartilhada | VOL-08, SEG-03 | Pendente de CI |
-| `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | GET do mesmo tenant ativo é permitido | VOL-06 | Pendente de CI |
-| `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | PATCH não persiste em outro tenant | VOL-09 | Pendente de CI |
-| `voluntarioInativoNaoPodeSerConsultado` | GET nega vínculo INATIVO | VOL-07 | Pendente de CI |
-| `atualizacaoPermitidaParaCadastroExclusivoDaOrganizacao` | PUT preserva edição autorizada no mesmo tenant | VOL-08 | Pendente de CI |
-| `desativacaoPermitidaMarcaApenasVinculoDaOrganizacao` | PATCH altera status do vínculo correto | VOL-09 | Pendente de CI |
-| `cadastroNovoCriaVinculoAtivoParaOrganizacaoAutenticada` | POST legítimo cria vínculo ativo no tenant | VOL-01 | Pendente de CI |
+| `consultaPorIdDeOutraOrganizacaoNaoRevelaDados` | GET ID sem vínculo no tenant retorna 404 | VOL-07 | Unitário aprovado CI #43084884716 |
+| `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | CPF de outro tenant retorna 404 | VOL-07 | Unitário aprovado CI #43084884716 |
+| `listarRetornaApenasVinculosAtivosDaOrganizacao` | Consulta lista somente ATIVO do tenant | VOL-12 | Unitário aprovado CI #43084884716 |
+| `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Revogação de vínculo invalida acesso apesar de JWT | AUT-15, SEG-03 | Unitário aprovado CI #43084884716 |
+| `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | CPF existente não cadastra novo vínculo sem prova | VOL-02 (critério revisto) | Unitário aprovado CI #43084884716 |
+| `atualizarVoluntarioSemVinculoNaoPersisteAlteracao` | PUT sem vínculo não persiste | VOL-08 | Unitário aprovado CI #43084884716 |
+| `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | PUT recusa alterar entidade global compartilhada | VOL-08, SEG-03 | Unitário aprovado CI #43084884716 |
+| `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | GET do mesmo tenant ativo é permitido | VOL-06 | Unitário aprovado CI #43084884716 |
+| `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | PATCH não persiste em outro tenant | VOL-09 | Unitário aprovado CI #43084884716 |
+| `voluntarioInativoNaoPodeSerConsultado` | GET nega vínculo INATIVO | VOL-07 | Unitário aprovado CI #43084884716 |
+| `atualizacaoPermitidaParaCadastroExclusivoDaOrganizacao` | PUT preserva edição autorizada no mesmo tenant | VOL-08 | Unitário aprovado CI #43084884716 |
+| `desativacaoPermitidaMarcaApenasVinculoDaOrganizacao` | PATCH altera status do vínculo correto | VOL-09 | Unitário aprovado CI #43084884716 |
+| `cadastroNovoCriaVinculoAtivoParaOrganizacaoAutenticada` | POST legítimo cria vínculo ativo no tenant | VOL-01 | Unitário aprovado CI #43084884716 |
 
 **Limites:** os testes são unitários com repositórios mockados; não exercitam JSON/JPA, transações reais, HTTP 403/404, CPF válido de documento, autenticação/associação via requisição de coleta nem consentimento do titular. Esses testes de integração são gates adicionais.
 

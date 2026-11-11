@@ -84,7 +84,7 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 | API-48 PUT /voluntarios/{id} | Sem alteração cross-tenant ou perfil global compartilhado | `atualizarVoluntarioSemVinculoNaoPersisteAlteracao`, `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | HTTP/integração/consentimento |
 | API-49 PATCH /voluntarios/{id}/desativar | Só vínculo da mesma organização | `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | Teste de dois tenants PostgreSQL |
 
-R04 = **mitigação parcial na branch**, não liberação de produção; R11 = fronteira transacional implementada sem teste SQL; R20 = aberto por ausência de reativação/consentimento. O catálogo permanece com 49 endpoints e 165 casos base, agora com critérios VOL revistos. Ver [UML 18](../uml/18_sequencia_isolamento_voluntarios.puml).
+R04 = **mitigação parcial na branch**, testes unitários aprovados no CI #43084884716, não liberação de produção; R11 = fronteira transacional implementada sem teste SQL; R20 = aberto por ausência de reativação/consentimento. O catálogo permanece com 49 endpoints e 165 casos base, agora com critérios VOL revistos. Ver [UML 18](../uml/18_sequencia_isolamento_voluntarios.puml).
 
 ## Cenários transversais end-to-end
 

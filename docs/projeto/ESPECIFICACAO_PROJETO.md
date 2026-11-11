@@ -38,7 +38,7 @@
 
 **Compatibilidade da coleta:** `RequisicaoDoacaoService` não consulta mais voluntário por ID global sem escopo; utiliza `findByIdForColeta` com organização da requisição, já validada contra a organização solicitante. **O modelo continua global e compartilhado:** a autorização do titular, manutenção de dados e acesso por diferentes organizações exigem projeto de domínio específico.
 
-**Evidência:** 13 testes unitários novos, pendentes de execução de CI na data da edição. Os 165 casos do plano original permanecem com identificação, mas os critérios VOL-02, VOL-07, VOL-08, VOL-10 e VOL-12 são substituídos nesta versão. [Documento próprio de política](POLITICA_DADOS_VOLUNTARIOS.md).
+**Evidência:** 13 testes unitários novos aprovados no [CI #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716), sem execução de HTTP/PostgreSQL real. Os 165 casos do plano original permanecem com identificação, mas os critérios VOL-02, VOL-07, VOL-08, VOL-10 e VOL-12 são substituídos nesta versão. [Documento próprio de política](POLITICA_DADOS_VOLUNTARIOS.md).
 
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.

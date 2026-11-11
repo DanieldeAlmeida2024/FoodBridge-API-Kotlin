@@ -26,7 +26,7 @@
 - [Política de acesso e ciclo de vida de voluntários](../projeto/POLITICA_DADOS_VOLUNTARIOS.md).
 - [Diagrama de autorização de voluntários](../uml/18_sequencia_isolamento_voluntarios.puml).
 - **Código:** novo `VoluntarioService` com validação de vínculo vigente, consultas filtradas por organização e transações de escrita; `VoluntarioController` transmite o contexto autenticado; `RequisicaoDoacaoService` consulta voluntário vinculado ao tenant solicitante.
-- **Testes novos:** 13 testes unitários em `VoluntarioServiceAutorizacaoTest.kt`. Execução e CI devem ser verificados na revisão do PR; testes HTTP/SQL não foram executados neste documento.
+- **Testes novos:** 13 testes unitários em `VoluntarioServiceAutorizacaoTest.kt`. 13 testes unitários incluídos e aprovados no [GitHub Actions run 43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716); testes HTTP/SQL não foram executados neste documento.
 - **Não encerrados:** controle de gestores por papel (RBAC), consentimento/reativação do titular, ofuscação/retirada de CPF do DTO, validação de CPF/email, testes reais de Postgres e política LGPD.
 - A versão 1.2.0 do PR #4 e a versão 2.0.0 deste PR **não são releases publicados**.
 
@@ -35,7 +35,7 @@
 | Versão | Data | Alteração | Evidência |
 |---|---|---|---|
 | 1.0.0 | 29/10/2026 | Plano mestre com 165 casos, 49 endpoints e 16 diagramas catalogados | Anexos fornecidos; commit 611674973467cf859d5925c8306b66df249b7be3 |
-| 2.0.0 (proposta) | 11/11/2026 | Isolamento por tenant nas rotas de voluntários, bloqueio da vinculação automática por CPF, prevenção de edição do cadastro global compartilhado; 13 testes unitários e UML 18 | PR de segurança dependente do #4; CI pendente |
+| 2.0.0 (proposta) | 11/11/2026 | Isolamento por tenant nas rotas de voluntários, bloqueio da vinculação automática por CPF, prevenção de edição do cadastro global compartilhado; 13 testes unitários e UML 18 | CI #43084884716 aprovado; PR dependente do #4, sem deploy |
 | 1.2.0 | 11/11/2026 | Atualização do controle, especificação, riscos, testes, matriz e UML para mitigação R02/R03 em PR #4; CI de compilação/testes aprovado, sem deploy | PR #4, commit 9d96afb; run 43081581178 |
 | 1.1.0 | 11/11/2026 | Separação das especificações, testes, rastreabilidade, riscos e fontes PlantUML; distinção do snapshot histórico e CI atual | PR atual, base 2d0b63e416bc9f5bb994b6364160bb78f8399372 |
 
