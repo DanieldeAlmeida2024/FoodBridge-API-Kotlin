@@ -6,6 +6,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Publicar na Oracle Cloud apos CI (requer configuracao e secrets)'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -85,7 +91,7 @@ jobs:
   deploy-oracle:
     name: Publicar na VM Oracle
     needs: [build-e-testes]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy == true))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: oracle-production
