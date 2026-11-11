@@ -19,6 +19,13 @@
 - **Escopo:** correção de cast de role, autorização por vínculo ADMIN verificado no banco e teste unitário de isolamento para PUT e aprovação.
 - **Não concluído:** testes HTTP/integração com PostgreSQL, revisão independente de acesso, política futura de gestão para papéis não-ADMIN e liberação de produção. Nenhum release da aplicação é inferido desta versão documental.
 
+## Incremento de segurança na mesma versão 1.2.0 — DELETE + integração HTTP
+
+- `DELETE /organizacoes/{id}` (API-27) passa pela mesma política transacional de autorização do contexto administrativo, eliminando a possibilidade de `ADMIN` válido da organização A inativar a organização B.
+- `OrganizacaoAutorizacaoHttpIntegrationTest.kt`: **7 testes Spring MockMvc + banco PostgreSQL do CI** cobrindo PUT/DELETE cross-tenant, DELETE permitido, vínculo revogado, role insuficiente e PATCH aprovação/reprovação cross-tenant. A suíte ainda exige resultado de CI no commit da revisão.
+- Os cinco testes unitários do primeiro commit do PR continuam preservados; os sete são testes de integração adicionais (não novos cenários do catálogo de 165).
+- Esta alteração é parte da proposta documental 1.2.0 do PR #4, **não está mesclada nem publicada**. O PR #5 é dependente desta branch e precisa sincronizar o novo HEAD antes de merge.
+
 ## Histórico
 
 | Versão | Data | Alteração | Evidência |

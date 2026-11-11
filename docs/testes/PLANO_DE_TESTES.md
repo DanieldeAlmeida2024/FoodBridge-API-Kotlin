@@ -22,6 +22,22 @@
 
 Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e **não** executam os 165 cenários planejados abaixo. Antes de merge, complementar com MockMvc + PostgreSQL real para API-26/28/29 (403/204), teste de reprovação na mesma organização, papel indevido, usuário suspenso, mudanças de vínculo em corrida e serialização dos DTOs. Ver [matriz](MATRIZ_RASTREABILIDADE.md).
 
+## Adição de cobertura HTTP e PostgreSQL real (mesmo PR #4)
+
+**Arquivo:** `src/test/kotlin/com/br/foodbridge/controller/OrganizacaoAutorizacaoHttpIntegrationTest.kt`. **Execução:** o GitHub Actions da API fornece PostgreSQL 16 efêmero, e `@SpringBootTest + @AutoConfigureMockMvc` exercitam JWT real, `JwtFilter`, `SecurityFilterChain`, controller, service e JPA.
+
+| Teste | Rota | Esperado | Status antes do run |
+|---|---|---|---|
+| putDeOutraOrganizacaoDevolve403ESemMutacao | PUT org B | 403, B inalterada | Pendente |
+| deleteDeOutraOrganizacaoDevolve403ESemInativar | DELETE org B | 403, B VERIFICADO | Pendente |
+| deleteDaPropriaOrganizacaoVerificadaDevolve204 | DELETE org A | 204, A INATIVO | Pendente |
+| tokenDeVinculoRevogadoNaoPodeInativarOrganizacao | DELETE org A com link INATIVO | 403 | Pendente |
+| membroNaoAdminNaoPodeInativarOrganizacao | DELETE org A com papel ONG | 403 | Pendente |
+| patchAprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH aprovar vínculo B | 403, vínculo não alterado | Pendente |
+| patchReprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH reprovar vínculo B | 403, vínculo não alterado | Pendente |
+
+**Os sete métodos são integração automatizada adicional, não alteram o total de 165 cenários planejados.** Falta teste positivo de PATCH, teste de role/status mutável, OpenAPI e revisão de serialização de DTO.
+
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.
 **Ferramentas propostas:** JUnit 5 + Spring Boot Test + MockK/Mockito + MockMvc, Testcontainers PostgreSQL, JaCoCo, OWASP ZAP (ambiente autorizado), k6, Detekt/ktlint, Newman e GitHub Actions. Estas ferramentas são propostas; não foram encontradas todas configuradas no commit.

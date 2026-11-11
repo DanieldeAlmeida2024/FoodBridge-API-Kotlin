@@ -14,12 +14,13 @@
 - `PATCH /organizacoes/usuarios/{vinculoId}/aprovar` (API-28) e `/reprovar` (API-29): removido o cast inválido de `TokenData.role: String?` para `OrganizacaoRole`. As duas operações validam o administrador pelo banco **e** que o vínculo-alvo pertença à organização do contexto.
 - `GlobalExceptionHandler`: `AccessDeniedException` recebe HTTP 403 com resposta neutra.
 - **Restrições atuais:** o enum `OrganizacaoRole` ainda representa tipo organizacional e papel de membro sem separação de função de gestor. Como medida temporária e conservadora, **somente vínculo ADMIN verificado** tem permissão de atualização/aprovação; gestão por DOADOR/ONG/PRODUTOR/DISTRIBUIDOR exige decisão de RBAC e evolução segura do contrato.
-- **Não coberto:** `GET /organizacoes/{id}`, informações de `Voluntario`/CPF, `DELETE` em nível de vínculo, revogação de outros endpoints, DTOs JPA aninhados e autorização de outros módulos. Não extrapolar o resultado destes testes.
+- **Não coberto:** `GET /organizacoes/{id}`, informações de `Voluntario`/CPF, revogação de outros endpoints, DTOs JPA aninhados e autorização de outros módulos. DELETE organizacional (API-27) passou a ser coberto pela mesma política nesta revisão. Não extrapolar o resultado destes testes.
 - **Evidência:** cinco novos métodos em `OrganizacaoServiceAutorizacaoTest`; build e testes aprovados no [CI #43081581178](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43081581178). Nenhum teste de integração PostgreSQL/HTTP nem deploy foi validado.
 
 | Rota | Guarda original do inventário | Guarda adicionada na branch de PR #4 | Status |
 |---|---|---|---|
-| API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; integrar |
+| API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; novos testes HTTP em execução |
+| API-27 `DELETE /organizacoes/{id}` | ROLE_ADMIN apenas, sem validar organização-alvo | Exige vínculo ADMIN vigente do próprio tenant antes de inativar | Código + testes HTTP em execução |
 | API-28 `PATCH .../{vinculoId}/aprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código + unitários parciais; integrar |
 | API-29 `PATCH .../{vinculoId}/reprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código compilado; falta caso específico |
 

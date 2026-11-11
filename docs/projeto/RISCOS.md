@@ -53,6 +53,14 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 
 **Não classificar R02/R03 como encerrados** apenas pelo CI unitário. O PR permanece rascunho e não foi publicado em produção.
 
+## Incremento no PR #4 — R03 e API-27
+
+**Achado adicional confirmado:** `OrganizacaoController.deletar` verificava somente `tokenData.role == ADMIN`, permitindo que um ADMIN de outra organização inativasse qualquer `id`. O serviço `inativarOrganizacao(id, tokenData)` agora revalida **ID/role/status do vínculo atual no banco** e tenant alvo, como no PUT.
+
+**Teste de integração real:** `OrganizacaoAutorizacaoHttpIntegrationTest` possui 7 métodos com `@SpringBootTest @AutoConfigureMockMvc`: PUT cross-tenant, DELETE cross-tenant, DELETE permitido, DELETE com vínculo revogado, DELETE sem role ADMIN, aprovação/reprovação em outro tenant. Requer CI para confirmar, pois erros 403 podem depender de filtros HTTP e persistência.
+
+**Estado de R03:** mitigação ampliada no código do PR #4; **não encerrada em produção**. Devem ser revisadas as regras de leitura organizacional, DTOs e papéis futuros.
+
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.
