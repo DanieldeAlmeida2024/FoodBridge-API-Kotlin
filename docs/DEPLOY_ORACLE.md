@@ -93,8 +93,9 @@ A job usa o environment `oracle-production`; você pode adicionar proteção de 
 1. Verifique CI verde na aba **Actions**.
 2. Rode `deploy/oracle/preparar-vm.sh` na VM após revisar os arquivos.
 3. Configure chave SSH e host verificado no GitHub.
-4. Ative a variable `OCI_DEPLOY_ENABLED=true`; um novo push na `main` disparará CI e deploy.
-5. Acompanhe `GitHub → Actions → FoodBridge API - CI e deploy Oracle`.
+4. Ative a variable `OCI_DEPLOY_ENABLED=true`. A partir daí, um novo push na `main` executa CI e deploy.
+5. Para uma implantação inicial **sem novo commit**, use `Actions → FoodBridge API - CI e deploy Oracle → Run workflow`, selecione `main` e marque o parâmetro `deploy=true`.
+6. Acompanhe `GitHub → Actions → FoodBridge API - CI e deploy Oracle`.
 
 Na VM, somente leitura:
 
