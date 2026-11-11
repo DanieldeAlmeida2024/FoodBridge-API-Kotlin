@@ -31,6 +31,7 @@ falhar() { echo "ERRO: $*" >&2; exit 1; }
 echo "$SHA_ESPERADO  $UPLOAD" | sha256sum --check --status || falhar "SHA-256 diferente do pacote aprovado."
 sudo -n true || falhar "Usuário remoto não tem sudo não interativo."
 sudo -n test -f "$CONFIG" || falhar "Config externa de produção ausente: $CONFIG"
+sudo -n -u opc test -r "$CONFIG" || falhar "O serviço (opc) não pode ler a configuração externa."
 sudo -n test -f "$MARCADOR" || falhar "Execute antes deploy/oracle/preparar-vm.sh para configurar systemd."
 sudo -n systemctl cat "$SERVICO" > /dev/null || falhar "Serviço foodbridge.service não encontrado."
 sudo -n test -f "$DESTINO" || falhar "JAR anterior não encontrado; nenhuma implantação foi feita."
