@@ -1,6 +1,6 @@
 # FoodBridge — riscos técnicos e não conformidades a validar
 
-> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -53,14 +53,32 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 
 **Não classificar R02/R03 como encerrados** apenas pelo CI unitário. O PR permanece rascunho e não foi publicado em produção.
 
-## Incremento no PR #4 — R03 e API-27
+## Atualização de risco — isolamento de voluntários (v2.0.0 proposta)
 
-**Achado adicional confirmado:** `OrganizacaoController.deletar` verificava somente `tokenData.role == ADMIN`, permitindo que um ADMIN de outra organização inativasse qualquer `id`. O serviço `inativarOrganizacao(id, tokenData)` agora revalida **ID/role/status do vínculo atual no banco** e tenant alvo, como no PUT.
+| Risco | Mitigação nesta branch | Limitação antes do encerramento |
+|---|---|---|
+| **R04** — consulta/alteração global de PII | GET por ID/CPF filtrados por vínculo ativo do tenant; listagem tenant-scoped; PUT exige vínculo e impede alteração de cadastro ligado a outras organizações | Testes HTTP PostgreSQL, revisão de minimização de CPF e autorização granular |
+| **R11** — transação de criação do voluntário/vínculo | `@Transactional` na criação, edição e desativação, com contexto validado no serviço | Testar rollback real em banco ao falhar criação do vínculo |
+| **R20** — reativação de vínculo | **Aberto:** POST com CPF/e-mail existente passa a negar vinculação automática para impedir apropriação de cadastro | Fluxo explícito com comprovação do titular, consentimento e reativação auditável |
+| Segurança adicional — vínculo por CPF interorganizacional | **Bloqueado por padrão** no POST, até existir prova de consentimento | Teste integração de identidade e política legal do tratamento |
+| Segurança adicional — edição de pessoa vinculada a múltiplas organizações | **Negada por padrão** a alteração da entidade global | Separar dados pessoais canônicos dos atributos por organização / gestor |
+| Privilégio do operador | Guarda exige usuário/vínculo/organização VERIFICADO e role coerente com token | **RBAC incompleto:** qualquer membro verificado do tenant ainda pode operar voluntários |
 
-**Teste de integração real:** `OrganizacaoAutorizacaoHttpIntegrationTest` possui 7 métodos com `@SpringBootTest @AutoConfigureMockMvc`: PUT cross-tenant, DELETE cross-tenant, DELETE permitido, DELETE com vínculo revogado, DELETE sem role ADMIN, aprovação/reprovação em outro tenant. Os testes HTTP e de persistência passaram no [CI #43090289433](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090289433); nenhum deploy executado.
+**Estado:** proposta em branch empilhada no PR #4. Os 13 testes unitários foram aprovados no [CI #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716), mas **não encerram os riscos sem testes de integração e revisão**. Nenhuma correção foi integrada ou publicada.
 
-**Estado de R03:** mitigação ampliada no código do PR #4; **não encerrada em produção**. Devem ser revisadas as regras de leitura organizacional, DTOs e papéis futuros.
+## Reconciliação R03/R04 — branch empilhada sobre o PR #4 atualizado
 
+| Item | Política de código combinada | Evidência |
+|---|---|---|
+| R03 — DELETE cross-tenant | `inativarOrganizacao` exige `TokenData`, vínculo ADMIN vigente da organização-alvo | 7 HTTP/SQL tests do PR #4 aprovados no CI #43090697810 |
+| R02 — PATCH com cast inválido | sem cast, e vínculos-alvo limitados ao tenant | Tests negativos integrados no mesmo job |
+| R04 — voluntário/cadastro | GET/PUT/POST/PATCH tenant-scoped e CPF não cria vínculo automático entre organizações | 13 unitários do PR #5 aprovados no CI #43085607706 |
+| Regressão combinada | Novo merge contém os dois conjuntos de correções | **Novo CI do HEAD da branch exigido** |
+
+Nenhum risco é dado como encerrado em produção; PRs #4/#5 não foram mesclados na main.
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.
+
+
+**Gate combinado PR #4 + PR #5:** [CI #43091491145](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43091491145) aprovado para o código agregado no commit `638a1558`. Isso confirma compilação e testes automatizados, **não encerra R02/R03/R04 em produção** nem os riscos de PII e RBAC ainda descritos.

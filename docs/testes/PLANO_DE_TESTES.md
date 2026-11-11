@@ -1,6 +1,6 @@
 # FoodBridge — plano mestre de testes
 
-> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -22,24 +22,41 @@
 
 Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e **não** executam os 165 cenários planejados abaixo. Antes de merge, complementar com MockMvc + PostgreSQL real para API-26/28/29 (403/204), teste de reprovação na mesma organização, papel indevido, usuário suspenso, mudanças de vínculo em corrida e serialização dos DTOs. Ver [matriz](MATRIZ_RASTREABILIDADE.md).
 
-## Adição de cobertura HTTP e PostgreSQL real (mesmo PR #4)
+## Registro incremental — voluntários e proteção de dados (v2.0.0 proposta)
 
-**Arquivo:** `src/test/kotlin/com/br/foodbridge/controller/OrganizacaoAutorizacaoHttpIntegrationTest.kt`. **Execução:** o GitHub Actions da API fornece PostgreSQL 16 efêmero, e `@SpringBootTest + @AutoConfigureMockMvc` exercitam JWT real, `JwtFilter`, `SecurityFilterChain`, controller, service e JPA.
+**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **13 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o CI [run #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716) executou o build/teste Kotlin Java 21 com sucesso; Oracle foi ignorado.
 
-| Teste | Rota | Esperado | Status antes do run |
+| Método JUnit | Controle | Caso original | Execução |
 |---|---|---|---|
-| putDeOutraOrganizacaoDevolve403ESemMutacao | PUT org B | 403, B inalterada | Aprovado no CI #43090289433 |
-| deleteDeOutraOrganizacaoDevolve403ESemInativar | DELETE org B | 403, B VERIFICADO | Aprovado no CI #43090289433 |
-| deleteDaPropriaOrganizacaoVerificadaDevolve204 | DELETE org A | 204, A INATIVO | Aprovado no CI #43090289433 |
-| tokenDeVinculoRevogadoNaoPodeInativarOrganizacao | DELETE org A com link INATIVO | 403 | Aprovado no CI #43090289433 |
-| membroNaoAdminNaoPodeInativarOrganizacao | DELETE org A com papel ONG | 403 | Aprovado no CI #43090289433 |
-| patchAprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH aprovar vínculo B | 403, vínculo não alterado | Aprovado no CI #43090289433 |
-| patchReprovacaoDeVinculoDeOutraOrganizacaoDevolve403 | PATCH reprovar vínculo B | 403, vínculo não alterado | Aprovado no CI #43090289433 |
+| `consultaPorIdDeOutraOrganizacaoNaoRevelaDados` | GET ID sem vínculo no tenant retorna 404 | VOL-07 | Unitário aprovado CI #43084884716 |
+| `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | CPF de outro tenant retorna 404 | VOL-07 | Unitário aprovado CI #43084884716 |
+| `listarRetornaApenasVinculosAtivosDaOrganizacao` | Consulta lista somente ATIVO do tenant | VOL-12 | Unitário aprovado CI #43084884716 |
+| `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Revogação de vínculo invalida acesso apesar de JWT | AUT-15, SEG-03 | Unitário aprovado CI #43084884716 |
+| `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | CPF existente não cadastra novo vínculo sem prova | VOL-02 (critério revisto) | Unitário aprovado CI #43084884716 |
+| `atualizarVoluntarioSemVinculoNaoPersisteAlteracao` | PUT sem vínculo não persiste | VOL-08 | Unitário aprovado CI #43084884716 |
+| `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | PUT recusa alterar entidade global compartilhada | VOL-08, SEG-03 | Unitário aprovado CI #43084884716 |
+| `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | GET do mesmo tenant ativo é permitido | VOL-06 | Unitário aprovado CI #43084884716 |
+| `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | PATCH não persiste em outro tenant | VOL-09 | Unitário aprovado CI #43084884716 |
+| `voluntarioInativoNaoPodeSerConsultado` | GET nega vínculo INATIVO | VOL-07 | Unitário aprovado CI #43084884716 |
+| `atualizacaoPermitidaParaCadastroExclusivoDaOrganizacao` | PUT preserva edição autorizada no mesmo tenant | VOL-08 | Unitário aprovado CI #43084884716 |
+| `desativacaoPermitidaMarcaApenasVinculoDaOrganizacao` | PATCH altera status do vínculo correto | VOL-09 | Unitário aprovado CI #43084884716 |
+| `cadastroNovoCriaVinculoAtivoParaOrganizacaoAutenticada` | POST legítimo cria vínculo ativo no tenant | VOL-01 | Unitário aprovado CI #43084884716 |
 
-**Os sete métodos são integração automatizada adicional, não alteram o total de 165 cenários planejados.** Falta teste positivo de PATCH, teste de role/status mutável, OpenAPI e revisão de serialização de DTO.
+**Limites:** os testes são unitários com repositórios mockados; não exercitam JSON/JPA, transações reais, HTTP 403/404, CPF válido de documento, autenticação/associação via requisição de coleta nem consentimento do titular. Esses testes de integração são gates adicionais.
 
-**Execução confirmada:** `./gradlew clean test bootJar` aprovado no [run #43090289433](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090289433) para a revisão com sete testes HTTP e banco PostgreSQL 16 efêmero. Os 165 casos são **planejados**, e não inteiramente executados.
+### Atualizações de aceite para cenários existentes
 
+- **VOL-02:** o antigo resultado 201 ao vincular por CPF é substituído por **409 e nenhum vínculo criado** enquanto não houver autorização verificável do titular.
+- **VOL-07:** GET ID/CPF de outra organização retorna 404; listagem não contém registros de outros tenants.
+- **VOL-08:** PUT sem vínculo ativo ou com entidade compartilhada não realiza escrita.
+- **VOL-10:** reativação exige novo fluxo auditado, **não implementado**; manter 409.
+- **VOL-12:** listagem retorna **somente voluntários com vínculo ATIVO na organização autenticada**.
+
+## Consolidação da suite HTTP da autorização organizacional — integração do PR #4
+
+- **7 testes HTTP já aprovados no PR #4** via [run #43090697810](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43090697810): PUT de outro tenant 403, DELETE de outro tenant 403, DELETE autorizado 204, DELETE com vínculo revogado 403, DELETE com role não-ADMIN 403, PATCH aprovar/reprovar vínculo de outro tenant 403.
+- O arquivo `OrganizacaoAutorizacaoHttpIntegrationTest.kt` foi incorporado integralmente ao PR #5 juntamente com o código do DELETE. As regras de proteção de CPF e voluntários continuam com 13 unitários adicionados.
+- **Exigir novo run CI** no SHA do commit de integração, com PostgreSQL 16 do workflow, antes do merge de qualquer PR. Sem declaração de E2E com frontend ou produção.
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.
 **Ferramentas propostas:** JUnit 5 + Spring Boot Test + MockK/Mockito + MockMvc, Testcontainers PostgreSQL, JaCoCo, OWASP ZAP (ambiente autorizado), k6, Detekt/ktlint, Newman e GitHub Actions. Estas ferramentas são propostas; não foram encontradas todas configuradas no commit.
@@ -609,7 +626,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-02 — Vincular voluntário existente via CPF**  
 - Prioridade: **P0** | Camada: API  
 - Execução: CPF existente e organização ainda não vinculada  
-- Resultado esperado: 201; novo vínculo, sem duplicar voluntário.  
+- Resultado esperado (revisado v2.0.0): 409 sem novo vínculo; transferência somente com autorização explícita verificável do titular.  
 
 **VOL-03 — Bloquear duplicidade de vínculo**  
 - Prioridade: **P1** | Camada: API  
@@ -649,7 +666,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-10 — Reativação do vínculo inativo**  
 - Prioridade: **P1** | Camada: Integração  
 - Execução: Desativar vínculo; tentar POST com CPF existente na mesma organização  
-- Resultado esperado: Contrato desejado: reativar; código atual acusa já vinculado.  
+- Resultado esperado (revisado v2.0.0): 409 sem reativar automaticamente; fluxo de reativação consentida permanece planejado.  
 
 **VOL-11 — Vínculo desativado não pode coletar**  
 - Prioridade: **P0** | Camada: Integração  
@@ -659,7 +676,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-12 — Listagem de voluntários**  
 - Prioridade: **P1** | Camada: API  
 - Execução: GET /voluntarios com perfis variados  
-- Resultado esperado: Contrato atual lista todos; avaliar paginação e isolamento por organização.  
+- Resultado esperado (revisado v2.0.0): listar apenas voluntários ATIVOS do tenant; paginação ainda planejada.  
 
 
 ### Dashboards e impacto alimentar (15 casos)
@@ -972,3 +989,8 @@ Para cada caso registrar: ID, commit, ambiente, fixture, data, executor, input J
 ## Gestão de execução
 
 Registrar para cada ID: data, commit testado, ambiente, versão documental, fixture sintética, executor, saída observada, evidência sanitizada, PASS/FAIL/BLOCKED e issue/PR correlatos. A [matriz de rastreabilidade](MATRIZ_RASTREABILIDADE.md) vincula o endpoint aos casos.
+
+
+## Evidência consolidada após merge técnico PR #4 + #5
+
+O CI [#43091491145](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43091491145) retornou **success** para Kotlin/Java 21/Gradle sobre o commit `638a15583ed4488062253527ce74686898f5c8aa`, contendo simultaneamente os **7 testes HTTP/PostgreSQL de organizações** e os **13 unitários de voluntários** (além dos testes anteriores). Oracle skipped. Os 165 casos do plano permanecem critérios de aceitação, não 165 E2E executados. Ainda faltam testes HTTP/PostgreSQL de voluntários e consentimento/gestores.

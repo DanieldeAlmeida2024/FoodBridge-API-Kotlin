@@ -279,7 +279,7 @@ class RequisicaoDoacaoService(
     }
 
     private fun validarVoluntarioColeta(voluntarioId: Long?, organizacaoSolicitante: Organizacao) =
-        voluntarioService.findById(voluntarioId).also { voluntario ->
+        voluntarioService.findByIdForColeta(voluntarioId, organizacaoSolicitante.id).also { voluntario ->
             val vinculo = voluntarioOrganizacaoRepository.findByVoluntarioIdAndOrganizacaoId(
                 voluntario.id ?: throw BusinessException("Voluntario invalido"),
                 organizacaoSolicitante.id ?: throw BusinessException("Organizacao solicitante invalida")

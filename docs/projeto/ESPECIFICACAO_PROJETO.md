@@ -1,6 +1,6 @@
 # FoodBridge — especificação do projeto
 
-> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -14,16 +14,37 @@
 - `PATCH /organizacoes/usuarios/{vinculoId}/aprovar` (API-28) e `/reprovar` (API-29): removido o cast inválido de `TokenData.role: String?` para `OrganizacaoRole`. As duas operações validam o administrador pelo banco **e** que o vínculo-alvo pertença à organização do contexto.
 - `GlobalExceptionHandler`: `AccessDeniedException` recebe HTTP 403 com resposta neutra.
 - **Restrições atuais:** o enum `OrganizacaoRole` ainda representa tipo organizacional e papel de membro sem separação de função de gestor. Como medida temporária e conservadora, **somente vínculo ADMIN verificado** tem permissão de atualização/aprovação; gestão por DOADOR/ONG/PRODUTOR/DISTRIBUIDOR exige decisão de RBAC e evolução segura do contrato.
-- **Não coberto:** `GET /organizacoes/{id}`, informações de `Voluntario`/CPF, revogação de outros endpoints, DTOs JPA aninhados e autorização de outros módulos. DELETE organizacional (API-27) passou a ser coberto pela mesma política nesta revisão. Não extrapolar o resultado destes testes.
+- **Não coberto:** `GET /organizacoes/{id}`, informações de `Voluntario`/CPF, `DELETE` em nível de vínculo, revogação de outros endpoints, DTOs JPA aninhados e autorização de outros módulos. Não extrapolar o resultado destes testes.
 - **Evidência:** cinco novos métodos em `OrganizacaoServiceAutorizacaoTest`; build e testes aprovados no [CI #43081581178](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43081581178). Nenhum teste de integração PostgreSQL/HTTP nem deploy foi validado.
 
 | Rota | Guarda original do inventário | Guarda adicionada na branch de PR #4 | Status |
 |---|---|---|---|
-| API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; novos testes HTTP em execução |
-| API-27 `DELETE /organizacoes/{id}` | ROLE_ADMIN apenas, sem validar organização-alvo | Exige vínculo ADMIN vigente do próprio tenant antes de inativar | Código + testes HTTP em execução |
+| API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; integrar |
 | API-28 `PATCH .../{vinculoId}/aprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código + unitários parciais; integrar |
 | API-29 `PATCH .../{vinculoId}/reprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código compilado; falta caso específico |
 
+## Política de dados de voluntários — revisão 2.0.0 proposta
+
+**Mudança de contrato:** os 6 endpoints API-44..49 em `/voluntarios` passam a exigir contexto de organização efetivo e vínculo autenticado, com status verificado consultado no banco. CPF, e-mail, telefone e endereço são dados pessoais; o endpoint não deve consultar perfis globais sem autorização por tenant. A consulta por ID/CPF não retorna dados de outra organização (404). A listagem retorna apenas vínculos ATIVOS da organização e o PUT recusa perfis associados a outras organizações por compartilharem uma entidade global.
+
+| Rota | Guarda introduzida | Limite explícito |
+|---|---|---|
+| POST /voluntarios | Vínculo de usuário VERIFICADO em banco + transação de criação/vínculo | CPF/e-mail já existentes retornam 409 genérico; transferência entre organizações **não implementada** |
+| GET /voluntarios/{id} | Vínculo de usuário e de voluntário ATIVO na mesma organização | Negar 404 a voluntário não vinculado |
+| GET /voluntarios/cpf/{cpf} | Vínculo de usuário e de voluntário ATIVO na mesma organização | Consulta CPF global é apenas resolução interna, não entrega acesso a outro tenant |
+| GET /voluntarios | Repositorio de vínculos por `organizacaoId`, ATIVO | Lista exclusivamente registros acessíveis |
+| PUT /voluntarios/{id} | Vínculo ativo + bloqueio para cadastro global com outro vínculo organizacional | Edição por qualquer membro verificado ainda exige RBAC mais granular |
+| PATCH /voluntarios/{id}/desativar | Revalida vínculo de usuário + altera somente vínculo do mesmo tenant | Não apaga cadastro global ou outros vínculos |
+
+**Compatibilidade da coleta:** `RequisicaoDoacaoService` não consulta mais voluntário por ID global sem escopo; utiliza `findByIdForColeta` com organização da requisição, já validada contra a organização solicitante. **O modelo continua global e compartilhado:** a autorização do titular, manutenção de dados e acesso por diferentes organizações exigem projeto de domínio específico.
+
+**Evidência:** 13 testes unitários novos aprovados no [CI #43084884716](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43084884716), sem execução de HTTP/PostgreSQL real. Os 165 casos do plano original permanecem com identificação, mas os critérios VOL-02, VOL-07, VOL-08, VOL-10 e VOL-12 são substituídos nesta versão. [Documento próprio de política](POLITICA_DADOS_VOLUNTARIOS.md).
+
+## Atualização combinada — autorização organizacional e voluntários
+
+O PR #5 incorpora a revisão atualizada do PR #4 (merge técnico, não merge na main). O serviço `OrganizacaoService.inativarOrganizacao(id, tokenData)` usa a mesma consulta de vínculo administrativo atual para o **DELETE** da organização, bloqueando administradores autenticados em outro tenant. O controller deixa de confiar apenas em `role==ADMIN`. Os sete testes HTTP com `@SpringBootTest + @AutoConfigureMockMvc` estão preservados na branch de voluntários e foram aprovados isoladamente no CI #43090697810.
+
+**Impacto e dependência:** `PUT`, `DELETE` e os dois `PATCH` de aprovação de organização exigem vínculo ADMIN verificado, enquanto os seis endpoints de voluntários exigem vínculo do usuário verificado e registro do voluntário ATIVO no mesmo tenant. Testes integrados de ambas as famílias no mesmo commit devem ser executados; nenhuma mudança foi publicada na Oracle.
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.
 

@@ -20,7 +20,10 @@ ONG --> F
 Voluntario --> D
 ADMIN --> B
 note bottom
-Consulta CPF e edição devem ser filtradas
-por organização/papel (VOL-07/08).
+GET por ID/CPF e listagem exigem vínculo ATIVO
+com a organização do contexto autenticado.
+POST não vincula automaticamente cadastro existente
+via CPF/e-mail; PUT bloqueia entidade compartilhada.
+Ainda falta RBAC de gestor e consentimento do titular.
 end note
 @enduml

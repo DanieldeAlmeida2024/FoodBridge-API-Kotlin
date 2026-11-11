@@ -1,6 +1,6 @@
 # FoodBridge — matriz de rastreabilidade
 
-> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -68,12 +68,33 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 | ID de rota | Problema/riscos | Alteração de produção | Unitário no CI #43081581178 | Validação ainda necessária |
 |---|---|---|---|---|
 | API-26 PUT /organizacoes/{id} | R03, ORG-10, SEG-03 | `TokenData` + validação de administrador/vínculo atual por tenant | Quatro métodos: tenant diverso, role, revogação e caso permitido | API real 403/200, concorrência e política do gestor |
-| API-27 DELETE /organizacoes/{id} | R03, ORG-12/13, SEG-03 | `TokenData` + revalidação ADMIN vigente e tenant antes de inativar | 4 métodos HTTP aprovados no CI #43090289433 | Revisar política de gestor e JPA/JSON |
 | API-28 PATCH aprovar vínculo | R02/R03, ORG-14 | Sem cast inválido, validação do vínculo-alvo por tenant | Um método cross-tenant | MockMvc: ADMIN válido 204, negado 403, sem cast/500 |
 | API-29 PATCH reprovar vínculo | R02/R03, ORG-15 | Sem cast inválido, mesma validação de tenant | **Não há método dedicado novo** | Teste positivo/negativo HTTP e serviço |
 
 **Estado:** mitigação em branch [PR #4](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/4), compilação e unitários CI **passaram**, PR **não integrado**, Oracle **não publicado**. Os 49 endpoints e os 165 casos planejados continuam inalterados em quantidade. Para a sequência do guarda, ver [UML 17](../uml/17_sequencia_autorizacao_organizacao.puml).
 
+## Rastreabilidade incremental — v2.0.0 proposta (dependente do PR #4)
+
+| Endpoint | Critério de aceite atualizado | Teste unitário associado | Validação pendente |
+|---|---|---|---|
+| API-44 POST /voluntarios | Vínculo de operador verificado, transação e **não** vincular CPF de outro tenant automaticamente | `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | 201 novo, 409 duplicado, rollback com PostgreSQL |
+| API-45 GET /voluntarios/{id} | Exigir vínculo ATIVO no tenant | `consultaPorIdDeOutraOrganizacaoNaoRevelaDados`, `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | HTTP 200/404 e auth real |
+| API-46 GET /voluntarios/cpf/{cpf} | Não revelar dados sem vínculo no tenant | `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | HTTP 404 e CPF com formato válido |
+| API-47 GET /voluntarios | Apenas voluntários ATIVOS do tenant | `listarRetornaApenasVinculosAtivosDaOrganizacao`, `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Contratos paginados/SQL |
+| API-48 PUT /voluntarios/{id} | Sem alteração cross-tenant ou perfil global compartilhado | `atualizarVoluntarioSemVinculoNaoPersisteAlteracao`, `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | HTTP/integração/consentimento |
+| API-49 PATCH /voluntarios/{id}/desativar | Só vínculo da mesma organização | `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | Teste de dois tenants PostgreSQL |
+
+R04 = **mitigação parcial na branch**, testes unitários aprovados no CI #43084884716, não liberação de produção; R11 = fronteira transacional implementada sem teste SQL; R20 = aberto por ausência de reativação/consentimento. O catálogo permanece com 49 endpoints e 165 casos base, agora com critérios VOL revistos. Ver [UML 18](../uml/18_sequencia_isolamento_voluntarios.puml).
+
+## Rastreabilidade incorporada da revisão HTTP do PR #4
+
+| API | Risco | Evidência | Dependências |
+|---|---|---|---|
+| API-27 `DELETE /organizacoes/{id}` | R03 (inativação cross-tenant) | `OrganizacaoAutorizacaoHttpIntegrationTest`: nega outro tenant, não-ADMIN e vínculo revogado; autoriza própria organização; CI #43090697810 | RBAC gestor e API em homologação |
+| API-26/28/29 | R02/R03 | Suíte HTTP confirma bloqueio de PUT e PATCH de outros tenants; CI #43090697810 | Testes positivos de aprovação/reprovação |
+| API-44..49 | R04 | 13 unitários CI #43085607706, proteção de CPF por tenant | HTTP/PostgreSQL/consentimento pendentes |
+
+**O commit de reconciliação precisa executar as duas suítes no mesmo SHA**, mantendo 49 endpoints e 165 critérios de aceitação base.
 ## Cenários transversais end-to-end
 
 - **E2E-01 Onboarding:** cadastrar usuário → login TEMP → cadastrar organização → admin aprovar usuário e organização → login TEMP → selecionar organização → obter ACCESS → GET /usuarios/me.
