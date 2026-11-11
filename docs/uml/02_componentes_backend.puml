@@ -1,0 +1,26 @@
+@startuml
+skinparam componentStyle rectangle
+actor "Cliente Web / Postman" as C
+component "Spring Security" as Sec
+component "JwtFilter + JwtService" as Jwt
+component "8 Controllers REST" as Ctrl
+component "Services: Auth, Admin, Doacao,
+Requisicao, Organizacao, Usuario,
+Voluntario, Dashboard" as Svc
+component "ImpactoAlimentarCalculator" as Calc
+component "Spring Data Repositories" as Repo
+database "PostgreSQL
+JPA / JSONB" as DB
+C --> Sec
+Sec --> Jwt
+Sec --> Ctrl
+Ctrl --> Svc
+Svc --> Calc
+Svc --> Repo
+Repo --> DB
+note right of Jwt
+TEMP e ACCESS têm escopos diferentes.
+Autenticação não garante isolamento
+horizontal sem checagem do serviço.
+end note
+@enduml

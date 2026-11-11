@@ -1,0 +1,22 @@
+@startuml
+actor ONG
+actor DOADOR
+participant "RequisicaoDoacaoController" as C
+participant "RequisicaoDoacaoService" as S
+database PostgreSQL as DB
+ONG -> C : POST /requisicoes (ACCESS ONG)
+C -> S : criar solicitação
+S -> DB : consultar doação/saldo
+DB --> S : estoque/status
+S -> DB : gravar PENDENTE
+S --> ONG : requisicao criada
+DOADOR -> C : PATCH /requisicoes/{id}/aprovar
+C -> S : validar doador/estado/saldo
+S -> DB : atualizar APROVADO
+note right of DB
+Concorrência exige lock/CAS ou
+outro controle transacional.
+Cenário REQ-15 ainda é critério de aceite.
+end note
+S --> DOADOR : resultado
+@enduml

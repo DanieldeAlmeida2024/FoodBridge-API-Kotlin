@@ -1,0 +1,12 @@
+@startuml
+[*] --> PENDENTE
+PENDENTE --> APROVADO : aprovação do doador
+PENDENTE --> REJEITADO : rejeição do doador
+PENDENTE --> CANCELADO : cancelamento pela ONG
+APROVADO --> CONCLUIDO : coleta confirmada
+note right of APROVADO
+Conclusão: voluntário ATIVO,
+vinculado e quantidade válida.
+As restrições devem ser testadas.
+end note
+@enduml

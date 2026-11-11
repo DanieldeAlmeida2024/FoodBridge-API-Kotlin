@@ -50,3 +50,14 @@ Documentos: [requisitos](docs/REQUISITOS.md), [arquitetura](docs/ARQUITETURA.md)
 - A suíte automatizada de CI inicia seu próprio PostgreSQL descartável. A execução remota na Oracle Cloud requer preparação da VM e secrets de SSH; a configuração remota ainda não foi validada.
 
 **Estado:** aplicação em desenvolvimento, não certificada para produção.
+
+## Documentação técnica aprofundada (v1.1.0)
+
+- [Projeto, requisitos e 49 endpoints](docs/projeto/ESPECIFICACAO_PROJETO.md)
+- [Riscos e regras pendentes](docs/projeto/RISCOS.md)
+- [Arquitetura e 16 diagramas UML editáveis](docs/uml/README.md)
+- [Plano de testes com 165 casos planejados](docs/testes/PLANO_DE_TESTES.md)
+- [Matriz de rastreabilidade rota × teste](docs/testes/MATRIZ_RASTREABILIDADE.md)
+- [Versionamento e histórico de revisão](docs/controle/VERSIONAMENTO.md)
+
+> O plano mestre tem como base a análise estática de outubro de 2026; o CI aprovado em novembro não equivale à execução de todos os cenários.

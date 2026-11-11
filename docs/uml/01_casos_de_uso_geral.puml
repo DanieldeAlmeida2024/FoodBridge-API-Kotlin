@@ -1,0 +1,29 @@
+@startuml
+left to right direction
+actor "Usuário" as U
+actor "Admin" as A
+actor "ONG" as O
+actor "Doador / Produtor / Distribuidor" as D
+actor "Voluntário" as V
+rectangle "FoodBridge" {
+ usecase "Cadastrar usuário" as CU
+ usecase "Login / selecionar organização" as CL
+ usecase "Aprovar cadastros e vínculos" as CA
+ usecase "Publicar / fechar doação" as CD
+ usecase "Solicitar e receber alimentos" as CR
+ usecase "Vincular voluntário" as CV
+ usecase "Consultar dashboards" as CDB
+}
+U --> CU
+U --> CL
+A --> CA
+D --> CD
+O --> CR
+O --> CV
+V --> CV
+U --> CDB
+note bottom
+Modelo funcional: permissões reais dependem de
+JWT, vínculo e regras por organização.
+end note
+@enduml

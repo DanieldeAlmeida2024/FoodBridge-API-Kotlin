@@ -1,0 +1,13 @@
+@startuml
+start
+:ADMIN autenticado em organização habilitada;
+:Selecionar usuário/organização pendente;
+if (Validação documental e política aprovada?) then (sim)
+  :Marcar usuário ou organização VERIFICADO;
+  :Reavaliar vínculos elegíveis;
+else (não)
+  :Reprovar / inativar registro;
+endif
+:Registrar resultado sem dados sensíveis desnecessários;
+stop
+@enduml

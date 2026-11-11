@@ -1,0 +1,20 @@
+@startuml
+actor Usuario
+participant "DashboardController" as C
+participant "DashboardService" as S
+participant "ImpactoAlimentarCalculator" as Calc
+database PostgreSQL as DB
+Usuario -> C : GET /dashboards/{publico|doador|ong}
+C -> S : consultar indicadores por papel
+S -> DB : doações, requisições concluídas
+DB --> S : dados relevantes
+S -> Calc : calcular(coletas, encerradas)
+Calc --> S : somas por unidade e categoria
+S --> C : DTO de dashboard
+C --> Usuario : JSON agregado
+note right of Calc
+Não converter unidades arbitrariamente.
+Fechamento manual não duplica coleta.
+ONG vê somente suas próprias coletas.
+end note
+@enduml
