@@ -162,4 +162,51 @@ class VoluntarioServiceAutorizacaoTest {
         }
         verify(vinculosVoluntario, never()).save(any(VoluntarioOrganizacao::class.java))
     }
+    @Test
+    fun voluntarioInativoNaoPodeSerConsultado() {
+        autenticar()
+        associar(StatusVoluntario.INATIVO)
+        assertThrows(ResourceNotFoundException::class.java) {
+            service.findById(50L, token())
+        }
+    }
+
+    @Test
+    fun atualizacaoPermitidaParaCadastroExclusivoDaOrganizacao() {
+        autenticar()
+        associar()
+        `when`(vinculosVoluntario.findAllByVoluntarioId(50L))
+            .thenReturn(listOf(vinculoVoluntario()))
+        `when`(voluntarios.save(any(Voluntario::class.java)))
+            .thenAnswer { it.arguments[0] }
+        val atualizado = service.update(50L, request(), token())
+        assertEquals("Pessoa atualizada", atualizado.nome)
+        verify(voluntarios).save(any(Voluntario::class.java))
+    }
+
+    @Test
+    fun desativacaoPermitidaMarcaApenasVinculoDaOrganizacao() {
+        autenticar()
+        associar()
+        service.desativarVinculo(50L, token())
+        val captor = org.mockito.ArgumentCaptor.forClass(VoluntarioOrganizacao::class.java)
+        verify(vinculosVoluntario).save(captor.capture())
+        assertEquals(10L, captor.value.organizacao?.id)
+        assertEquals(StatusVoluntario.INATIVO, captor.value.status)
+    }
+
+    @Test
+    fun cadastroNovoCriaVinculoAtivoParaOrganizacaoAutenticada() {
+        autenticar()
+        `when`(organizacoes.findById(10L)).thenReturn(Optional.of(org(10L)))
+        `when`(voluntarios.save(any(Voluntario::class.java)))
+            .thenReturn(voluntario())
+
+        assertEquals(50L, service.criarOuVincular(request(), token()).id)
+        val captor = org.mockito.ArgumentCaptor.forClass(VoluntarioOrganizacao::class.java)
+        verify(vinculosVoluntario).save(captor.capture())
+        assertEquals(10L, captor.value.organizacao?.id)
+        assertEquals(StatusVoluntario.ATIVO, captor.value.status)
+    }
+
 }

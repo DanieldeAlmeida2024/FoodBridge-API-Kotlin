@@ -64,7 +64,7 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 | Segurança adicional — edição de pessoa vinculada a múltiplas organizações | **Negada por padrão** a alteração da entidade global | Separar dados pessoais canônicos dos atributos por organização / gestor |
 | Privilégio do operador | Guarda exige usuário/vínculo/organização VERIFICADO e role coerente com token | **RBAC incompleto:** qualquer membro verificado do tenant ainda pode operar voluntários |
 
-**Estado:** proposta em branch empilhada no PR #4. Os 9 testes adicionados não são evidência de aprovação até conclusão do CI do novo commit. Nenhuma correção foi integrada ou publicada.
+**Estado:** proposta em branch empilhada no PR #4. Os 13 testes adicionados não são evidência de aprovação até conclusão do CI do novo commit. Nenhuma correção foi integrada ou publicada.
 
 ## Critério para encerramento
 

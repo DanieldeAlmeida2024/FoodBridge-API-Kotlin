@@ -24,7 +24,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 
 ## Registro incremental — voluntários e proteção de dados (v2.0.0 proposta)
 
-**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **9 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o status de CI será preenchido após o run do PR.
+**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **13 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o status de CI será preenchido após o run do PR.
 
 | Método JUnit | Controle | Caso original | Execução |
 |---|---|---|---|
@@ -37,6 +37,10 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 | `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | PUT recusa alterar entidade global compartilhada | VOL-08, SEG-03 | Pendente de CI |
 | `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | GET do mesmo tenant ativo é permitido | VOL-06 | Pendente de CI |
 | `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | PATCH não persiste em outro tenant | VOL-09 | Pendente de CI |
+| `voluntarioInativoNaoPodeSerConsultado` | GET nega vínculo INATIVO | VOL-07 | Pendente de CI |
+| `atualizacaoPermitidaParaCadastroExclusivoDaOrganizacao` | PUT preserva edição autorizada no mesmo tenant | VOL-08 | Pendente de CI |
+| `desativacaoPermitidaMarcaApenasVinculoDaOrganizacao` | PATCH altera status do vínculo correto | VOL-09 | Pendente de CI |
+| `cadastroNovoCriaVinculoAtivoParaOrganizacaoAutenticada` | POST legítimo cria vínculo ativo no tenant | VOL-01 | Pendente de CI |
 
 **Limites:** os testes são unitários com repositórios mockados; não exercitam JSON/JPA, transações reais, HTTP 403/404, CPF válido de documento, autenticação/associação via requisição de coleta nem consentimento do titular. Esses testes de integração são gates adicionais.
 
