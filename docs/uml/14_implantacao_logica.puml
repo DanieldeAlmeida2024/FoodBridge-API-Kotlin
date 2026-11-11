@@ -1,0 +1,24 @@
+@startuml
+node "Usuário / Navegador" as User
+cloud "Internet" as Net
+node "Oracle Cloud Linux 9" as VM {
+ component "Nginx (proxy reverso)" as N
+ component "foodbridge.service (systemd)" as SD
+ component "Spring Boot / Kotlin API
+Java 21 :8080" as API
+ database "PostgreSQL foodbridge" as DB
+ file "/etc/foodbridge/application.properties" as Config
+}
+node "GitHub Actions" as CI
+User --> Net
+Net --> N
+N --> API
+SD ..> API : ciclo de vida
+API --> DB
+API --> Config : configuração externa
+CI --> VM : JAR por SSH (quando habilitado)
+note right of CI
+CI validado, deploy remoto depende
+de SSH/known_hosts e preparação.
+end note
+@enduml

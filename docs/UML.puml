@@ -1,13 +1,17 @@
 @startuml
+' Alias de compatibilidade: modelo de componentes, v1.1.0
 actor Cliente
-component "Spring Security + JwtFilter" as Seguranca
-component Controller
-component Service
-component Repository
-artifact PostgreSQL
+component "Spring Security / JwtFilter" as Seguranca
+component "Controllers REST" as Controllers
+component "Services / Regras" as Services
+component "Repositories JPA" as Repo
+database PostgreSQL
 Cliente --> Seguranca
-Seguranca --> Controller
-Controller --> Service
-Service --> Repository
-Repository --> PostgreSQL
+Seguranca --> Controllers
+Controllers --> Services
+Services --> Repo
+Repo --> PostgreSQL
+note bottom
+Fontes detalhadas: docs/uml/01..16_*.puml
+end note
 @enduml

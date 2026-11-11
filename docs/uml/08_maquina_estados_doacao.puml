@@ -1,0 +1,17 @@
+@startuml
+[*] --> RASCUNHO
+RASCUNHO --> PUBLICADO
+PUBLICADO --> DISPONIVEL
+DISPONIVEL --> PARCIALMENTE_REIVINDICADO : solicitações aprovadas
+PARCIALMENTE_REIVINDICADO --> TOTALMENTE_REIVINDICADO : saldo esgotado
+DISPONIVEL --> COMPLETO : fechamento
+PARCIALMENTE_REIVINDICADO --> COMPLETO : confirmação final
+TOTALMENTE_REIVINDICADO --> COMPLETO : conclusão
+PUBLICADO --> EXPIRADO : prazo
+DISPONIVEL --> CANCELADO
+note right
+Modelo de estados conhecidos na análise.
+Não supor enforcement central de transições;
+testar DOA-05, DOA-12, DOA-20.
+end note
+@enduml

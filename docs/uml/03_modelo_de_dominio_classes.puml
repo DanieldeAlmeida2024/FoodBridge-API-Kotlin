@@ -1,0 +1,26 @@
+@startuml
+hide methods
+class Usuario { id: Long; email: String; status: UserStatus }
+class Organizacao { id: Long; cnpj: String; role: OrganizacaoRole }
+class UsuarioOrganizacao { id: Long; status: StatusOrganizacao; role: OrganizacaoRole }
+class Voluntario { id: Long; cpf: String }
+class VoluntarioOrganizacao { status: StatusVinculo }
+class Doacao { id: Long; quantidade: Double; unidade: Unidade; status: StatusDoacao }
+class RequisicaoDoacao { id: Long; quantidadeSolicitada: Double; status: StatusReivindicacao }
+class Endereco <<JSONB>>
+class JanelaHorario <<JSONB>>
+Usuario "1" -- "0..*" UsuarioOrganizacao
+Organizacao "1" -- "0..*" UsuarioOrganizacao
+Organizacao "1" -- "0..*" Doacao : doadora
+Organizacao "1" -- "0..*" RequisicaoDoacao : solicitante
+Doacao "1" -- "0..*" RequisicaoDoacao
+Voluntario "0..1" -- "0..*" RequisicaoDoacao : coleta
+Voluntario "1" -- "0..*" VoluntarioOrganizacao
+Organizacao "1" -- "0..*" VoluntarioOrganizacao
+Organizacao *-- Endereco
+Doacao *-- JanelaHorario
+note bottom of RequisicaoDoacao
+Cardinalidades lógicas do domínio.
+Validar constraints físicas e nomes JPA atuais.
+end note
+@enduml

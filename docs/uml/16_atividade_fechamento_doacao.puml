@@ -1,0 +1,18 @@
+@startuml
+start
+:Doador solicita PATCH /doacoes/{id}/fechar;
+:Validar propriedade da doação;
+if (Quantidade confirmada entre 0 e ofertada?) then (sim)
+  :Consultar requisições concluídas;
+  :Conciliar volume já registrado;
+  :Registrar somente saldo confirmado adicional;
+  :Fechar doação e atualizar indicadores;
+else (não)
+  :Rejeitar sem alteração de dados;
+endif
+stop
+note bottom
+Cenários DOA-13..17 e E2E-04.
+Política de reconciliação exige teste.
+end note
+@enduml

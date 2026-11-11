@@ -1,0 +1,27 @@
+@startuml
+actor Usuario
+participant "AuthController" as C
+participant "AuthService" as S
+participant "JwtService" as JWT
+database PostgreSQL as DB
+Usuario -> C : POST /auth/login
+C -> S : login(credenciais)
+S -> DB : buscar usuário e vínculos
+DB --> S : usuário/status/organizações
+S -> JWT : gerar TEMP (fluxo comum)
+JWT --> S : tempToken
+S --> C : loginResponse
+C --> Usuario : 200 TEMP
+Usuario -> C : POST /auth/select-org + TEMP
+C -> JWT : validar TEMP
+C -> S : selecionar organização
+S -> DB : validar vínculo/status
+DB --> S : organização autorizada
+S -> JWT : emitir ACCESS por organização
+JWT --> C : ACCESS
+C --> Usuario : contexto selecionado
+note over C,JWT
+Padrão de interação conceitual:
+ADMIN tem fluxo próprio descrito em AUT-01.
+end note
+@enduml

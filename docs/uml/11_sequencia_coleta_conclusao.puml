@@ -1,0 +1,23 @@
+@startuml
+actor ONG
+actor DOADOR
+participant "RequisicaoController" as C
+participant "RequisicaoDoacaoService" as S
+participant "VoluntarioService" as V
+database PostgreSQL as DB
+ONG -> C : vincular-voluntario
+C -> S : validar requisição aprovada
+S -> V : verificar vínculo ATIVO
+V -> DB : consultar vínculo
+DB --> V : status/organização
+V --> S : elegibilidade
+S -> DB : associar voluntário
+DOADOR -> C : concluir
+C -> S : validar doação e coleta
+S -> DB : persistir CONCLUIDO + quantidade
+S --> DOADOR : coleta concluída
+note bottom
+Falhas de persistência ou vínculos
+não podem produzir coleta concluída.
+end note
+@enduml

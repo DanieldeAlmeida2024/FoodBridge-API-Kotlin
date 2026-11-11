@@ -1,0 +1,26 @@
+@startuml
+left to right direction
+actor ONG
+actor ADMIN
+actor Voluntario
+rectangle "Gestão de voluntários" {
+ usecase "Cadastrar voluntário" as A
+ usecase "Consultar por ID" as B
+ usecase "Consultar por CPF" as C
+ usecase "Vincular à ONG" as D
+ usecase "Atualizar dados" as E
+ usecase "Desativar vínculo" as F
+}
+ONG --> A
+ONG --> B
+ONG --> C
+ONG --> D
+ONG --> E
+ONG --> F
+Voluntario --> D
+ADMIN --> B
+note bottom
+Consulta CPF e edição devem ser filtradas
+por organização/papel (VOL-07/08).
+end note
+@enduml

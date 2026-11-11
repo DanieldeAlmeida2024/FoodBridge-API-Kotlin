@@ -1,0 +1,13 @@
+@startuml
+[*] --> DOCUMENTOS_PENDENTES : cadastro
+DOCUMENTOS_PENDENTES --> REVISAO : enviar documentação
+REVISAO --> VERIFICADO : aprovação ADMIN
+REVISAO --> INATIVO : reprovação
+VERIFICADO --> SUSPENSO : suspensão
+SUSPENSO --> VERIFICADO : reativação após análise
+INATIVO --> REVISAO : novo cadastro/vínculo [política]
+note right of VERIFICADO
+Usuário e vínculo também precisam
+estar verificados para operar.
+end note
+@enduml

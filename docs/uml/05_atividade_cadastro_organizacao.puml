@@ -1,0 +1,17 @@
+@startuml
+start
+:Usuário envia POST /organizacoes com TEMP;
+if (CNPJ já existe?) then (sim)
+  if (e-mail confere e vínculo elegível?) then (sim)
+    :Propor vínculo com status REVISAO;
+  else (não)
+    :Negar conflito (409);
+    stop
+  endif
+else (não)
+  :Cadastrar organização em revisão;
+  :Criar vínculo do solicitante em revisão;
+endif
+:Revisão administrativa posterior;
+stop
+@enduml

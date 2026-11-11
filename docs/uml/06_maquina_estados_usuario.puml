@@ -1,0 +1,13 @@
+@startuml
+[*] --> PENDENTE_VERIFICACAO : registro
+PENDENTE_VERIFICACAO --> VERIFICADO : aprovação ADMIN
+PENDENTE_VERIFICACAO --> INATIVO : reprovação
+VERIFICADO --> SUSPENSO : suspensão
+SUSPENSO --> VERIFICADO : reativação [política]
+VERIFICADO --> INATIVO : exclusão/inativação
+note right of SUSPENSO
+Revogação imediata de token
+é critério de aceite AUT-14,
+não fato automaticamente validado.
+end note
+@enduml
