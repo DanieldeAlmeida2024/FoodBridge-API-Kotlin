@@ -1,5 +1,7 @@
 # FoodBridge — API Kotlin/Spring Boot
 
+[![FoodBridge API — CI](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml/badge.svg)](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml)
+
 Serviço de backend para redistribuição de alimentos, usuários, organizações e fluxos de doação. Desenvolvido em **Kotlin 2.2**, **Spring Boot 3.2.5**, **Java 21**, **Gradle** e **PostgreSQL**.
 
 ## Preparação
@@ -23,6 +25,12 @@ Em Linux/macOS: `./gradlew bootRun`.
 
 As coleções Postman estão em `postman/collections`. Confirme URL base e credenciais de teste antes de executar operações que modifiquem dados.
 
+## GitHub Actions e Oracle Cloud
+
+O workflow `.github/workflows/foodbridge-ci-cd.yml` compila, executa testes com PostgreSQL temporário e publica o JAR aprovado como artefato. O deploy na VM só é habilitado após a configuração segura de SSH e a variável `OCI_DEPLOY_ENABLED=true`. A atualização possui backup e rollback automático.
+
+**[Guia de preparação e ativação do deploy Oracle](docs/DEPLOY_ORACLE.md)**. Não inclua credenciais reais no GitHub e não use o banco de produção nos testes de CI.
+
 ## Arquitetura
 
 - `controller/`: entrada HTTP e DTOs.
@@ -39,6 +47,6 @@ Documentos: [requisitos](docs/REQUISITOS.md), [arquitetura](docs/ARQUITETURA.md)
 - A política de acesso diferencia tokens temporários e de acesso. Revise as permissões por endpoint ao acrescentar novas rotas.
 - Nunca registrar o conteúdo do token, cabeçalho Authorization ou dados de sessão.
 - `ddl-auto=update` no exemplo não substitui migrações controladas para produção.
-- A conexão com banco e o contexto completo do Spring não foram executados nesta sessão; este PR deve passar por build, testes e revisão antes de merge.
+- A suíte automatizada de CI inicia seu próprio PostgreSQL descartável. A execução remota na Oracle Cloud requer preparação da VM e secrets de SSH; a configuração remota ainda não foi validada.
 
 **Estado:** aplicação em desenvolvimento, não certificada para produção.
