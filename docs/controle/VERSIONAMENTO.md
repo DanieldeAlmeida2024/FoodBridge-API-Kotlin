@@ -57,3 +57,8 @@
 ## Fonte e procedência
 
 Os anexos de entrada foram: `Plano_de_Testes_FoodBridge(1).md`, `Matriz_de_Rastreabilidade(1).md` e correspondente PDF. O pacote atual separa seus capítulos e preserva os casos identificados. Fontes PlantUML foram reconstruídas no PR e devem ser revisadas contra o código.
+
+
+### Gate de integração combinado PR #4 + PR #5
+
+**Commit de reconciliação:** `bf70c5aaa19a058fe7a429b7cb975a26b981d6cc`, com dois pais (PR #5 e HEAD revisado do PR #4). Os arquivos de autorização organizacional foram mantidos na revisão mais recente, os documentos e testes de voluntários foram preservados. É exigido CI de Java 21/Gradle/PostgreSQL para esta árvore combinada, não somente para commits anteriores. O PR #5 permanecerá como dependente do PR #4 após a execução de CI.
