@@ -1,6 +1,6 @@
 # FoodBridge — matriz de rastreabilidade
 
-> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Rastreabilidade** · Documento **FB-TRC-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -72,6 +72,19 @@ Base: main @ 611674973467cf859d5925c8306b66df249b7be3. Os IDs remetem ao capítu
 | API-29 PATCH reprovar vínculo | R02/R03, ORG-15 | Sem cast inválido, mesma validação de tenant | **Não há método dedicado novo** | Teste positivo/negativo HTTP e serviço |
 
 **Estado:** mitigação em branch [PR #4](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/4), compilação e unitários CI **passaram**, PR **não integrado**, Oracle **não publicado**. Os 49 endpoints e os 165 casos planejados continuam inalterados em quantidade. Para a sequência do guarda, ver [UML 17](../uml/17_sequencia_autorizacao_organizacao.puml).
+
+## Rastreabilidade incremental — v2.0.0 proposta (dependente do PR #4)
+
+| Endpoint | Critério de aceite atualizado | Teste unitário associado | Validação pendente |
+|---|---|---|---|
+| API-44 POST /voluntarios | Vínculo de operador verificado, transação e **não** vincular CPF de outro tenant automaticamente | `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | 201 novo, 409 duplicado, rollback com PostgreSQL |
+| API-45 GET /voluntarios/{id} | Exigir vínculo ATIVO no tenant | `consultaPorIdDeOutraOrganizacaoNaoRevelaDados`, `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | HTTP 200/404 e auth real |
+| API-46 GET /voluntarios/cpf/{cpf} | Não revelar dados sem vínculo no tenant | `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | HTTP 404 e CPF com formato válido |
+| API-47 GET /voluntarios | Apenas voluntários ATIVOS do tenant | `listarRetornaApenasVinculosAtivosDaOrganizacao`, `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Contratos paginados/SQL |
+| API-48 PUT /voluntarios/{id} | Sem alteração cross-tenant ou perfil global compartilhado | `atualizarVoluntarioSemVinculoNaoPersisteAlteracao`, `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | HTTP/integração/consentimento |
+| API-49 PATCH /voluntarios/{id}/desativar | Só vínculo da mesma organização | `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | Teste de dois tenants PostgreSQL |
+
+R04 = **mitigação parcial na branch**, não liberação de produção; R11 = fronteira transacional implementada sem teste SQL; R20 = aberto por ausência de reativação/consentimento. O catálogo permanece com 49 endpoints e 165 casos base, agora com critérios VOL revistos. Ver [UML 18](../uml/18_sequencia_isolamento_voluntarios.puml).
 
 ## Cenários transversais end-to-end
 

@@ -1,6 +1,6 @@
 # FoodBridge — riscos técnicos e não conformidades a validar
 
-> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Registro de riscos** · Documento **FB-RSK-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -52,6 +52,19 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 | Modelo de gestor | **Pendente de decisão** | ADMIN é o único papel administrativo disponível nesta regra | Separar tipo de organização de papel do membro, sem ampliação implícita de acesso |
 
 **Não classificar R02/R03 como encerrados** apenas pelo CI unitário. O PR permanece rascunho e não foi publicado em produção.
+
+## Atualização de risco — isolamento de voluntários (v2.0.0 proposta)
+
+| Risco | Mitigação nesta branch | Limitação antes do encerramento |
+|---|---|---|
+| **R04** — consulta/alteração global de PII | GET por ID/CPF filtrados por vínculo ativo do tenant; listagem tenant-scoped; PUT exige vínculo e impede alteração de cadastro ligado a outras organizações | Testes HTTP PostgreSQL, revisão de minimização de CPF e autorização granular |
+| **R11** — transação de criação do voluntário/vínculo | `@Transactional` na criação, edição e desativação, com contexto validado no serviço | Testar rollback real em banco ao falhar criação do vínculo |
+| **R20** — reativação de vínculo | **Aberto:** POST com CPF/e-mail existente passa a negar vinculação automática para impedir apropriação de cadastro | Fluxo explícito com comprovação do titular, consentimento e reativação auditável |
+| Segurança adicional — vínculo por CPF interorganizacional | **Bloqueado por padrão** no POST, até existir prova de consentimento | Teste integração de identidade e política legal do tratamento |
+| Segurança adicional — edição de pessoa vinculada a múltiplas organizações | **Negada por padrão** a alteração da entidade global | Separar dados pessoais canônicos dos atributos por organização / gestor |
+| Privilégio do operador | Guarda exige usuário/vínculo/organização VERIFICADO e role coerente com token | **RBAC incompleto:** qualquer membro verificado do tenant ainda pode operar voluntários |
+
+**Estado:** proposta em branch empilhada no PR #4. Os 9 testes adicionados não são evidência de aprovação até conclusão do CI do novo commit. Nenhuma correção foi integrada ou publicada.
 
 ## Critério para encerramento
 

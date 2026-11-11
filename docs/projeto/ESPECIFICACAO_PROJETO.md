@@ -1,6 +1,6 @@
 # FoodBridge — especificação do projeto
 
-> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Projeto e requisitos** · Documento **FB-PROJ-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -22,6 +22,23 @@
 | API-26 `PUT /organizacoes/{id}` | ACCESS apenas | Vínculo ADMIN verificado, organização igual ao alvo, reconsulta ao banco | Código + unitários CI aprovados; integrar |
 | API-28 `PATCH .../{vinculoId}/aprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código + unitários parciais; integrar |
 | API-29 `PATCH .../{vinculoId}/reprovar` | ACCESS apenas + cast inválido | Vínculo ADMIN verificado; vínculo-alvo no mesmo tenant | Código compilado; falta caso específico |
+
+## Política de dados de voluntários — revisão 2.0.0 proposta
+
+**Mudança de contrato:** os 6 endpoints API-44..49 em `/voluntarios` passam a exigir contexto de organização efetivo e vínculo autenticado, com status verificado consultado no banco. CPF, e-mail, telefone e endereço são dados pessoais; o endpoint não deve consultar perfis globais sem autorização por tenant. A consulta por ID/CPF não retorna dados de outra organização (404). A listagem retorna apenas vínculos ATIVOS da organização e o PUT recusa perfis associados a outras organizações por compartilharem uma entidade global.
+
+| Rota | Guarda introduzida | Limite explícito |
+|---|---|---|
+| POST /voluntarios | Vínculo de usuário VERIFICADO em banco + transação de criação/vínculo | CPF/e-mail já existentes retornam 409 genérico; transferência entre organizações **não implementada** |
+| GET /voluntarios/{id} | Vínculo de usuário e de voluntário ATIVO na mesma organização | Negar 404 a voluntário não vinculado |
+| GET /voluntarios/cpf/{cpf} | Vínculo de usuário e de voluntário ATIVO na mesma organização | Consulta CPF global é apenas resolução interna, não entrega acesso a outro tenant |
+| GET /voluntarios | Repositorio de vínculos por `organizacaoId`, ATIVO | Lista exclusivamente registros acessíveis |
+| PUT /voluntarios/{id} | Vínculo ativo + bloqueio para cadastro global com outro vínculo organizacional | Edição por qualquer membro verificado ainda exige RBAC mais granular |
+| PATCH /voluntarios/{id}/desativar | Revalida vínculo de usuário + altera somente vínculo do mesmo tenant | Não apaga cadastro global ou outros vínculos |
+
+**Compatibilidade da coleta:** `RequisicaoDoacaoService` não consulta mais voluntário por ID global sem escopo; utiliza `findByIdForColeta` com organização da requisição, já validada contra a organização solicitante. **O modelo continua global e compartilhado:** a autorização do titular, manutenção de dados e acesso por diferentes organizações exigem projeto de domínio específico.
+
+**Evidência:** 9 testes unitários novos, pendentes de execução de CI na data da edição. Os 165 casos do plano original permanecem com identificação, mas os critérios VOL-02, VOL-07, VOL-08, VOL-10 e VOL-12 são substituídos nesta versão. [Documento próprio de política](POLITICA_DADOS_VOLUNTARIOS.md).
 
 ## Propósito
 Sistema de coordenação de redistribuição de alimentos entre organizações doadoras, produtoras, distribuidoras e ONGs, com cadastros de usuários, vínculos institucionais, voluntários, solicitações de retirada e indicadores de impacto. A especificação abaixo preserva a análise estática de 29/10/2026.

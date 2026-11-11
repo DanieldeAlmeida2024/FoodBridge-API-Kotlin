@@ -1,6 +1,6 @@
 # FoodBridge — plano mestre de testes
 
-> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **1.2.0** · Revisão **2026-11-11**
+> **FoodBridge / Plano de testes** · Documento **FB-TST-001** · Versão **2.0.0 proposta** · Revisão **2026-11-11**
 > **Código atual de referência:** `main` @ `2d0b63e416bc9f5bb994b6364160bb78f8399372` (antes deste PR)
 > **Documento histórico auditado:** `611674973467cf859d5925c8306b66df249b7be3` (29/10/2026).
 > **Atenção:** o levantamento histórico descreve um snapshot; requisitos de aceitação não provam comportamento atual. Ver [controle de versões](../controle/VERSIONAMENTO.md).
@@ -21,6 +21,32 @@
 | `administradorNaoPodeAprovarVinculoDeOutraOrganizacao` | Aprovação cross-tenant bloqueada, sem `save` | ORG-14, SEG-03 | Unitário incluído no CI aprovado |
 
 Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e **não** executam os 165 cenários planejados abaixo. Antes de merge, complementar com MockMvc + PostgreSQL real para API-26/28/29 (403/204), teste de reprovação na mesma organização, papel indevido, usuário suspenso, mudanças de vínculo em corrida e serialização dos DTOs. Ver [matriz](MATRIZ_RASTREABILIDADE.md).
+
+## Registro incremental — voluntários e proteção de dados (v2.0.0 proposta)
+
+**Alvo:** `VoluntarioServiceAutorizacaoTest.kt` com **9 testes JUnit 5 novos**, além dos 165 cenários de aceitação originais. Os métodos abaixo foram incluídos na branch de correção; o status de CI será preenchido após o run do PR.
+
+| Método JUnit | Controle | Caso original | Execução |
+|---|---|---|---|
+| `consultaPorIdDeOutraOrganizacaoNaoRevelaDados` | GET ID sem vínculo no tenant retorna 404 | VOL-07 | Pendente de CI |
+| `consultaPorCpfDeOutraOrganizacaoNaoRevelaDados` | CPF de outro tenant retorna 404 | VOL-07 | Pendente de CI |
+| `listarRetornaApenasVinculosAtivosDaOrganizacao` | Consulta lista somente ATIVO do tenant | VOL-12 | Pendente de CI |
+| `vinculoDeUsuarioRevogadoBloqueiaConsultas` | Revogação de vínculo invalida acesso apesar de JWT | AUT-15, SEG-03 | Pendente de CI |
+| `cpfExistenteNaoCriaVinculoAutomaticoOutraOrganizacao` | CPF existente não cadastra novo vínculo sem prova | VOL-02 (critério revisto) | Pendente de CI |
+| `atualizarVoluntarioSemVinculoNaoPersisteAlteracao` | PUT sem vínculo não persiste | VOL-08 | Pendente de CI |
+| `cadastroCompartilhadoNaoEhAlteradoPorUmSoTenant` | PUT recusa alterar entidade global compartilhada | VOL-08, SEG-03 | Pendente de CI |
+| `membroVerificadoPodeConsultarVoluntarioAtivoDaOrganizacao` | GET do mesmo tenant ativo é permitido | VOL-06 | Pendente de CI |
+| `funcionarioDeOutraOrganizacaoNaoDesativaVinculo` | PATCH não persiste em outro tenant | VOL-09 | Pendente de CI |
+
+**Limites:** os testes são unitários com repositórios mockados; não exercitam JSON/JPA, transações reais, HTTP 403/404, CPF válido de documento, autenticação/associação via requisição de coleta nem consentimento do titular. Esses testes de integração são gates adicionais.
+
+### Atualizações de aceite para cenários existentes
+
+- **VOL-02:** o antigo resultado 201 ao vincular por CPF é substituído por **409 e nenhum vínculo criado** enquanto não houver autorização verificável do titular.
+- **VOL-07:** GET ID/CPF de outra organização retorna 404; listagem não contém registros de outros tenants.
+- **VOL-08:** PUT sem vínculo ativo ou com entidade compartilhada não realiza escrita.
+- **VOL-10:** reativação exige novo fluxo auditado, **não implementado**; manter 409.
+- **VOL-12:** listagem retorna **somente voluntários com vínculo ATIVO na organização autenticada**.
 
 ## 3. Estratégia, critérios e responsabilidade
 **Pirâmide:** unitários de services/validators/impacto; integração JPA/JSONB/JWT com PostgreSQL; API com MockMvc/REST Assured; E2E via Postman/Newman; contrato de DTO; segurança/concorrência; não funcionais.
@@ -591,7 +617,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-02 — Vincular voluntário existente via CPF**  
 - Prioridade: **P0** | Camada: API  
 - Execução: CPF existente e organização ainda não vinculada  
-- Resultado esperado: 201; novo vínculo, sem duplicar voluntário.  
+- Resultado esperado (revisado v2.0.0): 409 sem novo vínculo; transferência somente com autorização explícita verificável do titular.  
 
 **VOL-03 — Bloquear duplicidade de vínculo**  
 - Prioridade: **P1** | Camada: API  
@@ -631,7 +657,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-10 — Reativação do vínculo inativo**  
 - Prioridade: **P1** | Camada: Integração  
 - Execução: Desativar vínculo; tentar POST com CPF existente na mesma organização  
-- Resultado esperado: Contrato desejado: reativar; código atual acusa já vinculado.  
+- Resultado esperado (revisado v2.0.0): 409 sem reativar automaticamente; fluxo de reativação consentida permanece planejado.  
 
 **VOL-11 — Vínculo desativado não pode coletar**  
 - Prioridade: **P0** | Camada: Integração  
@@ -641,7 +667,7 @@ Estes são **cinco testes unitários adicionados**, não cinco casos E2E novos e
 **VOL-12 — Listagem de voluntários**  
 - Prioridade: **P1** | Camada: API  
 - Execução: GET /voluntarios com perfis variados  
-- Resultado esperado: Contrato atual lista todos; avaliar paginação e isolamento por organização.  
+- Resultado esperado (revisado v2.0.0): listar apenas voluntários ATIVOS do tenant; paginação ainda planejada.  
 
 
 ### Dashboards e impacto alimentar (15 casos)

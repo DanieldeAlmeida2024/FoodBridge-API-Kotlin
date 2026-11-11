@@ -1,0 +1,54 @@
+@startuml
+title FoodBridge API — isolamento de voluntários (PR dependente do #4)
+actor "Membro autenticado" as User
+participant "VoluntarioController" as Controller
+participant "VoluntarioService" as Service
+database "UsuarioOrganizacaoRepository" as UserLink
+database "VoluntarioOrganizacaoRepository" as VolunteerLink
+database "VoluntarioRepository" as Volunteers
+User -> Controller : GET /voluntarios/{id} ou /cpf/{cpf}
+Controller -> Service : consulta com TokenData
+Service -> UserLink : findByUsuarioIdAndOrganizacaoId()
+UserLink --> Service : vínculo vigente ?
+alt Não verificado/revogado
+ Service --> User : 403 AccessDeniedException
+else Usuário e organização verificados
+ Service -> VolunteerLink : findByVoluntarioIdAndOrganizacaoId(id, tenant)
+ VolunteerLink --> Service : vínculo ATIVO ?
+ alt Voluntário não vinculado/INATIVO
+  Service --> User : 404 (dados não expostos)
+ else vinculado
+  Service --> User : 200 VoluntarioDTO
+ end
+end
+group POST cadastro
+ User -> Controller : POST /voluntarios
+ Controller -> Service : criarOuVincular()
+ Service -> UserLink : validar acesso atual
+ Service -> Volunteers : existsByCpf/existsByEmail
+ alt Cadastro global existente
+  Service --> User : 409 genérico (sem vínculo)
+ else novo cadastro
+  Service -> Volunteers : save novo voluntário
+  Service -> VolunteerLink : save vínculo ATIVO (transação)
+  Service --> User : 201
+ end
+end
+group PUT perfil
+ User -> Controller : PUT /voluntarios/{id}
+ Controller -> Service : update(id, request, TokenData)
+ Service -> VolunteerLink : vínculo ATIVO ao tenant
+ Service -> VolunteerLink : findAllByVoluntarioId(id)
+ alt Outro tenant possui vínculo
+  Service --> User : 403 (edição global bloqueada)
+ else somente tenant atual
+  Service -> Volunteers : save perfil alterado
+  Service --> User : 200
+ end
+end
+note bottom
+A requisição de coleta acessa findByIdForColeta com org da ONG
+já validada no RequisicaoDoacaoService.
+Ainda falta RBAC granular/consentimento/minimização de CPF.
+end note
+@enduml
