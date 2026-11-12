@@ -33,7 +33,18 @@ sudo -n true || falhar "Usuário remoto não tem sudo não interativo."
 sudo -n test -f "$CONFIG" || falhar "Config externa de produção ausente: $CONFIG"
 sudo -n -u opc test -r "$CONFIG" || falhar "O serviço (opc) não pode ler a configuração externa."
 # Bloquear Hibernate DDL mutante no restart, antes de qualquer alteração de artefato.
-sudo -n grep -Eq '^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:][[:space:]]*(validate|none)[[:space:]]*([#!].*)?$' "$CONFIG" ||
+sudo -n awk '
+  /^[[:space:]]*[#!]/ { next }
+  /^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:]/ {
+    count++
+    value=$0
+    sub(/^[^=:]*[=:][[:space:]]*/, "", value)
+    sub(/[[:space:]]*[#!].*$/, "", value)
+    sub(/[[:space:]]+$/, "", value)
+    if (value != "validate" && value != "none") invalid=1
+  }
+  END { exit (count == 1 && !invalid) ? 0 : 1 }
+' "$CONFIG" ||
   falhar "ddl-auto em produção deve ser validate ou none; DB intocado."
 UNIT_ENV="$(sudo -n systemctl show "$SERVICO" -p Environment --value)"
 if [[ "$UNIT_ENV" == *"SPRING_JPA_HIBERNATE_DDL_AUTO="* ]]; then

@@ -52,3 +52,5 @@ Nenhum risco é encerrado somente por documentação. Exigir código corrigido, 
 - **OCI-R04 · Alto:** usuário `opc` com `sudo -n` é amplo; limitar a conta de deploy, usar chave dedicada e proteção do environment antes de autorizar auto-deploy.
 - **OCI-R05 · Alto:** cancelar um workflow durante swap/restart pode interromper rollback. `cancel-in-progress=false` impede cancelamento automático por novo run do mesmo grupo, mas não evita queda do runner/VM. Ensaiar recuperação manual.
 - **OCI-R06 · P0:** PRs #4/#5/#6 de segurança funcional seguem draft; CI verde de `main` não substitui testes de autorização/tenant antes de publicar externamente.
+
+- **OCI-R07 · Alto:** arquivos `application.properties` com definições duplicadas de `spring.jpa.hibernate.ddl-auto` podem sobrepor uma configuração segura por outra mutante. Preflight e script de atualização agora exigem **exatamente uma** definição explícita e com valor `validate` ou `none`, sem imprimir a configuração. Fontes externas ao arquivo ainda exigem auditoria do runtime.

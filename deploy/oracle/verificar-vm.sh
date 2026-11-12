@@ -35,7 +35,18 @@ check "configuração externa existente e legível (sem exibir valores)"
 
 
 # Spring pode executar DDL durante restart; exigir política explicitamente não mutante.
-sudo -n grep -Eq '^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:][[:space:]]*(validate|none)[[:space:]]*([#!].*)?$' "$CONFIG" ||
+sudo -n awk '
+  /^[[:space:]]*[#!]/ { next }
+  /^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:]/ {
+    count++
+    value=$0
+    sub(/^[^=:]*[=:][[:space:]]*/, "", value)
+    sub(/[[:space:]]*[#!].*$/, "", value)
+    sub(/[[:space:]]+$/, "", value)
+    if (value != "validate" && value != "none") invalid=1
+  }
+  END { exit (count == 1 && !invalid) ? 0 : 1 }
+' "$CONFIG" ||
   fail "Produção exige ddl-auto=validate (ou none) na configuração externa."
 UNIT_ENV="$(sudo -n systemctl show "$SERVICE" -p Environment --value)"
 if [[ "$UNIT_ENV" == *"SPRING_JPA_HIBERNATE_DDL_AUTO="* ]]; then

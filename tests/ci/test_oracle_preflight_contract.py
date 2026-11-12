@@ -24,8 +24,10 @@ if args[0] == "test":
     if os.environ.get("SIM_MISSING_CONFIG") == "1" and args[-1] == "/etc/foodbridge/application.properties":
         sys.exit(1)
     sys.exit(0)
-if args[0] == "grep":
-    sys.exit(0 if os.environ.get("SIM_DDL", "validate") in ("validate", "none") else 1)
+if args[0] == "awk":
+    bad = os.environ.get("SIM_DDL", "validate") not in ("validate", "none")
+    repeated = os.environ.get("SIM_DUPLICATE") == "1"
+    sys.exit(1 if bad or repeated else 0)
 if args[0] == "systemctl":
     if "cat" in args:
         sys.exit(0)
@@ -84,6 +86,11 @@ class OraclePreflightMockTests(unittest.TestCase):
 
     def test_rejects_unsafe_hibernate_ddl(self):
         result=self.run_preflight(SIM_DDL="update")
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn("ddl-auto",result.stderr)
+
+    def test_rejects_duplicate_ddl_auto_properties(self):
+        result=self.run_preflight(SIM_DUPLICATE="1")
         self.assertNotEqual(result.returncode,0)
         self.assertIn("ddl-auto",result.stderr)
 
