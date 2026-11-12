@@ -1,43 +1,56 @@
 package com.br.foodbridge.config
 
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.core.env.MapPropertySource
 
 /**
- * Tests actual Spring @Profile wiring and the early BeanFactoryPostProcessor.
- * Does not load DataSource/JPA nor connect to PostgreSQL.
+ * Tests that Spring evaluates @Profile BEFORE registering the configuration.
+ * No PostgreSQL JDBC, HTTP server, ORM, or admin seeding are started.
  */
 class SchemaValidationContextTest {
-    private fun runner() = ApplicationContextRunner()
-        .withInitializer { context ->
-            context.environment.setActiveProfiles("schema-validation")
-        }
-        .withUserConfiguration(DataInitializer::class.java, SchemaValidationGuard::class.java)
-        .withPropertyValues(
-            "spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/foodbridge_restore_check_20261112",
-            "spring.datasource.username=foodbridge_validate_20261112",
-            "spring.jpa.hibernate.ddl-auto=validate",
-            "spring.main.web-application-type=none",
-            "spring.datasource.hikari.read-only=true"
+    private fun createContext(url: String): AnnotationConfigApplicationContext {
+        val context = AnnotationConfigApplicationContext()
+        context.environment.setActiveProfiles("schema-validation")
+        context.environment.propertySources.addFirst(
+            MapPropertySource(
+                "clone-only-test",
+                mapOf<String, Any>(
+                    "spring.datasource.url" to url,
+                    "spring.datasource.username" to "foodbridge_validate_20261112",
+                    "spring.jpa.hibernate.ddl-auto" to "validate",
+                    "spring.main.web-application-type" to "none",
+                    "spring.datasource.hikari.read-only" to "true"
+                )
+            )
         )
+        context.register(DataInitializer::class.java, SchemaValidationGuard::class.java)
+        return context
+    }
 
     @Test
     fun validationProfileOmitsAdminInitializer() {
-        runner().run { context ->
-            assertNull(context.startupFailure, context.startupFailure?.toString())
-            assertFalse(context.containsBean("init"), "Admin CommandLineRunner must not be registered")
+        val context = createContext("jdbc:postgresql://127.0.0.1:5432/foodbridge_restore_check_20261112")
+        try {
+            context.refresh()
+            assertFalse(context.containsBean("dataInitializer"))
+            assertFalse(context.containsBean("init"))
+        } finally {
+            context.close()
         }
     }
 
     @Test
-    fun validationProfileRefusesOriginalDatabaseBeforeBeansAreReady() {
-        runner()
-            .withPropertyValues("spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/foodbridge")
-            .run { context ->
-                assertNotNull(context.startupFailure)
-            }
+    fun validationProfileRefusesProductionDatabaseAtBootstrap() {
+        val context = createContext("jdbc:postgresql://127.0.0.1:5432/foodbridge")
+        try {
+            val failure = assertThrows(Exception::class.java) { context.refresh() }
+            assertTrue(failure.stackTraceToString().contains("schema-validation: somente banco"))
+        } finally {
+            context.close()
+        }
     }
 }
