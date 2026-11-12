@@ -75,6 +75,14 @@ jobs:
           ./gradlew --no-daemon --stacktrace clean test bootJar
           test -s build/libs/foodbridge-0.0.1-SNAPSHOT.jar
 
+      - name: Validar contrato de SSH, rollback e scripts (sem tocar na Oracle)
+        shell: bash
+        run: |
+          bash -n deploy/oracle/preparar-vm.sh
+          bash -n deploy/oracle/atualizar-api.sh
+          bash -n deploy/oracle/verificar-vm.sh
+          python3 -m unittest discover -s tests/ci -p 'test_*_contract.py' -v
+
       - name: Publicar relatorios de testes
         if: always()
         uses: actions/upload-artifact@v4

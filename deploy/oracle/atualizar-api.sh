@@ -35,6 +35,22 @@ sudo -n -u opc test -r "$CONFIG" || falhar "O serviço (opc) não pode ler a con
 sudo -n test -f "$MARCADOR" || falhar "Execute antes deploy/oracle/preparar-vm.sh para configurar systemd."
 sudo -n systemctl cat "$SERVICO" > /dev/null || falhar "Serviço foodbridge.service não encontrado."
 sudo -n test -f "$DESTINO" || falhar "JAR anterior não encontrado; nenhuma implantação foi feita."
+[[ "$(sudo -n systemctl show "$SERVICO" -p User --value)" == "opc" ]] ||
+  falhar "O service systemd não executa como opc."
+UNIT_EXEC="$(sudo -n systemctl show "$SERVICO" -p ExecStart --value)"
+UNIT_DIR="$(sudo -n systemctl show "$SERVICO" -p WorkingDirectory --value)"
+if [[ "$UNIT_EXEC" != *"$DESTINO"* ]]; then
+  [[ "$UNIT_DIR" == "$RAIZ" &&
+     "$UNIT_EXEC" == *"build/libs/foodbridge-0.0.1-SNAPSHOT.jar"* ]] ||
+    falhar "ExecStart usa outro JAR; nenhum arquivo substituído."
+fi
+unset UNIT_EXEC UNIT_DIR
+# Não substituir uma versão já indisponível: rollback não recuperaria saúde anterior.
+sudo -n systemctl is-active --quiet "$SERVICO" ||
+  falhar "Serviço não está ativo antes da tentativa de deploy."
+curl --silent --show-error --fail --max-time 5 -o /dev/null \
+  "http://127.0.0.1:8080/dashboards/publico" ||
+  falhar "Health do serviço atual falhou; deploy cancelado antes da troca do JAR."
 
 IDENTIFICADOR="$(date -u +%Y%m%dT%H%M%SZ)-${SHA_ESPERADO:0:12}"
 ANTIGO="$BACKUPS/foodbridge-$IDENTIFICADOR.jar"

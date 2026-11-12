@@ -12,6 +12,18 @@ sudo -n systemctl cat foodbridge.service > /dev/null || {
   echo "Serviço foodbridge.service não encontrado; confirme o deploy existente." >&2
   exit 1
 }
+# Não criar configuração/override para service que não usa o JAR esperado.
+DESTINO="$ROOT/build/libs/foodbridge-0.0.1-SNAPSHOT.jar"
+UNIT_EXEC="$(sudo -n systemctl show foodbridge.service -p ExecStart --value)"
+UNIT_DIR="$(sudo -n systemctl show foodbridge.service -p WorkingDirectory --value)"
+if [[ "$UNIT_EXEC" != *"$DESTINO"* ]]; then
+  [[ "$UNIT_DIR" == "$ROOT" &&
+     "$UNIT_EXEC" == *"build/libs/foodbridge-0.0.1-SNAPSHOT.jar"* ]] || {
+    echo "O ExecStart atual não usa o JAR esperado; revise o systemd antes de preparar." >&2
+    exit 1
+  }
+fi
+unset UNIT_EXEC UNIT_DIR
 
 if ! sudo -n test -s "$CONFIG"; then
   [[ -s "$ORIGEM" ]] || {
