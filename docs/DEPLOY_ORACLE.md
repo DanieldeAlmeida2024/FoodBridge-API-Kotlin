@@ -198,3 +198,17 @@ O arquivo atual da VM continua configurado como spring.jpa.hibernate.ddl-auto=up
 6. Somente após ensaio, planejar descarte seguro de clone/role por procedimento autorizado; preservar backup por política de retenção e fazer cópia criptografada fora da mesma VM.
 
 Não habilitar OCI_DEPLOY_ENABLED nem OCI_AUTO_DEPLOY_ENABLED antes de revisar segurança, configuração externa e esquema. O teste Hibernate real ainda não aconteceu.
+
+### Evidência da role e ACL do PostgreSQL 13 (12/11/2026)
+
+O mantenedor criou a role temporária `foodbridge_validate_20261112` sem superuser/createdb/createrole, definiu sua senha interativamente e estabeleceu `default_transaction_read_only=on`. A conexão com `foodbridge_restore_check_20261112` retornou `foodbridge_restore_check_20261112|foodbridge_validate_20261112|on`.
+
+**Atenção PG 13:** a criação do banco restaurado pode trazer permissão `CREATE` no schema `public` herdada de `PUBLIC`. Antes de iniciar o JAR secundário, executar **somente no banco clonado**, nunca em `foodbridge`:
+
+```sql
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+```
+
+Depois verificar na **cópia**: `has_schema_privilege('foodbridge_validate_20261112','public','CREATE')=false`, `has_database_privilege(...,'CREATE')=false`, `has_database_privilege(...,'TEMP')=false` e nenhuma tabela com `has_table_privilege(...,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')=true`. `transaction_read_only=on` sozinho não substitui ACL (o usuário pode mudar a preferência por sessão). Não tocar nas ACLs do banco de produção.
+
+O CI [#43292633447](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43292633447) no commit `d24ed934c060f1d8650c7ba0274c88082c28205c` compilou e testou com sucesso o profile; o artefato `foodbridge-api-jar` deve ser obtido **dessa execução** e copiado para diretório de ensaio independente (`/home/opc/foodbridge-validation`) sem tocar em `/opt/foodbridge/FoodBridge-API-Kotlin/build/libs/`. O profile ainda não foi executado na VM.

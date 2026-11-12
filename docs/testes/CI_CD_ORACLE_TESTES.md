@@ -62,3 +62,7 @@ A versão proposta agora usa `awk` de forma somente leitura para validar **exata
 | OCI-19F | Remoção segura posterior de role/clone sem tocar em foodbridge | NÃO EXECUTADO |
 
 CI verde só comprova testes unitários e contratos, não o ensaio com banco restaurado real.
+
+### OCI-19G — Verificação de ACL PostgreSQL 13 no schema public
+
+A role de validação foi criada e autenticada com `transaction_read_only=on` no clone. **Pendente:** revogar `CREATE` do papel `PUBLIC` no schema `public` apenas do banco restaurado, verificar `CREATE` de schema/database, `TEMP` e DML nas tabelas usando `has_*_privilege`. O DDL na role do clone não está liberado para ensaio até as ACLs serem conferidas.

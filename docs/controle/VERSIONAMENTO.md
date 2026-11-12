@@ -68,3 +68,9 @@ O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito 
 - Testes: SchemaValidationPolicyTest.kt e tests/ci/test_schema_validation_contract.py; executar CI na PR, e diferenciar do ensaio na VM.
 - Evidência operacional informada: pg_dump Custom restaurado em clone isolado, 7 tabelas / 61 colunas / 8 FKs. O banco de produção não foi alterado.
 - Estado: teste de Hibernate validate com role restrita na cópia permanece PENDENTE.
+
+### FB-OCI-VAL-002 — Role temporária criada no clone (12/11/2026)
+
+- Role `foodbridge_validate_20261112` foi criada para `foodbridge_restore_check_20261112`, senha definida por prompt e `transaction_read_only=on` confirmado no login TCP local.
+- Adicionado gate de revisão da ACL `CREATE` do schema `public` no PostgreSQL 13 e checagem `CREATE/TEMP/DML` antes do ensaio Hibernate.
+- Build CI de `schema-validation` aprovado no run #43292633447; execução do JAR secundário na Oracle **ainda pendente**, sem alteração do serviço de produção.
