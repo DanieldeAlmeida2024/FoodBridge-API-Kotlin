@@ -216,3 +216,10 @@ sudo -n awk '
 ```
 
 **Não copiar a configuração para GitHub ou chat, nem alterar `ddl-auto=update` cegamente.** A configuração externa tem de preservar os segredos, refletir o esquema atual e ser auditada antes de passar a usar `validate`. Copiar o arquivo com `preparar-vm.sh` não reinicia o serviço nem faz migração, mas modifica permissões, cria drop-in e chama `daemon-reload`; só fazê-lo após revisão. CI SSH depende de chave dedicada e fingerprint do host verificado. Variáveis de auto-deploy continuam desabilitadas.
+
+### Evidência adicional do preflight local — 12/11/2026
+
+- Operador executou preflight **somente leitura** na VM Oracle com timeout HTTP de 20 s. Resultado: `PREFLIGHT LOCAL: PASS`; endpoint `GET http://127.0.0.1:8080/dashboards/publico`: `HTTP 200 | Tempo 7.878148s`.
+- Serviço `foodbridge.service` manteve PID `1135520`. O arquivo `/etc/foodbridge/application.properties` foi previamente preparado com `ddl-auto=validate`, owner root:opc e modo 0640; drop-in systemd `90-github-deploy.conf` registrado com `daemon-reload` sem reiniciar. Esse ensaio não afirma que o processo atual já adotou a configuração externa.
+- A demora de 7,878 s reproduz o falso bloqueio do limite anterior de 5 s e justifica **20 s** no health do preflight e do deploy (PR #9). O endpoint é funcional e pesado; substituição por `/health/live` leve + readiness é trabalho separado.
+- O preflight local não testa SSH do GitHub runner, known_hosts, workflow_dispatch nem rollback, e não realiza deploy ou restart.

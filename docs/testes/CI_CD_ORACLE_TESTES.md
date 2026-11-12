@@ -55,3 +55,12 @@ A versão proposta agora usa `awk` de forma somente leitura para validar **exata
 - **Dado observado:** dashboard público retornou HTTP 200 em 6,247 s; preflight anterior de 5 s expirava. PostgreSQL e systemd estavam ativos.
 - **Verificação automatizada:** scripts contêm `--connect-timeout 2 --max-time 20` nos checks de baseline e saúde pós-restart, e não contêm `--max-time 5`. O preflight emite aviso se o tempo atingir cinco segundos.
 - **Pendente:** ensaio SSH real em homologação e avaliação de desempenho/consultas; um `--max-time 20` não prova que o sistema será rápido ou pronto para carga.
+
+### OCI-18 — Preflight HTTP no host real (12/11/2026)
+
+| Cenário | Evidência | Resultado |
+|---|---|---|
+| Local OCI-18A | Script manual sem escrita, health com `--max-time 20` responde HTTP 200 em 7,878148 s | **PASS no host** |
+| CI-18B | Script publicado do preflight recebe timeout de 20 s, não 5 s | Código + CI de PR #9; GitHub SSH remoto pendente |
+| OCI-18C | Preflight via `workflow_dispatch`/runner GitHub usando chave SSH dedicada + known_hosts fixado | **PENDENTE** |
+| OCI-18D | Health após deploy/rollback com novo timeout | **NÃO EXECUTADO** |

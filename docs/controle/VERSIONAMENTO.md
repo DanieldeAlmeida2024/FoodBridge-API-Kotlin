@@ -72,3 +72,7 @@ O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito 
 | `docs/DEPLOY_ORACLE.md` | Evidência da VM real, diagnóstico sem imprimir propriedades e cautela com o arquivo de origem |
 
 **Evidência operacional:** SSH, systemd ativo, Java 21, PostgreSQL aceitando conexões e dashboard HTTP 200 em 6,247 s; configuration externa/drop-in ausentes. **Ainda NÃO houve deploy, backup de banco nem preflight real do GitHub.** O problema de desempenho do dashboard permanece aberto: ampliar timeout evita falso negativo, mas não corrige a consulta de dados de produção.
+
+### FB-OCI-HEALTH-002 — Preflight local confirma latência >5 segundos
+
+Em 12/11/2026, execução manual somente leitura na VM retornou `HTTP 200 | Tempo 7.878148s` para `/dashboards/publico` sob `--max-time 20`. Serviços e arquivos estavam presentes, `foodbridge.service` manteve PID 1135520. Sem deploy/restart. Isso fundamenta elevar o timeout de health do CI/CD em PR #9; validar GitHub Actions após o commit documental.
