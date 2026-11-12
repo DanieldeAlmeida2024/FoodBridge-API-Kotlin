@@ -32,7 +32,7 @@ Na VM, confira a versão atual e os dados em disco sem mostrar os segredos:
 
 ```bash
 sudo systemctl status foodbridge.service --no-pager
-sudo systemctl cat foodbridge.service
+sudo systemctl cat foodbridge.service >/dev/null && echo 'Unit systemd encontrada (conteúdo não exibido)'
 test -s /opt/foodbridge/FoodBridge-API-Kotlin/src/main/resources/application.properties && echo "Configuração local disponível"
 ```
 
@@ -42,7 +42,7 @@ A partir do checkout atualizado na VM, execute:
 cd /opt/foodbridge/FoodBridge-API-Kotlin
 sudo -n true
 bash deploy/oracle/preparar-vm.sh
-sudo systemctl cat foodbridge.service
+sudo systemctl cat foodbridge.service >/dev/null && echo 'Unit systemd encontrada (conteúdo não exibido)'
 sudo test -s /etc/foodbridge/application.properties && echo "Configuração externa encontrada"
 ```
 
@@ -102,6 +102,7 @@ Na VM, somente leitura:
 
 ```bash
 sudo systemctl status foodbridge.service --no-pager
+# Logs podem conter dados internos; consulte localmente e não cole saída bruta em chat/issue.
 sudo journalctl -u foodbridge.service -n 80 --no-pager
 curl --fail --silent --show-error --max-time 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/dashboards/publico
 ```
