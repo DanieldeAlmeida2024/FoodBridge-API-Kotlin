@@ -74,3 +74,10 @@ O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito 
 - Role `foodbridge_validate_20261112` foi criada para `foodbridge_restore_check_20261112`, senha definida por prompt e `transaction_read_only=on` confirmado no login TCP local.
 - Adicionado gate de revisão da ACL `CREATE` do schema `public` no PostgreSQL 13 e checagem `CREATE/TEMP/DML` antes do ensaio Hibernate.
 - Build CI de `schema-validation` aprovado no run #43292633447; execução do JAR secundário na Oracle **ainda pendente**, sem alteração do serviço de produção.
+
+### FB-OCI-VAL-003 — Corrigir dependências web no perfil schema-validation (12/11/2026)
+
+- A VM reportou `APPLICATION FAILED TO START` por falta de `HandlerExceptionResolver` no construtor do `JwtFilter` ao rodar `web-application-type=none`. A falha precede confirmação de Hibernate `validate` e não justifica alteração no banco.
+- `JwtFilter` e `SecurityConfig` não são registrados no perfil opcional `schema-validation`; configuração de produção sem esse perfil permanece igual.
+- `PasswordEncoder` BCrypt passou para `PasswordEncoderConfig` (disponível com ou sem MVC), sem mudança da política de senhas.
+- Testes de contexto Spring verificam exclusão de filtro/security e manutenção do encoder. Nova execução do CI e novo JAR são necessários antes de voltar à VM.

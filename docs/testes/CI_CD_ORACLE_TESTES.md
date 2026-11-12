@@ -66,3 +66,10 @@ CI verde só comprova testes unitários e contratos, não o ensaio com banco res
 ### OCI-19G — Verificação de ACL PostgreSQL 13 no schema public
 
 A role de validação foi criada e autenticada com `transaction_read_only=on` no clone. **Pendente:** revogar `CREATE` do papel `PUBLIC` no schema `public` apenas do banco restaurado, verificar `CREATE` de schema/database, `TEMP` e DML nas tabelas usando `has_*_privilege`. O DDL na role do clone não está liberado para ensaio até as ACLs serem conferidas.
+
+### OCI-19H — regressão sem Spring MVC (clone-only)
+
+- **Falha observada no primeiro JAR remoto:** Spring não encontrou `HandlerExceptionResolver` para instanciar `JwtFilter` com `spring.main.web-application-type=none`; retorno 1. Isso **não é** uma falha de esquema comprovada.
+- **Novo teste Spring:** em perfil `schema-validation`, sem inicializar Postgres/HTTP, verificar ausentes `JwtFilter`, `SecurityConfig` e `DataInitializer`; bean BCrypt `passwordEncoder` continua presente.
+- **Produção:** sem o perfil de validação, o teste de contexto padrão e os testes existentes devem continuar aprovados; exigir `clean test bootJar` no CI.
+- **E2E de validação no clone:** **PENDENTE** — repetir só com JAR do SHA novo após CI verde.
