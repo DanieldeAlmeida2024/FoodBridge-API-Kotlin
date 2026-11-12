@@ -54,3 +54,5 @@ Nenhum risco é encerrado somente por documentação. Exigir código corrigido, 
 - **OCI-R06 · P0:** PRs #4/#5/#6 de segurança funcional seguem draft; CI verde de `main` não substitui testes de autorização/tenant antes de publicar externamente.
 
 - **OCI-R07 · Alto:** arquivos `application.properties` com definições duplicadas de `spring.jpa.hibernate.ddl-auto` podem sobrepor uma configuração segura por outra mutante. Preflight e script de atualização agora exigem **exatamente uma** definição explícita e com valor `validate` ou `none`, sem imprimir a configuração. Fontes externas ao arquivo ainda exigem auditoria do runtime.
+
+- **OCI-R08 · Alto — dashboard não é health endpoint barato:** na VM, `GET /dashboards/publico` retorna 200 em cerca de 6,25 s consultando dados do PostgreSQL. O timeout anterior de 5 s provoca falha falsa de preflight e pode disparar rollback incorreto. Limiar corrigido para 20 s como mitigação temporária; criar e validar endpoint de liveness/readiness de baixo custo e investigar latência para automação contínua.

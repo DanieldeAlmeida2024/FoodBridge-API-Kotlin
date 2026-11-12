@@ -49,3 +49,9 @@ Nunca executar testes de failover sobre o PostgreSQL real. Registrar run, SHA, r
 ### Expansão da proteção de propriedades duplicadas
 
 A versão proposta agora usa `awk` de forma somente leitura para validar **exatamente uma** definição de `spring.jpa.hibernate.ddl-auto` no arquivo externo, com valor `validate` ou `none`. Um segundo valor `update` no mesmo arquivo deve bloquear a publicação. O teste `test_rejects_duplicate_ddl_auto_properties` foi adicionado à suíte de preflight simulado. O comportamento real na VM continua pendente, mesmo com o CI verde.
+
+### FB-OCI-18 — regressão de timeout (12/11/2026)
+
+- **Dado observado:** dashboard público retornou HTTP 200 em 6,247 s; preflight anterior de 5 s expirava. PostgreSQL e systemd estavam ativos.
+- **Verificação automatizada:** scripts contêm `--connect-timeout 2 --max-time 20` nos checks de baseline e saúde pós-restart, e não contêm `--max-time 5`. O preflight emite aviso se o tempo atingir cinco segundos.
+- **Pendente:** ensaio SSH real em homologação e avaliação de desempenho/consultas; um `--max-time 20` não prova que o sistema será rápido ou pronto para carga.

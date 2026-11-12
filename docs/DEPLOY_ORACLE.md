@@ -174,3 +174,45 @@ Não ativar `OCI_AUTO_DEPLOY_ENABLED=true` antes de ensaiar rollback em homologa
 ### CI do contrato comprovado (não equivale ao deploy remoto)
 
 [Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) no código `5da02052170e12f888e00d279b80594c44f4ab90` comprovou build/testes, sintaxe e **sete cenários de preflight simulado**. Os jobs de SSH/deploy ficaram **SKIPPED**, pois o evento era um PR. Após merge, só um `workflow_dispatch` na main com `preflight=true` e secrets SSH autorizados verificará de verdade a instância Oracle. Nenhum valor sensível precisa ser compartilhado no chat.
+
+## Diagnóstico real da VM e limite de health (12/11/2026)
+
+A inspeção da instância Oracle Linux, conectada via SSH pelo usuário `opc`, confirmou:
+
+- `foodbridge.service`: **active/running**, `User=opc` e processo Java 21 em `*:8080`.
+- PostgreSQL local `127.0.0.1:5432`: **accepting connections**.
+- JAR `/opt/foodbridge/FoodBridge-API-Kotlin/build/libs/foodbridge-0.0.1-SNAPSHOT.jar`: presente e alinhado ao ExecStart.
+- `GET /dashboards/publico`: **HTTP 200 em 6,247 segundos**, com TTFB 6,227 s. O health com `--max-time 5` usado anteriormente no preflight e no rollback reprovaria falsamente uma instância que responde em cerca de 6,2 s.
+- `GET /auth/login`: HTTP 500 em 6,322 s. **Não é teste de login válido**, pois o endpoint de autenticação usa POST; investigar tratamento de método inválido como item separado.
+- Configuração externa `/etc/foodbridge/application.properties` e drop-in `90-github-deploy.conf`: **ausentes ou vazios na consulta**, enquanto o arquivo `src/main/resources/application.properties` está presente na VM.
+
+### Ajuste nesta revisão
+
+O preflight e o script de publicação/rollback usam **`--connect-timeout 2 --max-time 20`** no dashboard, sem registrar payload. O preflight imprime apenas a duração e um aviso se exceder 5 segundos; **HTTP não-2xx, timeout real de 20 s, erro de DNS/conexão ou falha do serviço continuam bloqueando o deploy**. Isso é uma correção de limiar, não otimização do dashboard nem garantia de disponibilidade. O health do pós-restart permanece uma verificação do mesmo endpoint funcional até a implantação de um health endpoint leve.
+
+### Próxima verificação, sem apresentar valores sensíveis
+
+Antes de rodar `deploy/oracle/preparar-vm.sh`, inspecione o arquivo de origem atual **sem imprimir seus valores**:
+
+```bash
+ORIGEM=/opt/foodbridge/FoodBridge-API-Kotlin/src/main/resources/application.properties
+sudo -n test -s "$ORIGEM" && echo "Arquivo de origem presente"
+sudo -n awk '
+  /^[[:space:]]*[#!]/ { next }
+  /^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:]/ {
+    n++; v=$0
+    sub(/^[^=:]*[=:][[:space:]]*/, "", v)
+    sub(/[[:space:]]*[#!].*$/, "", v)
+    sub(/[[:space:]]+$/, "", v)
+    if (v != "validate" && v != "none") inseguro=1
+  }
+  END {
+    if (n == 0) print "PENDENTE: ddl-auto não definido explicitamente"
+    else if (n > 1) print "PENDENTE: ddl-auto duplicado"
+    else if (inseguro) print "PENDENTE: ddl-auto não é validate/none"
+    else print "OK: uma política ddl-auto não mutante"
+  }
+' "$ORIGEM"
+```
+
+**Não copiar a configuração para GitHub ou chat, nem alterar `ddl-auto=update` cegamente.** A configuração externa tem de preservar os segredos, refletir o esquema atual e ser auditada antes de passar a usar `validate`. Copiar o arquivo com `preparar-vm.sh` não reinicia o serviço nem faz migração, mas modifica permissões, cria drop-in e chama `daemon-reload`; só fazê-lo após revisão. CI SSH depende de chave dedicada e fingerprint do host verificado. Variáveis de auto-deploy continuam desabilitadas.

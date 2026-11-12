@@ -61,3 +61,14 @@ O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotli
 ### OCI-R07 — 8 casos simulados e proteção contra valores duplicados
 
 O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito casos**: arquivo com `ddl-auto` duplicado reprova, mesmo que haja uma linha segura. `verificar-vm.sh` e `atualizar-api.sh` utilizam inspeção somente leitura e exigem uma única propriedade com `validate` ou `none`. A execução CI do último SHA precisa ser consultada antes da integração.
+
+## FB-OCI-CD v1.2.1 — ajustar falso timeout de health e registrar evidência real (12/11/2026)
+
+| Artefato | Correção |
+|---|---|
+| `deploy/oracle/verificar-vm.sh` | Timeout do dashboard ampliado para 20 s, connect timeout 2 s, registra apenas duração e aviso de lentidão acima de 5 s |
+| `deploy/oracle/atualizar-api.sh` | Precheck e health pós-restart/rollback usam limiar consistente de 20 s, ainda falhando em HTTP não-2xx |
+| `tests/ci/test_oracle_deploy_contract.py` | Teste de regressão contra retorno do limite incorreto de 5 s |
+| `docs/DEPLOY_ORACLE.md` | Evidência da VM real, diagnóstico sem imprimir propriedades e cautela com o arquivo de origem |
+
+**Evidência operacional:** SSH, systemd ativo, Java 21, PostgreSQL aceitando conexões e dashboard HTTP 200 em 6,247 s; configuration externa/drop-in ausentes. **Ainda NÃO houve deploy, backup de banco nem preflight real do GitHub.** O problema de desempenho do dashboard permanece aberto: ampliar timeout evita falso negativo, mas não corrige a consulta de dados de produção.
