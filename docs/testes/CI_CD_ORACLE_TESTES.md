@@ -21,6 +21,7 @@ Escopo: Java 21 + PostgreSQL CI descartável + inspeção remota *sem deploy*. T
 | OCI-14 | VM homologação autorizada | injetar falha controlada no health | Rollback automático restaura JAR anterior e serviço | Pendente, NÃO provocar indisponibilidade em produção |
 | OCI-15 | VM Oracle | ambiente com variáveis secretas e SQL reais | Sem vazamento em logs; teste por auditor independente | Pendente |
 | OCI-16 | Operação | CI e deploy simultâneos da mesma branch | Nunca cancelar deploy em andamento | Contrato estático, E2E pendente |
+| OCI-17 | Simulação do preflight | Arquivo de configuração com duas chaves `spring.jpa.hibernate.ddl-auto` (validate + update) | Recusar propriedades duplicadas antes de qualquer cópia ou restart | Automatizado em teste com comandos simulados; VM real pendente |
 
 ### Evidências já existentes na main
 
@@ -44,3 +45,7 @@ Nunca executar testes de failover sobre o PostgreSQL real. Registrar run, SHA, r
 ### Resultado verificado do PR (sem VM)
 
 [Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) no SHA `5da02052170e12f888e00d279b80594c44f4ab90`: **CI SUCCESS**, Gradle Kotlin/Java 21 e PostgreSQL descartável, sintaxe Bash, contrato GitHub Actions e sete casos de preflight remoto simulado. **Não marcar OCI-05..OCI-15 PASS:** jobs Oracle reais não executaram (SKIPPED) nem houve SSH, JAR substituído, Nginx, banco ou serviço reiniciado.
+
+### Expansão da proteção de propriedades duplicadas
+
+A versão proposta agora usa `awk` de forma somente leitura para validar **exatamente uma** definição de `spring.jpa.hibernate.ddl-auto` no arquivo externo, com valor `validate` ou `none`. Um segundo valor `update` no mesmo arquivo deve bloquear a publicação. O teste `test_rejects_duplicate_ddl_auto_properties` foi adicionado à suíte de preflight simulado. O comportamento real na VM continua pendente, mesmo com o CI verde.

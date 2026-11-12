@@ -57,3 +57,7 @@ O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotli
 - Jobs **`Publicar na VM Oracle: SKIPPED`** e **`Preflight Oracle somente leitura: SKIPPED`**, como esperado em um pull request. **Nenhuma conexão SSH ou alteração da VM foi comprovada/executada**.
 - Run anterior [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43233569951) reprovou verificação `bash -n` após um patch incorreto; corrigido a partir de versão válida antes de voltar a PASS. Não ocultar a regressão.
 - Uma atualização posterior apenas de documentação gera novo HEAD, cujo CI deve ser consultado antes de merge. A conexão com a VM e o primeiro deploy manual permanecem fora do escopo dos testes locais.
+
+### OCI-R07 — 8 casos simulados e proteção contra valores duplicados
+
+O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito casos**: arquivo com `ddl-auto` duplicado reprova, mesmo que haja uma linha segura. `verificar-vm.sh` e `atualizar-api.sh` utilizam inspeção somente leitura e exigem uma única propriedade com `validate` ou `none`. A execução CI do último SHA precisa ser consultada antes da integração.

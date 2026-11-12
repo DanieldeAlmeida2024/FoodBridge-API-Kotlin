@@ -52,3 +52,7 @@ A autenticação da console Oracle Cloud não é a mesma que o SSH da VM: se o p
 O controle de acesso por organização e voluntários permanece com PRs #4/#5/#6 em revisão. **Não publicar a aplicação como segura enquanto esses P0 estiverem pendentes.**
 
 [Plano de testes do pipeline](../testes/CI_CD_ORACLE_TESTES.md) · [UML](../uml/17_pipeline_oracle_cicd.puml) · [Guia operacional](../DEPLOY_ORACLE.md) · [Versionamento](../controle/VERSIONAMENTO.md).
+
+### Proteção contra chave repetida
+
+A validação de `spring.jpa.hibernate.ddl-auto` não considera suficiente encontrar qualquer linha `validate`: verifica que **existe exatamente uma definição explícita no arquivo de produção e que seu valor é validate ou none**. Define falha fechada para arquivo sem propriedade, definição duplicada, modo update/create ou override de ambiente incompatível. Configuração injetada por outras fontes do Spring permanece risco de revisão manual.
