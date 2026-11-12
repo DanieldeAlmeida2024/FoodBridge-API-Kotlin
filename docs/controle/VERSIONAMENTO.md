@@ -81,3 +81,10 @@ O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito 
 - `JwtFilter` e `SecurityConfig` não são registrados no perfil opcional `schema-validation`; configuração de produção sem esse perfil permanece igual.
 - `PasswordEncoder` BCrypt passou para `PasswordEncoderConfig` (disponível com ou sem MVC), sem mudança da política de senhas.
 - Testes de contexto Spring verificam exclusão de filtro/security e manutenção do encoder. Nova execução do CI e novo JAR são necessários antes de voltar à VM.
+
+### FB-OCI-VAL-004 — homologacao real concluida no clone (12/11/2026)
+
+- [CI #43321134207](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43321134207) SUCCESS no SHA 9c8e86ccaf0fdab5ff932b9d1a5ca91b99eed63a, incluindo bootJar e testes de perfil Spring.
+- VM: execucao Java secundaria do JAR corrigido contra foodbridge_restore_check_20261112, com role foodbridge_validate_20261112, web desabilitada, ddl-auto=validate e Hikari read-only.
+- Resultado informado: Codigo de saida: 0; PASS: Hibernate inicializou com o banco restaurado. Gate de compatibilidade no clone aprovado, sem deploy.
+- Pendente: configurar fonte externa de producao e systemd sem restart; homologar SSH do GitHub; resolver P0 de autorizacao antes de habilitar publicacao.

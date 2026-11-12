@@ -73,3 +73,15 @@ A role de validação foi criada e autenticada com `transaction_read_only=on` no
 - **Novo teste Spring:** em perfil `schema-validation`, sem inicializar Postgres/HTTP, verificar ausentes `JwtFilter`, `SecurityConfig` e `DataInitializer`; bean BCrypt `passwordEncoder` continua presente.
 - **Produção:** sem o perfil de validação, o teste de contexto padrão e os testes existentes devem continuar aprovados; exigir `clean test bootJar` no CI.
 - **E2E de validação no clone:** **PENDENTE** — repetir só com JAR do SHA novo após CI verde.
+
+### OCI-19E/19G/19H — evidencias reais no clone (12/11/2026)
+
+| ID | Evidencia | Resultado |
+|---|---|---|
+| OCI-19G | Role testada sem CREATE no schema/banco, TEMP nem DML; REVOKE CREATE aplicado somente ao clone | PASS |
+| OCI-19H | Problema de Bean HandlerExceptionResolver eliminado no JAR corrigido do CI #43321134207 | PASS no startup isolado |
+| OCI-19E | Java exit 0 e marcadores Initialized JPA EntityManagerFactory e Started FoodbridgeApplication com ddl-auto=validate na copia | PASS somente no clone |
+| OCI-19F | Descarte posterior de role/clone com garantia de nao afetar producao | PENDENTE |
+| OCI-05/13/14 | SSH do runner, deploy controlado e rollback reais | PENDENTES |
+
+CI e teste isolado nao sao autorizacao para deploy. Config original produtiva ainda foi observada com ddl-auto=update.

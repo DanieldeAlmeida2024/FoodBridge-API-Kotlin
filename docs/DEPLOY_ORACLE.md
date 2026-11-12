@@ -222,3 +222,17 @@ O CI [#43292633447](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin
 **Correção proposta neste PR:** `@Profile("!schema-validation")` em `JwtFilter` e `SecurityConfig`. `PasswordEncoder` foi movido para `PasswordEncoderConfig`, **sem mudar o algoritmo BCrypt**, de modo que os serviços possam inicializar sem a configuração de segurança HTTP; a configuração padrão de produção permanece ativa. O teste de contexto Spring com perfil `schema-validation` agora verifica que `jwtFilter` e `securityConfig` não são criados, que `passwordEncoder` continua disponível e que o `DataInitializer` está desativado. A homologação real precisa de **novo JAR** gerado após essas alterações; o arquivo antigo na VM mantém o defeito.
 
 **Nunca fazer deploy automático ou copiar a versão de testes ao caminho do JAR do systemd.** Manter o banco original sem alteração e repetir teste somente com artefato do novo run, checksum conferido, e role já validada sem escrita no clone.
+
+### Homologacao real Hibernate validate no clone — PASS (12/11/2026)
+
+**Evidencia relatada pelo mantenedor:** JAR corrigido foodbridge-pr10-43321134207.jar executado isoladamente de foodbridge.service; CI [#43321134207](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43321134207) no SHA 9c8e86ccaf0fdab5ff932b9d1a5ca91b99eed63a aprovou build, testes e bootJar; jobs preflight e deploy ficaram SKIPPED.
+
+- Perfil schema-validation; web-application-type=none; JDBC 127.0.0.1:5432/foodbridge_restore_check_20261112; role foodbridge_validate_20261112; hikari.read-only=true; ddl-auto=validate. Segredos descartaveis, senha da role inserida em prompt e nao publicada.
+- O mantenedor havia executado gate de ACL no clone, incluindo REVOKE CREATE no schema public e ausencia de CREATE, TEMP e DML para role de testes; resultado PASS.
+- O script secundario so registra PASS quando a execucao Java termina com exit 0 e o log inclui os marcadores Initialized JPA EntityManagerFactory e Started FoodbridgeApplication.
+
+**Saida recebida:** Codigo de saida: 0 ; PASS: Hibernate inicializou com o banco restaurado.
+
+**Conclusao:** mapeamento JPA/Hibernate validate compativel com o banco RESTAURADO. Nao ocorreu deploy ao banco original, restart de foodbridge.service, teste SSH do runner, ensaio de rollback ou revisao completa dos PRs de autorizacao. Log privado permanece na VM; nao publicar dados de clientes nem senhas.
+
+**Proxima fase pendente:** revisar de forma confidencial o arquivo produtivo em src/main/resources/application.properties, preparar /etc/foodbridge/application.properties com root:opc 0640 e ddl-auto=validate unico, apos confirmar origens das propriedades Spring; criar drop-in de systemd e daemon-reload sem restart. Depois configurar chave SSH exclusiva do CI, validar preflight real do GitHub Actions e somente entao decidir primeiro deploy manual, sujeito aos P0 funcionais. Nao habilitar auto-deploy neste estagio.

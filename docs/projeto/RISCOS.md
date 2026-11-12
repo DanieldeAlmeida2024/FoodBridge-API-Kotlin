@@ -54,3 +54,5 @@ Nenhum risco é encerrado somente por documentação. Exigir código corrigido, 
 - **OCI-R06 · P0:** PRs #4/#5/#6 de segurança funcional seguem draft; CI verde de `main` não substitui testes de autorização/tenant antes de publicar externamente.
 
 - **OCI-R07 · Alto:** arquivos `application.properties` com definições duplicadas de `spring.jpa.hibernate.ddl-auto` podem sobrepor uma configuração segura por outra mutante. Preflight e script de atualização agora exigem **exatamente uma** definição explícita e com valor `validate` ou `none`, sem imprimir a configuração. Fontes externas ao arquivo ainda exigem auditoria do runtime.
+
+- **OCI-R09 — compatibilidade de esquema mitigada no clone (12/11/2026):** perfil schema-validation executou Hibernate ddl-auto=validate com codigo de saida 0 no clone restaurado e role restrita; testes de contexto CI e processo isolado passaram. **Risco remanescente P0:** configuracao original de producao ainda usa ddl-auto=update e drop-in nao instalado; o deploy real, SSH do runner e rollback nao foram validados.
