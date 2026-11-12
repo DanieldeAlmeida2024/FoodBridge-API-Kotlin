@@ -61,3 +61,7 @@ Documentos: [requisitos](docs/REQUISITOS.md), [arquitetura](docs/ARQUITETURA.md)
 - [Versionamento e histórico de revisão](docs/controle/VERSIONAMENTO.md)
 
 > O plano mestre tem como base a análise estática de outubro de 2026; o CI aprovado em novembro não equivale à execução de todos os cenários.
+
+### Pré-flight somente leitura antes de habilitar deploy (FB-OCI-CD v1.2.0 proposta)
+
+O pipeline agora diferencia `workflow_dispatch preflight=true` (SSH/serviço/configuração/saúde, sem deploy) de `deploy=true` (publicação manual após CI). A variável `OCI_AUTO_DEPLOY_ENABLED=true` é necessária **além de `OCI_DEPLOY_ENABLED=true`** para publicar automaticamente a cada push na main. Scripts verificam que o service realmente usa o JAR atualizado e exigem `ddl-auto=validate` ou `none` antes de qualquer restart; os dados e configurações da VM não foram alterados nesta revisão. [Guia operacional](docs/DEPLOY_ORACLE.md) · [Arquitetura de segurança](docs/implantacao/CI_CD_ORACLE_SEGURANCA.md) · [Matriz de testes](docs/testes/CI_CD_ORACLE_TESTES.md) · [UML](docs/uml/17_pipeline_oracle_cicd.puml).

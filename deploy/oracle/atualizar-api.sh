@@ -32,9 +32,45 @@ echo "$SHA_ESPERADO  $UPLOAD" | sha256sum --check --status || falhar "SHA-256 di
 sudo -n true || falhar "Usuário remoto não tem sudo não interativo."
 sudo -n test -f "$CONFIG" || falhar "Config externa de produção ausente: $CONFIG"
 sudo -n -u opc test -r "$CONFIG" || falhar "O serviço (opc) não pode ler a configuração externa."
+# Bloquear Hibernate DDL mutante no restart, antes de qualquer alteração de artefato.
+sudo -n awk '
+  /^[[:space:]]*[#!]/ { next }
+  /^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:]/ {
+    count++
+    value=$0
+    sub(/^[^=:]*[=:][[:space:]]*/, "", value)
+    sub(/[[:space:]]*[#!].*$/, "", value)
+    sub(/[[:space:]]+$/, "", value)
+    if (value != "validate" && value != "none") invalid=1
+  }
+  END { exit (count == 1 && !invalid) ? 0 : 1 }
+' "$CONFIG" ||
+  falhar "ddl-auto em produção deve ser validate ou none; DB intocado."
+UNIT_ENV="$(sudo -n systemctl show "$SERVICO" -p Environment --value)"
+if [[ "$UNIT_ENV" == *"SPRING_JPA_HIBERNATE_DDL_AUTO="* ]]; then
+  [[ "$UNIT_ENV" =~ SPRING_JPA_HIBERNATE_DDL_AUTO=(validate|none)([[:space:]]|$) ]] ||
+    falhar "Override systemd de ddl-auto deve ser validate ou none."
+fi
+unset UNIT_ENV
 sudo -n test -f "$MARCADOR" || falhar "Execute antes deploy/oracle/preparar-vm.sh para configurar systemd."
 sudo -n systemctl cat "$SERVICO" > /dev/null || falhar "Serviço foodbridge.service não encontrado."
 sudo -n test -f "$DESTINO" || falhar "JAR anterior não encontrado; nenhuma implantação foi feita."
+[[ "$(sudo -n systemctl show "$SERVICO" -p User --value)" == "opc" ]] ||
+  falhar "O service systemd não executa como opc."
+UNIT_EXEC="$(sudo -n systemctl show "$SERVICO" -p ExecStart --value)"
+UNIT_DIR="$(sudo -n systemctl show "$SERVICO" -p WorkingDirectory --value)"
+if [[ "$UNIT_EXEC" != *"$DESTINO"* ]]; then
+  [[ "$UNIT_DIR" == "$RAIZ" &&
+     "$UNIT_EXEC" == *"build/libs/foodbridge-0.0.1-SNAPSHOT.jar"* ]] ||
+    falhar "ExecStart usa outro JAR; nenhum arquivo substituído."
+fi
+unset UNIT_EXEC UNIT_DIR
+# Não substituir uma versão já indisponível: rollback não recuperaria saúde anterior.
+sudo -n systemctl is-active --quiet "$SERVICO" ||
+  falhar "Serviço não está ativo antes da tentativa de deploy."
+curl --silent --show-error --fail --max-time 5 -o /dev/null \
+  "http://127.0.0.1:8080/dashboards/publico" ||
+  falhar "Health do serviço atual falhou; deploy cancelado antes da troca do JAR."
 
 IDENTIFICADOR="$(date -u +%Y%m%dT%H%M%SZ)-${SHA_ESPERADO:0:12}"
 ANTIGO="$BACKUPS/foodbridge-$IDENTIFICADOR.jar"
