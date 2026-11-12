@@ -75,6 +75,23 @@ jobs:
           ./gradlew --no-daemon --stacktrace clean test bootJar
           test -s build/libs/foodbridge-0.0.1-SNAPSHOT.jar
 
+      - name: Diagnostico isolado do teste de perfil ao falhar
+        if: failure()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          for p in Path('build/test-results/test').glob('*SchemaValidationContextTest*.xml'):
+              root = ET.parse(p).getroot()
+              for case in root.findall('.//testcase'):
+                  for failure in case.findall('failure'):
+                      print('CONTEXT TEST:', case.get('name'))
+                      print('ERROR TYPE:', failure.get('type'))
+                      trace = (failure.text or '').splitlines()
+                      # A role/datasource do teste são dados sintéticos; nunca imprimir configurações.
+                      print('\n'.join(trace[:18]))
+          PY
       - name: Validar contrato de SSH, rollback e scripts (sem tocar na Oracle)
         shell: bash
         run: |
