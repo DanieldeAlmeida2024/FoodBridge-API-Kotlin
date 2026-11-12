@@ -186,13 +186,13 @@ O arquivo atual da VM continua configurado como spring.jpa.hibernate.ddl-auto=up
 - DataInitializer usa @Profile(!schema-validation) e é excluído apenas nesse modo; produção sem o perfil permanece inalterada.
 - SchemaValidationGuard, em fase anterior à criação do DataSource/JPA, exige conexão JDBC loopback 127.0.0.1:5432 ou localhost:5432 para foodbridge_restore_check_*, usuário foodbridge_validate_*, ddl-auto=validate, web-application-type=none e hikari.read-only=true.
 - Se falhar qualquer requisito, aborta o startup; não exibe a URL nem credenciais. Também rejeita override nativo hibernate.hbm2ddl.auto.
-- Essas verificações **não substituem privilégios do PostgreSQL**: a role de teste deve ser sem SUPERUSER/CREATEDB/CREATEROLE, ter apenas CONNECT na cópia, USAGE em schema public e SELECT nas tabelas; nunca obter direitos DML/DDL ou CONNECT no banco original por esse fluxo.
+- Essas verificações **não substituem privilégios do PostgreSQL**: a role de teste deve ser sem SUPERUSER/CREATEDB/CREATEROLE, ter apenas CONNECT na cópia, USAGE em schema public e SELECT nas tabelas; não conceder DML/DDL em nenhum banco e não conceder permissões novas no banco original. Atenção: PostgreSQL pode já conceder CONNECT ao banco original via PUBLIC; não revogar PUBLIC na produção por causa do teste. A guarda da URL exige somente o clone, e a role não deve ter USAGE/SELECT nem permissão de escrita em tabelas do banco original.
 
 ### Procedimento operacional pendente
 
 1. Revisar a PR e obter um **novo** JAR aprovado por CI contendo o perfil; não tocar no JAR associado a foodbridge.service.
 2. Criar role temporária com nome foodbridge_validate_20261112, senha inserida por prompt (nunca em GitHub, logs ou chat), privilégios mínimos sobre foodbridge_restore_check_20261112 e default_transaction_read_only=on.
-3. Verificar pelo próprio login de teste SHOW transaction_read_only=on, current_database()=foodbridge_restore_check_20261112 e ausência de privilégio CONNECT no banco foodbridge original.
+3. Verificar pelo próprio login de teste SHOW default_transaction_read_only=on, current_database()=foodbridge_restore_check_20261112 e que a role não tenha privilégios de leitura ou escrita em tabelas do banco foodbridge original. A permissão CONNECT herdada de PUBLIC, se existir, não prova acesso aos dados.
 4. Executar o **processo Java secundário** com spring.profiles.active=schema-validation, URL/role do clone, spring.jpa.hibernate.ddl-auto=validate, spring.main.web-application-type=none e spring.datasource.hikari.read-only=true. Configuração JWT/admin deve ser lida somente de arquivo local protegido, sem vazar valores.
 5. Conferir conclusão real de inicialização EntityManagerFactory/Hibernate validate; não interpretar CI verde como execução na VM. Aplicação não deve abrir porta HTTP nem executar DataInitializer.
 6. Somente após ensaio, planejar descarte seguro de clone/role por procedimento autorizado; preservar backup por política de retenção e fazer cópia criptografada fora da mesma VM.
