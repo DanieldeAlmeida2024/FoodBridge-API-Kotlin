@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import com.br.foodbridge.middleware.JwtFilter
 import org.springframework.core.env.MapPropertySource
 
 /**
@@ -27,7 +28,13 @@ class SchemaValidationContextTest {
                 )
             )
         )
-        context.register(DataInitializer::class.java, SchemaValidationGuard::class.java)
+        context.register(
+            DataInitializer::class.java,
+            SchemaValidationGuard::class.java,
+            JwtFilter::class.java,
+            SecurityConfig::class.java,
+            PasswordEncoderConfig::class.java
+        )
         return context
     }
 
@@ -38,6 +45,9 @@ class SchemaValidationContextTest {
             context.refresh()
             assertFalse(context.containsBean("dataInitializer"))
             assertFalse(context.containsBean("init"))
+            assertFalse(context.containsBean("jwtFilter"))
+            assertFalse(context.containsBean("securityConfig"))
+            assertTrue(context.containsBean("passwordEncoder"))
         } finally {
             context.close()
         }
