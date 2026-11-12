@@ -169,3 +169,7 @@ Se retornar `SKIPPED`, confirme que a execução foi realmente `workflow_dispatc
 Não ativar `OCI_AUTO_DEPLOY_ENABLED=true` antes de ensaiar rollback em homologação, configurar aprovação em `oracle-production` e aprovar alterações automáticas do backend. Se o preflight reprovar por `ddl-auto=update`, **não altere a opção cegamente**: confira esquema real/migrações e construa plano compatível de banco.
 
 **Falhas e limites:** CI verde na GitHub não significa acesso SSH; a conexão do runner depende de DNS, rede, firewall e SSH da VM. O workflow de CI/CD não reinicia ou faz dump do PostgreSQL; mudanças de esquema executadas pela própria aplicação devem ser tratadas separadamente. A revisão de riscos e testes está em [especificação específica do canal Oracle](implantacao/CI_CD_ORACLE_SEGURANCA.md) e [matriz de testes](testes/CI_CD_ORACLE_TESTES.md).
+
+### CI do contrato comprovado (não equivale ao deploy remoto)
+
+[Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) no código `5da02052170e12f888e00d279b80594c44f4ab90` comprovou build/testes, sintaxe e **sete cenários de preflight simulado**. Os jobs de SSH/deploy ficaram **SKIPPED**, pois o evento era um PR. Após merge, só um `workflow_dispatch` na main com `preflight=true` e secrets SSH autorizados verificará de verdade a instância Oracle. Nenhum valor sensível precisa ser compartilhado no chat.

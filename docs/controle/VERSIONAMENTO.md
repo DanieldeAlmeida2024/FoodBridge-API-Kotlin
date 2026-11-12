@@ -50,3 +50,10 @@ Histórico de evidências **anteriores**: [#43038670928](https://github.com/Dani
 ### Correção de gate detectada pelo CI (12/11/2026)
 
 O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43233569951) reprovou **corretamente** a sintaxe de `atualizar-api.sh` após uma alteração na validação Hibernate. O build Kotlin/Gradle passou, mas `bash -n` bloqueou o CI. O script foi reconstruído a partir do commit anterior válido e a política `ddl-auto=validate|none` reaplicada com teste de duplicação/inteireza do arquivo. Verificar novo CI no HEAD corrigido antes de marcar PASS. Nenhuma VM foi alcançada ou alterada por esses runs de PR.
+
+### Evidência CI do código de preflight e controles de implantação — 12/11/2026
+
+- Commit `5da02052170e12f888e00d279b80594c44f4ab90`: [Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) **SUCCESS**, incluindo `./gradlew clean test bootJar` (Java 21/PostgreSQL CI), `bash -n` dos três scripts, suíte `tests/ci/test_oracle_deploy_contract.py` e **sete testes simulados** de `verificar-vm.sh` (`tests/ci/test_oracle_preflight_contract.py`).
+- Jobs **`Publicar na VM Oracle: SKIPPED`** e **`Preflight Oracle somente leitura: SKIPPED`**, como esperado em um pull request. **Nenhuma conexão SSH ou alteração da VM foi comprovada/executada**.
+- Run anterior [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43233569951) reprovou verificação `bash -n` após um patch incorreto; corrigido a partir de versão válida antes de voltar a PASS. Não ocultar a regressão.
+- Uma atualização posterior apenas de documentação gera novo HEAD, cujo CI deve ser consultado antes de merge. A conexão com a VM e o primeiro deploy manual permanecem fora do escopo dos testes locais.

@@ -40,3 +40,7 @@ python3 -m unittest discover -s tests/ci -p 'test_*_contract.py' -v
 ```
 
 Nunca executar testes de failover sobre o PostgreSQL real. Registrar run, SHA, resultado e contexto de execução por ID, sem capturar valores de configuração de produção.
+
+### Resultado verificado do PR (sem VM)
+
+[Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) no SHA `5da02052170e12f888e00d279b80594c44f4ab90`: **CI SUCCESS**, Gradle Kotlin/Java 21 e PostgreSQL descartável, sintaxe Bash, contrato GitHub Actions e sete casos de preflight remoto simulado. **Não marcar OCI-05..OCI-15 PASS:** jobs Oracle reais não executaram (SKIPPED) nem houve SSH, JAR substituído, Nginx, banco ou serviço reiniciado.
