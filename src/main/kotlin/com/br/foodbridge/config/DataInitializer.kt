@@ -22,6 +22,7 @@ class DataInitializer(
 ) {
 
     @Bean
+    @Profile("!schema-validation")
     fun init() = CommandLineRunner {
 
         if (usuarioRepository.existsByEmail(adminConfig.email)) return@CommandLineRunner

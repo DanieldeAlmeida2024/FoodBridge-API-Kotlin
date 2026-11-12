@@ -27,8 +27,8 @@ class SchemaValidationContextTest {
     @Test
     fun validationProfileOmitsAdminInitializer() {
         runner().run { context ->
-            assertNull(context.startupFailure)
-            assertFalse(context.containsBean("dataInitializer"))
+            assertNull(context.startupFailure, context.startupFailure?.toString())
+            assertFalse(context.containsBean("init"), "Admin CommandLineRunner must not be registered")
         }
     }
 
