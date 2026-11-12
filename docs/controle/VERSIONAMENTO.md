@@ -61,3 +61,10 @@ O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotli
 ### OCI-R07 — 8 casos simulados e proteção contra valores duplicados
 
 O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito casos**: arquivo com `ddl-auto` duplicado reprova, mesmo que haja uma linha segura. `verificar-vm.sh` e `atualizar-api.sh` utilizam inspeção somente leitura e exigem uma única propriedade com `validate` ou `none`. A execução CI do último SHA precisa ser consultada antes da integração.
+
+## FB-OCI-VAL-001 · v1.2.2 (proposta, 12/11/2026)
+
+- Código: DataInitializer desativado apenas no perfil schema-validation; novo SchemaValidationGuard rejeita produção, host remoto, role não dedicada, JPA DDL inseguro e processo HTTP.
+- Testes: SchemaValidationPolicyTest.kt e tests/ci/test_schema_validation_contract.py; executar CI na PR, e diferenciar do ensaio na VM.
+- Evidência operacional informada: pg_dump Custom restaurado em clone isolado, 7 tabelas / 61 colunas / 8 FKs. O banco de produção não foi alterado.
+- Estado: teste de Hibernate validate com role restrita na cópia permanece PENDENTE.

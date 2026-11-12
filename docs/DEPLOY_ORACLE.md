@@ -174,3 +174,27 @@ Não ativar `OCI_AUTO_DEPLOY_ENABLED=true` antes de ensaiar rollback em homologa
 ### CI do contrato comprovado (não equivale ao deploy remoto)
 
 [Actions #43235395978](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43235395978) no código `5da02052170e12f888e00d279b80594c44f4ab90` comprovou build/testes, sintaxe e **sete cenários de preflight simulado**. Os jobs de SSH/deploy ficaram **SKIPPED**, pois o evento era um PR. Após merge, só um `workflow_dispatch` na main com `preflight=true` e secrets SSH autorizados verificará de verdade a instância Oracle. Nenhum valor sensível precisa ser compartilhado no chat.
+
+## FB-OCI-VAL-001 — Validar Hibernate em clone restaurado (v1.2.2, 12/11/2026)
+
+**Evidência da VM informada pelo mantenedor:** backup pg_dump Custom com 38.212 bytes e permissão 0600 em /var/backups/foodbridge/foodbridge-20261112T183930Z.dump. Restauração com pg_restore --single-transaction --exit-on-error na cópia foodbridge_restore_check_20261112 concluída; 7 tabelas, 61 colunas e 8 FKs. O banco foodbridge original permaneceu intacto. Não é evidência de compatibilidade JPA.
+
+O arquivo atual da VM continua configurado como spring.jpa.hibernate.ddl-auto=update. O DataInitializer.kt pode gravar dados administrativos no startup, por isso **não executar o JAR atual** apontando para a produção nem tentar validar sem isolamento.
+
+### Novo perfil opcional schema-validation
+
+- DataInitializer usa @Profile(!schema-validation) e é excluído apenas nesse modo; produção sem o perfil permanece inalterada.
+- SchemaValidationGuard, em fase anterior à criação do DataSource/JPA, exige conexão JDBC loopback 127.0.0.1:5432 ou localhost:5432 para foodbridge_restore_check_*, usuário foodbridge_validate_*, ddl-auto=validate, web-application-type=none e hikari.read-only=true.
+- Se falhar qualquer requisito, aborta o startup; não exibe a URL nem credenciais. Também rejeita override nativo hibernate.hbm2ddl.auto.
+- Essas verificações **não substituem privilégios do PostgreSQL**: a role de teste deve ser sem SUPERUSER/CREATEDB/CREATEROLE, ter apenas CONNECT na cópia, USAGE em schema public e SELECT nas tabelas; nunca obter direitos DML/DDL ou CONNECT no banco original por esse fluxo.
+
+### Procedimento operacional pendente
+
+1. Revisar a PR e obter um **novo** JAR aprovado por CI contendo o perfil; não tocar no JAR associado a foodbridge.service.
+2. Criar role temporária com nome foodbridge_validate_20261112, senha inserida por prompt (nunca em GitHub, logs ou chat), privilégios mínimos sobre foodbridge_restore_check_20261112 e default_transaction_read_only=on.
+3. Verificar pelo próprio login de teste SHOW transaction_read_only=on, current_database()=foodbridge_restore_check_20261112 e ausência de privilégio CONNECT no banco foodbridge original.
+4. Executar o **processo Java secundário** com spring.profiles.active=schema-validation, URL/role do clone, spring.jpa.hibernate.ddl-auto=validate, spring.main.web-application-type=none e spring.datasource.hikari.read-only=true. Configuração JWT/admin deve ser lida somente de arquivo local protegido, sem vazar valores.
+5. Conferir conclusão real de inicialização EntityManagerFactory/Hibernate validate; não interpretar CI verde como execução na VM. Aplicação não deve abrir porta HTTP nem executar DataInitializer.
+6. Somente após ensaio, planejar descarte seguro de clone/role por procedimento autorizado; preservar backup por política de retenção e fazer cópia criptografada fora da mesma VM.
+
+Não habilitar OCI_DEPLOY_ENABLED nem OCI_AUTO_DEPLOY_ENABLED antes de revisar segurança, configuração externa e esquema. O teste Hibernate real ainda não aconteceu.

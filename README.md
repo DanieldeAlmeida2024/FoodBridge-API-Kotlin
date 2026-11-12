@@ -65,3 +65,7 @@ Documentos: [requisitos](docs/REQUISITOS.md), [arquitetura](docs/ARQUITETURA.md)
 ### Pré-flight somente leitura antes de habilitar deploy (FB-OCI-CD v1.2.0 proposta)
 
 O pipeline agora diferencia `workflow_dispatch preflight=true` (SSH/serviço/configuração/saúde, sem deploy) de `deploy=true` (publicação manual após CI). A variável `OCI_AUTO_DEPLOY_ENABLED=true` é necessária **além de `OCI_DEPLOY_ENABLED=true`** para publicar automaticamente a cada push na main. Scripts verificam que o service realmente usa o JAR atualizado e exigem `ddl-auto=validate` ou `none` antes de qualquer restart; os dados e configurações da VM não foram alterados nesta revisão. [Guia operacional](docs/DEPLOY_ORACLE.md) · [Arquitetura de segurança](docs/implantacao/CI_CD_ORACLE_SEGURANCA.md) · [Matriz de testes](docs/testes/CI_CD_ORACLE_TESTES.md) · [UML](docs/uml/17_pipeline_oracle_cicd.puml).
+
+### Validação isolada Oracle (FB-OCI-VAL-001)
+
+Novo perfil opcional schema-validation exige banco restaurado foodbridge_restore_check_*, role dedicada somente leitura e Hibernate ddl-auto=validate, sem executar DataInitializer. É ferramenta em revisão, não executada na VM e não substitui backup nem migrações controladas. Veja [guia Oracle](docs/DEPLOY_ORACLE.md) e [matriz OCI-19](docs/testes/CI_CD_ORACLE_TESTES.md).

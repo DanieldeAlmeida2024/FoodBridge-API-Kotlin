@@ -49,4 +49,11 @@ Os scripts do CI/CD não executam SQL, mas o reinício
 do Spring exige revisão do ddl-auto e de migrações.
 Nenhum teste de CI usa o PostgreSQL existente.
 end note
+note over VM,ProdPG
+Perfil opcional schema-validation exige clone
+foodbridge_restore_check_* no loopback, role
+somente leitura e ddl-auto=validate.
+DataInitializer fica desabilitado nesse perfil.
+Execucao real na VM ainda pendente.
+end note
 @enduml

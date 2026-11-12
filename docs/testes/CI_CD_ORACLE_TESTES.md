@@ -49,3 +49,16 @@ Nunca executar testes de failover sobre o PostgreSQL real. Registrar run, SHA, r
 ### Expansão da proteção de propriedades duplicadas
 
 A versão proposta agora usa `awk` de forma somente leitura para validar **exatamente uma** definição de `spring.jpa.hibernate.ddl-auto` no arquivo externo, com valor `validate` ou `none`. Um segundo valor `update` no mesmo arquivo deve bloquear a publicação. O teste `test_rejects_duplicate_ddl_auto_properties` foi adicionado à suíte de preflight simulado. O comportamento real na VM continua pendente, mesmo com o CI verde.
+
+### OCI-19 — teste clone-only de compatibilidade Hibernate (v1.2.2 proposta)
+
+| Caso | Critério | Estado |
+|---|---|---|
+| OCI-19A | URL JDBC de foodbridge, host remoto e porta/DB não previstos rejeitados | Unitário proposto; VM pendente |
+| OCI-19B | DDL update/create/create-drop/none e override nativo são rejeitados | Unitário proposto; VM pendente |
+| OCI-19C | Usuário postgres/foodbridge, web ativo e read-only=false rejeitados | Unitário proposto; VM pendente |
+| OCI-19D | DataInitializer não executa com schema-validation | Contrato estático proposto; integração pendente |
+| OCI-19E | JAR novo executa Hibernate validate na cópia com role PostgreSQL sem escrita | NÃO EXECUTADO |
+| OCI-19F | Remoção segura posterior de role/clone sem tocar em foodbridge | NÃO EXECUTADO |
+
+CI verde só comprova testes unitários e contratos, não o ensaio com banco restaurado real.
