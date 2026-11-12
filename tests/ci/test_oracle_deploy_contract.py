@@ -61,6 +61,13 @@ class OracleDeployContract(unittest.TestCase):
         self.assertNotIn("psql ", deploy + prepare)
         self.assertNotIn("pg_restore", deploy + prepare)
 
+    def test_ddl_auto_remains_non_mutating_on_service_restart(self):
+        for script in (preflight, deploy):
+            self.assertIn("spring[.]jpa[.]hibernate[.]ddl-auto", script)
+            self.assertIn("(validate|none)", script)
+            self.assertIn("SPRING_JPA_HIBERNATE_DDL_AUTO", script)
+            self.assertNotIn("ddl-auto=update", script.replace("# O restart do Spring pode executar DDL se spring.jpa.hibernate.ddl-auto=update.", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

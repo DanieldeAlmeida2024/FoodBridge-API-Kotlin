@@ -33,6 +33,37 @@ sudo -n systemctl show "$SERVICE" -p Environment --value |
   fail "Variável externa de configuração não foi aplicada no systemd."
 check "configuração externa existente e legível (sem exibir valores)"
 
+# O restart do Spring pode executar DDL se spring.jpa.hibernate.ddl-auto=update.
+# Exigir política explícita não-mutante em arquivo externo ANTES de qualquer troca.
+sudo -n grep -Eq '^[[:space:]]*spring[.]jpa[.]hibernate[.]ddl-auto[[:space:]]*[=:][[:space:]]*(validate|none)[[:space:]]*([#!].*)?
+sudo -n test -s "$JAR" || fail "JAR esperado no destino não existe."
+UNIT_EXEC="$(sudo -n systemctl show "$SERVICE" -p ExecStart --value)"
+UNIT_DIR="$(sudo -n systemctl show "$SERVICE" -p WorkingDirectory --value)"
+if [[ "$UNIT_EXEC" != *"$JAR"* ]]; then
+  [[ "$UNIT_DIR" == "$ROOT" &&
+     "$UNIT_EXEC" == *"build/libs/foodbridge-0.0.1-SNAPSHOT.jar"* ]] ||
+    fail "ExecStart não aponta para o JAR que o pipeline substitui."
+fi
+unset UNIT_EXEC UNIT_DIR
+check "JAR corresponde ao comando de inicialização efetivo"
+
+sudo -n systemctl is-active --quiet "$SERVICE" ||
+  fail "Serviço não está ativo antes do deploy."
+curl --silent --show-error --fail --max-time 5 --output /dev/null "$HEALTH" ||
+  fail "Endpoint público de saúde não respondeu antes do deploy."
+check "serviço atual saudável via loopback"
+
+printf 'PREFLIGHT ORACLE: PASS (somente leitura, nenhum deploy executado)\n'
+ "$CONFIG" ||
+  fail "Producao exige spring.jpa.hibernate.ddl-auto=validate (ou none) explicitamente na configuração externa."
+UNIT_ENV="$(sudo -n systemctl show "$SERVICE" -p Environment --value)"
+if [[ "$UNIT_ENV" == *"SPRING_JPA_HIBERNATE_DDL_AUTO="* ]]; then
+  [[ "$UNIT_ENV" =~ SPRING_JPA_HIBERNATE_DDL_AUTO=(validate|none)([[:space:]]|$) ]] ||
+    fail "Override systemd de ddl-auto não é validate/none."
+fi
+unset UNIT_ENV
+check "JPA DDL-auto não destrutivo (configuração externa)"
+
 sudo -n test -s "$JAR" || fail "JAR esperado no destino não existe."
 UNIT_EXEC="$(sudo -n systemctl show "$SERVICE" -p ExecStart --value)"
 UNIT_DIR="$(sudo -n systemctl show "$SERVICE" -p WorkingDirectory --value)"
