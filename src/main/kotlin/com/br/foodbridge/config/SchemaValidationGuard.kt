@@ -1,9 +1,9 @@
 package com.br.foodbridge.config
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.context.EnvironmentAware
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
@@ -13,7 +13,13 @@ import org.springframework.stereotype.Component
  */
 @Component
 @Profile("schema-validation")
-class SchemaValidationGuard @Autowired constructor(private val environment: Environment) : BeanFactoryPostProcessor {
+class SchemaValidationGuard : BeanFactoryPostProcessor, EnvironmentAware {
+    private lateinit var environment: Environment
+
+    override fun setEnvironment(environment: Environment) {
+        this.environment = environment
+    }
+
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         SchemaValidationPolicy.requireSafe(
             datasourceUrl = environment.getProperty("spring.datasource.url"),
