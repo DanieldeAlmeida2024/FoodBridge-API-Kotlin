@@ -46,3 +46,5 @@ Os 16 diagramas PlantUML completos estão em `UML/`; para navegação rápida, o
 ## Visualização
 
 Abrir `.puml` no PlantUML, extensão VS Code ou renderizador de confiança. Alterações na estrutura de pastas exigem revisão de links. Nenhum diagrama deve ser usado como prova automática de autorização segura ou de serialização sem erros.
+
+- `17_pipeline_oracle_cicd.puml` — **FB-OCI-CD v1.2.0**, sequência CI Java/PostgreSQL descartável → pré-flight SSH somente leitura → deploy JAR/health/rollback; PR de CD não equivale a deploy comprovado.

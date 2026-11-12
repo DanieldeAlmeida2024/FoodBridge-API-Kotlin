@@ -1,0 +1,52 @@
+@startuml
+title FoodBridge FB-OCI-CD-001 v1.2.0 — CI, preflight e CD Oracle
+actor "Mantenedor" as Maintainer
+participant "GitHub Actions" as GH
+database "PostgreSQL 16 CI descartável" as CIPG
+collections "JAR aprovado / Artifact" as Artifact
+participant "SSH (host key fixada)" as SSH
+participant "Oracle Linux 9 / opc" as VM
+participant "systemd foodbridge.service" as Service
+database "PostgreSQL local existente" as ProdPG
+
+Maintainer -> GH : pull_request / push / workflow_dispatch
+GH -> CIPG : Iniciar DB efêmero
+GH -> GH : Java 21, Gradle test, bootJar, bash -n, unittest
+CIPG --> GH : testes concluídos
+alt CI falha
+  GH --> Maintainer : FAIL, sem SSH
+else CI aprova
+  GH -> Artifact : Upload JAR aprovado
+  alt preflight=true, deploy=false, main
+    GH -> SSH : Login dedicado + known_hosts verificado
+    SSH -> VM : bash -s verificar-vm.sh (leitura)
+    VM -> Service : consultar User/ExecStart/Environment/health
+    VM --> GH : PASS / FAIL sem alterar VM
+  else deploy=true, OCI_DEPLOY_ENABLED=true
+    GH -> SSH : Preflight obrigatório primeiro
+    SSH -> VM : Verificar service, Jar, config, ddl-auto, saúde
+    alt preflight não aprova
+      VM --> GH : FAIL; nada substituído
+    else preflight aprova
+      GH -> SSH : SCP artifact aprovado; SHA-256
+      SSH -> VM : atualizar-api.sh
+      VM -> VM : backup JAR antigo / troca atômica
+      VM -> Service : restart e health local
+      alt health falha
+        VM -> VM : restaurar JAR anterior
+        VM -> Service : restart / health do rollback
+        VM --> GH : FAIL, rollback reportado
+      else health OK
+        VM --> GH : DEPLOY OK
+      end
+    end
+  else push, auto não habilitado
+    GH --> Maintainer : deploy-oracle SKIPPED
+  end
+end
+note over VM,ProdPG
+Os scripts do CI/CD não executam SQL, mas o reinício
+do Spring exige revisão do ddl-auto e de migrações.
+Nenhum teste de CI usa o PostgreSQL existente.
+end note
+@enduml

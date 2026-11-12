@@ -43,3 +43,12 @@ A classificação abaixo resulta da inspeção do código (risco potencial ou de
 ## Critério para encerramento
 
 Nenhum risco é encerrado somente por documentação. Exigir código corrigido, teste reproduzível (preferencialmente negativo + positivo), evidência de CI e atualização da matriz.
+
+## Riscos de publicação Oracle identificados em 12/11/2026 — FB-OCI-CD v1.2.0
+
+- **OCI-R01 · P0:** a API pode atualizar esquema durante restart se `spring.jpa.hibernate.ddl-auto=update`. O pipeline exige `validate` ou `none` no arquivo externo e override systemd compatível, mas **não inspeciona outras fontes de propriedades** nem garante ausência de migrações executadas pela aplicação. Não trocar a configuração sem migrações e backup aprovados.
+- **OCI-R02 · P0:** a unit systemd pode iniciar um JAR diferente do substituído pelo pipeline. Preflight, preparo e update verificam ExecStart/WorkingDirectory para impedir falso sucesso.
+- **OCI-R03 · P0:** só o CI teve sucesso; nos runs da main o job de deploy foi `skipped`. Falta comprovação SSH/known_hosts/config/health/rollback na VM. A preparação e preflight dependem de ação explícita do mantenedor.
+- **OCI-R04 · Alto:** usuário `opc` com `sudo -n` é amplo; limitar a conta de deploy, usar chave dedicada e proteção do environment antes de autorizar auto-deploy.
+- **OCI-R05 · Alto:** cancelar um workflow durante swap/restart pode interromper rollback. `cancel-in-progress=false` impede cancelamento automático por novo run do mesmo grupo, mas não evita queda do runner/VM. Ensaiar recuperação manual.
+- **OCI-R06 · P0:** PRs #4/#5/#6 de segurança funcional seguem draft; CI verde de `main` não substitui testes de autorização/tenant antes de publicar externamente.

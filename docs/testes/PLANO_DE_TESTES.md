@@ -940,3 +940,7 @@ Para cada caso registrar: ID, commit, ambiente, fixture, data, executor, input J
 ## Gestão de execução
 
 Registrar para cada ID: data, commit testado, ambiente, versão documental, fixture sintética, executor, saída observada, evidência sanitizada, PASS/FAIL/BLOCKED e issue/PR correlatos. A [matriz de rastreabilidade](MATRIZ_RASTREABILIDADE.md) vincula o endpoint aos casos.
+
+## Contrato adicional de CI/CD Oracle (FB-OCI-TST v1.2.0 proposta)
+
+A automação de publicação tem **matriz específica OCI-01..OCI-16** para validação de scripts, postgreSQL descartável, SSH pinado, known_hosts, service opc, ExecStart do JAR, arquivo de configuração externo, ddl-auto validate/none, preflight sem alterações, rollback e deploy manual autorizado. Consultar [plano próprio](CI_CD_ORACLE_TESTES.md). A cobertura de CI não inclui execuções na VM; **OCI-05..OCI-15 requerem evidência externa e não podem ser marcados PASS pela suite unitária**.
