@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      preflight:
+        description: 'Apenas verificar SSH/serviço Oracle; não publica nem reinicia'
+        required: true
+        type: boolean
+        default: false
       deploy:
         description: 'Publicar na Oracle Cloud apos CI (requer configuracao e secrets)'
         required: true
@@ -18,7 +23,8 @@ permissions:
 
 concurrency:
   group: foodbridge-api-${{ github.ref }}
-  cancel-in-progress: true
+  # Não interromper um deploy entre troca do JAR, restart e rollback.
+  cancel-in-progress: false
 
 jobs:
   build-e-testes:
@@ -88,10 +94,54 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+
+  verificar-oracle:
+    name: Preflight Oracle somente leitura (sem deploy)
+    needs: [build-e-testes]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.preflight == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: oracle-production
+    env:
+      OCI_SSH_HOST: ${{ vars.OCI_SSH_HOST }}
+      OCI_SSH_USER: ${{ vars.OCI_SSH_USER }}
+      OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+      OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Checkout de verificações sem modificar a VM
+        uses: actions/checkout@v4
+      - name: Validar secrets e preparar SSH com host key fixada
+        shell: bash
+        run: |
+          set -euo pipefail
+          for nome in OCI_SSH_HOST OCI_SSH_USER OCI_SSH_PRIVATE_KEY OCI_SSH_KNOWN_HOSTS; do
+            if [[ -z "${!nome:-}" ]]; then
+              echo "::error::Falta ${nome}; confira docs/DEPLOY_ORACLE.md"
+              exit 1
+            fi
+          done
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$HOME/.ssh/foodbridge_deploy"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/foodbridge_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/foodbridge_deploy" > /dev/null
+      - name: Verificar VM em modo somente leitura
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10)
+          ssh "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'bash -s' < deploy/oracle/verificar-vm.sh
+      - name: Apagar chave temporária
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.ssh/foodbridge_deploy"
+
   deploy-oracle:
     name: Publicar na VM Oracle
     needs: [build-e-testes]
-    if: github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy == true))
+    # Manual deploy ou auto-deploy com duas habilitações distintas.
+    if: github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true' && !inputs.preflight && ((github.event_name == 'workflow_dispatch' && inputs.deploy == true) || (github.event_name == 'push' && vars.OCI_AUTO_DEPLOY_ENABLED == 'true'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: oracle-production
@@ -128,11 +178,17 @@ jobs:
           ssh-keygen -y -f "$HOME/.ssh/foodbridge_deploy" > /dev/null
           test -s pacote/foodbridge-0.0.1-SNAPSHOT.jar
 
+      - name: Pré-flight obrigatório sem escrita antes do deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10)
+          ssh "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'bash -s' < deploy/oracle/verificar-vm.sh
       - name: Transferir JAR e aplicar com rollback
         shell: bash
         run: |
           set -euo pipefail
-          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes)
+          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10)
           REMOTO="${OCI_SSH_USER}@${OCI_SSH_HOST}"
           JAR="pacote/foodbridge-0.0.1-SNAPSHOT.jar"
           SOMA="$(sha256sum "$JAR" | cut -d' ' -f1)"
