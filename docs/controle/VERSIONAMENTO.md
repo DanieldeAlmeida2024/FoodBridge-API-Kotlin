@@ -46,3 +46,7 @@ Os anexos de entrada foram: `Plano_de_Testes_FoodBridge(1).md`, `Matriz_de_Rastr
 | OCI-UML | `docs/uml/17_pipeline_oracle_cicd.puml` | Sequência PlantUML versionada de CI, preflight, CD e rollback |
 
 Histórico de evidências **anteriores**: [#43038670928](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43038670928) e [#43032061904](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43032061904), CI PASS, CD SKIPPED. Esse PR de segurança cria mecanismo de preflight mas **não prova deploy remoto**. A nova execução deve ser anexada somente após o CI do HEAD.
+
+### Correção de gate detectada pelo CI (12/11/2026)
+
+O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43233569951) reprovou **corretamente** a sintaxe de `atualizar-api.sh` após uma alteração na validação Hibernate. O build Kotlin/Gradle passou, mas `bash -n` bloqueou o CI. O script foi reconstruído a partir do commit anterior válido e a política `ddl-auto=validate|none` reaplicada com teste de duplicação/inteireza do arquivo. Verificar novo CI no HEAD corrigido antes de marcar PASS. Nenhuma VM foi alcançada ou alterada por esses runs de PR.

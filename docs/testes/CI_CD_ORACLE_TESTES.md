@@ -32,11 +32,11 @@ Esses três runs **não comprovam SSH, deploy, health remoto nem rollback**. As 
 
 ### Reprodução local sem tocar na VM
 
-\`\`\`bash
+```bash
 bash -n deploy/oracle/preparar-vm.sh
 bash -n deploy/oracle/verificar-vm.sh
 bash -n deploy/oracle/atualizar-api.sh
 python3 -m unittest discover -s tests/ci -p 'test_*_contract.py' -v
-\`\`\`
+```
 
 Nunca executar testes de failover sobre o PostgreSQL real. Registrar run, SHA, resultado e contexto de execução por ID, sem capturar valores de configuração de produção.
