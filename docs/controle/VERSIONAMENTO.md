@@ -1,5 +1,24 @@
 # FoodBridge — controle de versão dos documentos
 
+## v1.2.0 — inventário integral, documentação atual e trilha didática (13/11/2026)
+
+Esta revisão é **exclusivamente documental e de verificação de documentação**. O material se baseia no código API Kotlin e web React corrente, após homologação do CD automático nos runs [API #43465999269](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269) e [web #43465805656](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656).
+
+| ID | Documento | Finalidade |
+|---|---|---|
+| FB-DOC-HUB-001 | [Índice atual](../README_DOCUMENTACAO.md) | Navegar toda a documentação |
+| FB-INVENT-001 | [Inventário de arquivos](../INVENTARIO_PROJETO.md) | Todos os caminhos versionados, com validação Git por CI |
+| FB-API-CAT-001 | [Catálogo REST](../REFERENCIA_API_ATUAL.md) | 50 endpoints de nove controllers |
+| FB-ARC-ATUAL-001 | [Arquitetura atual](../ARQUITETURA_ATUAL.md) | Diagramas Mermaid de camadas, ER, fluxo e Oracle |
+| FB-FUNC-ATUAL-001 | [Recursos e estado](../RECURSOS_E_STATUS.md) | Implementado x testado x riscos pendentes |
+| FB-ESTUDO-001 | [Guia de estudo](../GUIA_ESTUDO.md) | Trilha de aprendizado, exercícios e perguntas |
+| FB-DEMO-001 | [Apresentação](../APRESENTACAO_PROJETO.md) | Pitch, slides e demo com evidências |
+
+O gerador versionado `tools/atualizar_inventario.py` executa `git ls-files`; o contrato `tests/ci/test_inventory_contract.py` falha se qualquer arquivo rastreado não constar no inventário, ou houver arquivo obsoleto. **Isso controla a lista de caminhos, não garante a atualização semântica de texto ao alterar apenas conteúdo.** PRs futuros devem atualizar o mapa funcional, API e diagrams quando alterarem comportamento.
+
+As especificações de 29/10 e 11/11 permanecem como histórico: o número antigo de 49 endpoints foi substituído por 50 com `/health/live`, e as flags de deploy manual não descrevem mais a operação atual.
+
+
 **Identificador:** FB-DOC-CTRL · **Versão do conjunto:** 1.1.0 · **Atualização:** 11/11/2026 · **Responsável técnico:** mantenedor do repositório / revisão de código por PR.
 
 ## Documentos controlados

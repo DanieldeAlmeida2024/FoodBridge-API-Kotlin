@@ -1,67 +1,50 @@
-# FoodBridge — API Kotlin/Spring Boot
+# FoodBridge — API Kotlin / Spring Boot
 
-[![FoodBridge API — CI](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml/badge.svg)](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml)
+[![CI/CD API Oracle](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml/badge.svg)](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/workflows/foodbridge-ci-cd.yml)
 
-Serviço de backend para redistribuição de alimentos, usuários, organizações e fluxos de doação. Desenvolvido em **Kotlin 2.2**, **Spring Boot 3.2.5**, **Java 21**, **Gradle** e **PostgreSQL**.
+O FoodBridge conecta organizações que disponibilizam alimentos a ONGs que os recebem. O backend organiza cadastro, autenticação, vínculos, doações, solicitações, voluntários, aprovações e indicadores sociais.
 
-## Preparação
+**Stack real:** Kotlin 2.2.21 · Spring Boot 3.2.5 · Java 21 · Spring Security/JWT · JPA/Hibernate · PostgreSQL · Gradle. **Interface:** [Foodbridge-Frontend-React](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React).
 
-1. Instale Java 21 e PostgreSQL.
-2. Configure um banco local de desenvolvimento e um usuário com privilégios mínimos.
-3. Configure as propriedades a partir de `src/main/resources/application.properties.example`. Não versionar senhas, JWT secrets ou credenciais do administrador.
-4. Execute na raiz:
+## O que existe
+
+- **50 endpoints REST** catalogados nos nove controllers, incluindo `GET /health/live`.
+- Usuários, organizações, vínculos e papéis `DOADOR`, `PRODUTOR`, `DISTRIBUIDOR`, `ONG`, `ADMIN`.
+- Autenticação JWT com contexto `TEMP` e `ACCESS`; autorização de negócio por vínculo e organização.
+- Gestão de doações, solicitações e coleta, estoque concorrente por transação, voluntários e dashboards.
+- Testes JUnit com PostgreSQL descartável em CI, contratos de SSH e fluxo automático de publicação.
+- CD real na Oracle Linux 9 `VM.Standard.E2.1.Micro`: backup de JAR, restart, health e rollback via GitHub Actions.
+
+**Evidência de CD automático:** [execução #43465999269 — SUCCESS](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269). O frontend publicou automaticamente no [run #43465805656](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656). O deploy é disparado em push de **código** na `main`, sem flags manuais; PRs executam CI, e commits somente de documentação não disparam deploy.
+
+## Documentação completa para estudar e apresentar
+
+**[Central de documentação](docs/README_DOCUMENTACAO.md)** · [Inventário de todos os arquivos](docs/INVENTARIO_PROJETO.md) · [Recursos e status](docs/RECURSOS_E_STATUS.md) · [50 rotas da API](docs/REFERENCIA_API_ATUAL.md) · [Arquitetura e Mermaid](docs/ARQUITETURA_ATUAL.md) · [Guia de estudo](docs/GUIA_ESTUDO.md) · [Roteiro de apresentação](docs/APRESENTACAO_PROJETO.md).
+
+A documentação histórica continua versionada: [requisitos](docs/projeto/ESPECIFICACAO_PROJETO.md), [UML PlantUML](docs/uml/README.md), [testes planejados](docs/testes/PLANO_DE_TESTES.md), [matriz de rastreabilidade](docs/testes/MATRIZ_RASTREABILIDADE.md), [incidente e recuperação da Oracle](docs/implantacao/INCIDENTE_DEPLOY_API_20261113.md).
+
+## Executar em ambiente local
+
+Instale JDK 21 e disponibilize um **PostgreSQL local de desenvolvimento**. Configure propriedades com base em `src/main/resources/application.properties.example` sem versionar senha do banco, segredo JWT ou credenciais de administrador.
 
 ```powershell
 .\gradlew.bat bootRun
+.\gradlew.bat clean test
+.\gradlew.bat bootJar
 ```
 
-Em Linux/macOS: `./gradlew bootRun`.
+Linux/macOS: `./gradlew bootRun` e `./gradlew clean test`. O CI monta seu próprio PostgreSQL efêmero; **nunca apontar testes para o banco de produção**. O exemplo de propriedades contém `ddl-auto=update` para ambiente de desenvolvimento; produção exige `validate` ou `none`, conforme preflight.
 
-## Testar
+Para conferir inventário rastreável:
 
-```powershell
-.\gradlew.bat test
+```bash
+python3 tools/atualizar_inventario.py --check
 ```
 
-As coleções Postman estão em `postman/collections`. Confirme URL base e credenciais de teste antes de executar operações que modifiquem dados.
+Ao adicionar/remover/renomear arquivos, usar `--write` e incluir o inventário atualizado no PR. O CI verifica essa consistência.
 
-## GitHub Actions e Oracle Cloud
+## Limites conhecidos
 
-O workflow `.github/workflows/foodbridge-ci-cd.yml` compila, executa testes com PostgreSQL temporário e publica o JAR aprovado como artefato. O deploy na VM só é habilitado após a configuração segura de SSH e a variável `OCI_DEPLOY_ENABLED=true`. A atualização possui backup e rollback automático.
+Ter CI/CD funcionando não significa todos os fluxos homologados em navegador real. A Oracle Micro tem recursos limitados; frontend usa tokens no localStorage, TLS/HTTPS e backups restauráveis de banco exigem verificação própria, e dados pessoais de voluntários requerem proteção e política LGPD. A [matriz de recursos](docs/RECURSOS_E_STATUS.md) distingue implementação, testes e lacunas.
 
-**[Guia de preparação e ativação do deploy Oracle](docs/DEPLOY_ORACLE.md)**. Não inclua credenciais reais no GitHub e não use o banco de produção nos testes de CI.
-
-## Arquitetura
-
-- `controller/`: entrada HTTP e DTOs.
-- `service/`: regras e processos.
-- `domain/`: entidades, enumerações e repositórios.
-- `middleware/JwtFilter.kt`: leitura e validação de JWT.
-- `config/`: configuração de autenticação, banco e aplicação.
-- `src/test/`: testes JUnit.
-
-Documentos: [requisitos](docs/REQUISITOS.md), [arquitetura](docs/ARQUITETURA.md), [UML](docs/UML.puml), [plano de testes](docs/PLANO_TESTES.md), [instruções para IA](AGENTS.md).
-
-## Segurança e estado
-
-- A política de acesso diferencia tokens temporários e de acesso. Revise as permissões por endpoint ao acrescentar novas rotas.
-- Nunca registrar o conteúdo do token, cabeçalho Authorization ou dados de sessão.
-- `ddl-auto=update` no exemplo não substitui migrações controladas para produção.
-- A suíte automatizada de CI inicia seu próprio PostgreSQL descartável. A execução remota na Oracle Cloud requer preparação da VM e secrets de SSH; a configuração remota ainda não foi validada.
-
-**Estado:** aplicação em desenvolvimento, não certificada para produção.
-
-## Documentação técnica aprofundada (v1.1.0)
-
-- [Projeto, requisitos e 49 endpoints](docs/projeto/ESPECIFICACAO_PROJETO.md)
-- [Riscos e regras pendentes](docs/projeto/RISCOS.md)
-- [Arquitetura e 16 diagramas UML editáveis](docs/uml/README.md)
-- [Plano de testes com 165 casos planejados](docs/testes/PLANO_DE_TESTES.md)
-- [Matriz de rastreabilidade rota × teste](docs/testes/MATRIZ_RASTREABILIDADE.md)
-- [Versionamento e histórico de revisão](docs/controle/VERSIONAMENTO.md)
-
-> O plano mestre tem como base a análise estática de outubro de 2026; o CI aprovado em novembro não equivale à execução de todos os cenários.
-
-### Pré-flight somente leitura antes de habilitar deploy (FB-OCI-CD v1.2.0 proposta)
-
-O pipeline agora diferencia `workflow_dispatch preflight=true` (SSH/serviço/configuração/saúde, sem deploy) de `deploy=true` (publicação manual após CI). A variável `OCI_AUTO_DEPLOY_ENABLED=true` é necessária **além de `OCI_DEPLOY_ENABLED=true`** para publicar automaticamente a cada push na main. Scripts verificam que o service realmente usa o JAR atualizado e exigem `ddl-auto=validate` ou `none` antes de qualquer restart; os dados e configurações da VM não foram alterados nesta revisão. [Guia operacional](docs/DEPLOY_ORACLE.md) · [Arquitetura de segurança](docs/implantacao/CI_CD_ORACLE_SEGURANCA.md) · [Matriz de testes](docs/testes/CI_CD_ORACLE_TESTES.md) · [UML](docs/uml/17_pipeline_oracle_cicd.puml).
+**Orientação para contribuições:** [AGENTS.md](AGENTS.md), e registre impacto documental em [docs/controle/VERSIONAMENTO.md](docs/controle/VERSIONAMENTO.md).
