@@ -1,0 +1,60 @@
+name: Oracle - readiness deploy SSH sem escrita
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/oracle-deploy-readiness.yml'
+      - 'deploy/oracle/verificar-predeploy-completo.sh'
+permissions:
+  contents: read
+concurrency:
+  group: foodbridge-oci-ssh-deploy-readiness
+  cancel-in-progress: false
+jobs:
+  readiness:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: oracle-production
+    timeout-minutes: 12
+    env:
+      SSH_HOST: ${{ vars.OCI_SSH_HOST }}
+      SSH_USER: ${{ vars.OCI_SSH_USER }}
+      SSH_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Checkout sem credenciais persistentes
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar sintaxe do script somente leitura
+        shell: bash
+        run: bash -n deploy/oracle/verificar-predeploy-completo.sh
+      - name: Preparar RSA dedicada com host fixado
+        shell: bash
+        run: |
+          set -euo pipefail
+          for v in SSH_HOST SSH_USER SSH_KEY SSH_KNOWN_HOSTS; do
+            [[ -n "${!v:-}" ]] || { echo "::error::Falta $v no environment"; exit 1; }
+          done
+          umask 077
+          install -d -m 0700 "$RUNNER_TEMP/foodbridge-oci-readiness"
+          printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/foodbridge-oci-readiness/known_hosts"
+          ssh-keygen -y -f "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa" -P '' > "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa.pub"
+          actual="$(ssh-keygen -lf "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa.pub" -E sha256 | awk '{print $2}')"
+          [[ "$actual" == 'SHA256:3zV6jlZeYgt19xz4h0KrumznEr3SNlyAEiolj+XrmO8' ]] || { echo '::error::Fingerprint RSA incorreta'; exit 1; }
+      - name: Conferir precondicoes reais na Oracle (sem deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          OPTS=(-i "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa"
+            -o IdentityAgent=none -o IdentitiesOnly=yes -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="$RUNNER_TEMP/foodbridge-oci-readiness/known_hosts"
+            -o ConnectTimeout=15)
+          ssh "${OPTS[@]}" "$SSH_USER@$SSH_HOST" 'bash -s' < deploy/oracle/verificar-predeploy-completo.sh
+      - name: Eliminar chave privada temporaria do runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa" "$RUNNER_TEMP/foodbridge-oci-readiness/id_rsa.pub" "$RUNNER_TEMP/foodbridge-oci-readiness/known_hosts"
