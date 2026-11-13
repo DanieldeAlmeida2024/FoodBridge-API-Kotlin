@@ -35,7 +35,7 @@ def generated_section(paths: list[str]) -> str:
     for name, count in sorted(sections.items()):
         text.append(f"- `{name}`: {count}")
     text.extend(["", "**Lista completa de caminhos versionados (gerada do Git):**", ""])
-    text.extend(f"- [`{path}`](../{quote(path, safe=\x27/._-\x27)})" for path in paths)
+    text.extend(f"- [`{path}`](../{quote(path, safe='/._-')})" for path in paths)
     return "\n".join(text) + "\n"
 
 
