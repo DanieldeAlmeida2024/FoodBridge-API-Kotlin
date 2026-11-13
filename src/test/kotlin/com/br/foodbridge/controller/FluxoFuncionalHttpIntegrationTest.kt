@@ -148,4 +148,30 @@ class FluxoFuncionalHttpIntegrationTest(
         val result = chamada(get("/usuarios/me"), "token-sintetico-invalido", expected = 401)
         assertFalse(result.toString().contains("token-sintetico-invalido"))
     }
+
+    @Test
+    fun consultaDeOutraOrganizacaoNaoExpoePessoasOuVinculos() {
+        val target = conta(OrganizacaoRole.ONG)
+        val operador = conta(OrganizacaoRole.DOADOR)
+        val consulta = chamada(get("/organizacoes/" + target.org.id), operador.token)
+        assertEquals(0, consulta["usuarios"].size())
+        assertEquals(0, consulta["voluntarios"].size())
+        assertFalse(consulta.toString().contains(target.usuario.email!!))
+        val temp = jwt.generateTempToken(operador.usuario.id!!, UserStatus.VERIFICADO)
+        val porCnpj = chamada(get("/organizacoes/cnpj/" + target.org.cnpj), temp)
+        assertEquals(0, porCnpj["usuarios"].size())
+        assertEquals(0, porCnpj["voluntarios"].size())
+        assertFalse(porCnpj.toString().contains(target.usuario.email!!))
+    }
+
+    @Test
+    fun cadastroPublicoNaoPodeSolicitarOrganizacaoAdmin() {
+        val c = conta(OrganizacaoRole.ONG)
+        val token = jwt.generateTempToken(c.usuario.id!!, UserStatus.VERIFICADO)
+        val unique = UUID.randomUUID().toString().replace("-", "")
+        chamada(post("/organizacoes"), token, mapOf(
+            "nome" to "Tentativa sintética", "cnpj" to unique.take(14), "telefone" to "62999999999",
+            "email" to "org-$unique@example.invalid", "role" to "ADMIN", "endereco" to endereco), 400)
+        assertNull(organizacoes.findByCnpj(unique.take(14)))
+    }
 }

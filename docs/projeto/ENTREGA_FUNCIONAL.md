@@ -41,3 +41,11 @@ O contrato automatizado verifica essa restrição; a nova revisão exige seu pr�
 no environment oracle-production. Roda manualmente ou quando seu próprio arquivo/script muda;
 não publica artefatos na VM. Exige a fingerprint da RSA dedicada, chave sem prompt
 e host key já validada em OCI_SSH_KNOWN_HOSTS. O resultado ainda é pendente até o Actions real.
+
+### Privacidade de consultas e cadastro administrativo
+Consultas por CNPJ e por ID de outro tenant retornam os dados institucionais sem listas
+de usuários/voluntários. Organizações serializadas dentro de outros recursos não incluem
+relações JPA de usuários, voluntários ou doações. A validação Bean Validation é efetivamente
+ativada no POST/PUT de organização; ADMIN é recusado no cadastro comum.
+Dois testes HTTP adicionais comprovam minimização de vínculos e recusa de ADMIN sem persistência.
+A suíte integrada passa de sete para nove testes HTTP. CI desta revisão ainda pendente.

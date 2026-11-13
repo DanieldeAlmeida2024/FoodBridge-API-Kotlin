@@ -10,6 +10,7 @@ import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.OrganizacaoService
 import com.br.foodbridge.service.UsuarioService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -32,7 +33,7 @@ class OrganizacaoController(
     @PostMapping
     fun cadastrarOuVincular(
         @AuthenticationPrincipal tokenData: TokenData,
-        @RequestBody request: CreateUpdateOrganizacaoRequest
+        @RequestBody @Valid request: CreateUpdateOrganizacaoRequest
     ): ResponseEntity<OrganizacaoDTO> {
 
         val usuarioId = tokenData.usuarioId
@@ -61,12 +62,13 @@ class OrganizacaoController(
 
     @GetMapping("/{id}")
     fun buscarPorId(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long
     ): ResponseEntity<OrganizacaoDTO> {
 
         val org = organizacaoService.findById(id)
 
-        return ResponseEntity.ok(toResponse(org))
+        return ResponseEntity.ok(toResponse(org, tokenData.organizacaoId == id))
     }
 
     @GetMapping
@@ -88,14 +90,14 @@ class OrganizacaoController(
 
         val org = organizacaoService.findById(organizacaoId)
 
-        return ResponseEntity.ok(toResponse(org))
+        return ResponseEntity.ok(toResponse(org, incluirVinculos = true))
     }
 
     @PutMapping("/{id}")
     fun atualizar(
         @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long,
-        @RequestBody request: CreateUpdateOrganizacaoRequest
+        @RequestBody @Valid request: CreateUpdateOrganizacaoRequest
     ): ResponseEntity<OrganizacaoDTO> {
 
         val atualizado = organizacaoService.update(id, request, tokenData)
@@ -137,7 +139,7 @@ class OrganizacaoController(
     }
 
     // Mapper
-    private fun toResponse(org: Organizacao): OrganizacaoDTO {
+    private fun toResponse(org: Organizacao, incluirVinculos: Boolean = false): OrganizacaoDTO {
 
         val id = org.id
             ?: throw BusinessException("Organização sem ID")
@@ -146,11 +148,11 @@ class OrganizacaoController(
             id = id,
             nome = org.nome,
             status = org.status,
-            usuarios = org.usuarios,
+            usuarios = if (incluirVinculos) org.usuarios else mutableListOf(),
             cnpj = org.cnpj,
             email = org.email,
             telefone = org.telefone,
-            voluntarios = org.voluntarios,
+            voluntarios = if (incluirVinculos) org.voluntarios else mutableListOf(),
             endereco = org.endereco,
             role = org.role
         )
