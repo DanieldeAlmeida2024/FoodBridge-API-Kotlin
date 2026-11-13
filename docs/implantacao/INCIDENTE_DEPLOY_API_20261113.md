@@ -23,6 +23,13 @@ O `systemd` mostra `TimeoutStartUSec=1min30s` e `TimeoutStopUSec=1min30s`, mas o
 - `.github/workflows/foodbridge-ci-cd.yml` exige esse gate após preflight e **antes** do passo `Transferir JAR e aplicar com rollback`. Falha do gate impede novo rollout; não afeta serviço já em execução. `tests/ci/test_oracle_release_capacity_gate_contract.py` protege a ordem e o comportamento.
 - `OCI_AUTO_DEPLOY_ENABLED=false` deve continuar desligado. Não repetir `deploy=true` antes de dimensionamento, confirmação de backup recuperável e revisão da saúde de inicialização. Não reiniciar PostgreSQL, não executar pg_restore nem modificar RAM/swap automaticamente.
 
+## Correção complementar do rollback
+
+O script `deploy/oracle/atualizar-api.sh` usava uma única chamada de `saudavel` após reiniciar o JAR anterior; uma conexão recusada durante startup gerava o relato **enganoso** de que o rollback não havia recuperado o serviço. O diagnóstico comprovou que a versão antiga voltou a responder posteriormente e que seu SHA-256 confere com o backup.
+
+A correção reutiliza `aguardar_saude`, com janela limitada a 180 segundos **tanto para a versão nova quanto para o rollback**. Após copiar o backup, aguarda health efetivo em vez de concluir indisponibilidade imediatamente. O job continua falhando quando precisar reverter, mesmo que o rollback recupere a saúde; não pode ser contado como deploy aprovado. O gate de RAM introduzido anteriormente bloqueia a publicação na VM atual, antes do restart.
+
+**Esta alteração de script não reinicia serviços ao ser mesclada**; somente muda o comportamento de uma publicação futura que ultrapasse os gates. A melhoria não substitui um endpoint liveness leve nem resolve a limitação de RAM.
 ## Próximos critérios de liberação
 
 1. Ajustar tamanho da VM ou distribuir serviços; confirmar `MemTotal >= 1GiB` e `MemAvailable >= 256MiB` pelo gate, com recomendação operacional >=2 GiB.
