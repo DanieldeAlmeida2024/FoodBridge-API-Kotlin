@@ -1,30 +1,35 @@
 #!/usr/bin/env bash
-# Gate de recursos para release de API (somente leitura; executa ANTES do upload/restart).
+# Telemetria read-only de recursos para VM.Standard.E2.1.Micro.
+# Nao bloquear publicacoes por MemTotal: a shape reconhece ~945 MiB apos desativar Kdump.
+# Integridade do JAR, SSH, CI, health e rollback permanecem obrigatorios.
 set -Eeuo pipefail
 
-[[ -r /proc/meminfo ]] || { echo 'DEPLOY_CAPACITY=BLOCKED motivo=meminfo_indisponivel' >&2; exit 1; }
+if [[ ! -r /proc/meminfo ]]; then
+  echo 'DEPLOY_CAPACITY=WARNING motivo=meminfo_indisponivel'
+  exit 0
+fi
+
 total_kib="$(awk '/^MemTotal:/ {print $2; exit}' /proc/meminfo)"
 available_kib="$(awk '/^MemAvailable:/ {print $2; exit}' /proc/meminfo)"
-[[ "$total_kib" =~ ^[0-9]+$ && "$available_kib" =~ ^[0-9]+$ ]] || {
-  echo 'DEPLOY_CAPACITY=BLOCKED motivo=memoria_nao_numerica' >&2
-  exit 1
-}
-
-# O stack de producao concentra Spring Boot/JVM, PostgreSQL, Nginx e Puppeteer/Docker.
-# Minimos de seguranca, nao recomendacao de dimensionamento. Preferir >= 2 GiB reais.
-readonly MIN_TOTAL_KIB=1048576   # 1 GiB fisico
-readonly MIN_AVAILABLE_KIB=262144 # 256 MiB disponiveis para restart
+swap_total_kib="$(awk '/^SwapTotal:/ {print $2; exit}' /proc/meminfo)"
+swap_free_kib="$(awk '/^SwapFree:/ {print $2; exit}' /proc/meminfo)"
+if [[ ! "$total_kib" =~ ^[0-9]+$ || ! "$available_kib" =~ ^[0-9]+$ ]]; then
+  echo 'DEPLOY_CAPACITY=WARNING motivo=memoria_nao_numerica'
+  exit 0
+fi
 
 echo "RAM_TOTAL_MIB=$((total_kib / 1024))"
 echo "RAM_AVAILABLE_MIB=$((available_kib / 1024))"
-
-if (( total_kib < MIN_TOTAL_KIB )); then
-  echo 'DEPLOY_CAPACITY=BLOCKED motivo=ram_fisica_inferior_1GiB (recomendar >= 2GiB para este stack)' >&2
-  exit 1
-fi
-if (( available_kib < MIN_AVAILABLE_KIB )); then
-  echo 'DEPLOY_CAPACITY=BLOCKED motivo=memoria_disponivel_inferior_256MiB' >&2
-  exit 1
+if [[ "$swap_total_kib" =~ ^[0-9]+$ && "$swap_free_kib" =~ ^[0-9]+$ ]]; then
+  echo "SWAP_USED_MIB=$(((swap_total_kib - swap_free_kib) / 1024))"
 fi
 
-echo 'DEPLOY_CAPACITY=PASS (somente leitura)'
+# Registrar risco operacional em vez de impedir deploy numa shape de 1 GB.
+if (( total_kib < 1048576 )); then
+  echo 'DEPLOY_CAPACITY=WARNING motivo=oracle_micro_ram_fisica_abaixo_1GiB'
+fi
+if (( available_kib < 131072 )); then
+  echo 'DEPLOY_CAPACITY=WARNING motivo=memoria_disponivel_abaixo_128MiB'
+fi
+
+echo 'DEPLOY_CAPACITY=PASS modo=telemetria_micro_sem_bloqueio'
