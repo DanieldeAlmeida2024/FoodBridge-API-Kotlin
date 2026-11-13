@@ -9,6 +9,7 @@ import com.br.foodbridge.domain.model.Doacao
 import com.br.foodbridge.domain.model.Organizacao
 import com.br.foodbridge.domain.model.RequisicaoDoacao
 import com.br.foodbridge.domain.repository.RequisicaoDoacaoRepository
+import com.br.foodbridge.domain.repository.DoacaoRepository
 import com.br.foodbridge.domain.repository.VoluntarioOrganizacaoRepository
 import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
@@ -23,16 +24,24 @@ class RequisicaoDoacaoService(
     private val doacaoService: DoacaoService,
     private val organizacaoService: OrganizacaoService,
     private val voluntarioService: VoluntarioService,
-    private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository
+    private val voluntarioOrganizacaoRepository: VoluntarioOrganizacaoRepository,
+    private val doacaoRepository: DoacaoRepository
 ) {
 
+    @Transactional
     fun criar(request: CreateRequisicaoDoacaoRequest, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleSolicitante(roleToken)
+
+        if (!request.quantidadeSolicitada.isFinite() || request.quantidadeSolicitada <= 0) {
+            throw ValidationException("Quantidade deve ser finita e maior que zero")
+        }
 
         val organizacaoSolicitante = organizacaoService.findById(organizacaoId)
         validarSolicitanteEhOng(organizacaoSolicitante)
 
-        val doacao = doacaoService.findDoacaoEntityById(request.doacaoId)
+        val doacao = doacaoRepository.findByIdForUpdate(request.doacaoId
+            ?: throw ValidationException("ID da doação é obrigatório"))
+            ?: throw ResourceNotFoundException("Doação não encontrada")
         val organizacaoDoadora = doacao.organizacao
 
         validarDoacaoRequisitavel(doacao)
@@ -92,7 +101,7 @@ class RequisicaoDoacaoService(
     fun vincularVoluntario(id: Long?, voluntarioId: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleSolicitante(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
 
         if (requisicao.organizacaoSolicitante.id != organizacaoId) {
             throw BusinessException("A requisição não pertence à sua organização")
@@ -116,9 +125,12 @@ class RequisicaoDoacaoService(
     fun aprovar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        // A primeira leitura da requisição ocorre DEPOIS do lock da doação.
+        // Aprovações do mesmo lote jamais calculam saldo em paralelo.
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
         validarPendente(requisicao)
+        validarDoacaoRequisitavel(requisicao.doacao)
 
         val disponivel = quantidadeDisponivel(requisicao.doacao)
         if (requisicao.quantidadeSolicitada > disponivel) {
@@ -136,10 +148,11 @@ class RequisicaoDoacaoService(
         return salvo
     }
 
+    @Transactional
     fun rejeitar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
         validarPendente(requisicao)
 
@@ -156,7 +169,7 @@ class RequisicaoDoacaoService(
     fun concluir(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleDoadora(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
         validarDoadorDaRequisicao(requisicao, organizacaoId)
 
         if (requisicao.status != StatusReivindicacao.APROVADO) {
@@ -166,6 +179,8 @@ class RequisicaoDoacaoService(
         if (requisicao.voluntario == null) {
             throw BusinessException("A requisicao precisa estar vinculada a um voluntario para ser concluida")
         }
+
+        validarVoluntarioColeta(requisicao.voluntario.id, requisicao.organizacaoSolicitante)
 
         val atualizado = requisicao.copy(
             status = StatusReivindicacao.CONCLUIDO,
@@ -178,10 +193,11 @@ class RequisicaoDoacaoService(
         return salvo
     }
 
+    @Transactional
     fun cancelar(id: Long?, organizacaoId: Long?, roleToken: String?): RequisicaoDoacao {
         validarRoleSolicitante(roleToken)
 
-        val requisicao = findById(id)
+        val requisicao = findByIdComDoacaoBloqueada(id)
 
         if (requisicao.organizacaoSolicitante.id != organizacaoId) {
             throw BusinessException("A requisição não pertence à organização solicitante")
@@ -204,6 +220,19 @@ class RequisicaoDoacaoService(
             listOf(StatusReivindicacao.APROVADO, StatusReivindicacao.CONCLUIDO)
         )
             .sumOf { it.quantidadeSolicitada }
+    }
+
+    private fun findByIdComDoacaoBloqueada(id: Long?): RequisicaoDoacao {
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da requisição inválido")
+        }
+
+        val doacaoId = requisicaoDoacaoRepository.findDoacaoIdByRequisicaoId(id)
+            ?: throw ResourceNotFoundException("Requisição não encontrada")
+        doacaoRepository.findByIdForUpdate(doacaoId)
+            ?: throw ResourceNotFoundException("Doação não encontrada")
+
+        return findById(id)
     }
 
     private fun findById(id: Long?): RequisicaoDoacao {
@@ -240,6 +269,9 @@ class RequisicaoDoacaoService(
     }
 
     private fun validarDoacaoRequisitavel(doacao: Doacao) {
+        if (!doacao.dataExpiracao.isAfter(LocalDateTime.now())) {
+            throw BusinessException("A doação está expirada")
+        }
         val statusPermitidos = setOf(
             StatusDoacao.PUBLICADO,
             StatusDoacao.DISPONIVEL,
@@ -279,7 +311,7 @@ class RequisicaoDoacaoService(
     }
 
     private fun validarVoluntarioColeta(voluntarioId: Long?, organizacaoSolicitante: Organizacao) =
-        voluntarioService.findById(voluntarioId).also { voluntario ->
+        voluntarioService.findByIdForColeta(voluntarioId, organizacaoSolicitante.id).also { voluntario ->
             val vinculo = voluntarioOrganizacaoRepository.findByVoluntarioIdAndOrganizacaoId(
                 voluntario.id ?: throw BusinessException("Voluntario invalido"),
                 organizacaoSolicitante.id ?: throw BusinessException("Organizacao solicitante invalida")

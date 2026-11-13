@@ -8,9 +8,11 @@ import com.br.foodbridge.domain.repository.UsuarioRepository
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.security.crypto.password.PasswordEncoder
 
 @Configuration
+@Profile("!schema-validation")
 class DataInitializer(
     private val usuarioRepository: UsuarioRepository,
     private val organizacaoRepository: OrganizacaoRepository,
@@ -20,6 +22,7 @@ class DataInitializer(
 ) {
 
     @Bean
+    @Profile("!schema-validation")
     fun init() = CommandLineRunner {
 
         if (usuarioRepository.existsByEmail(adminConfig.email)) return@CommandLineRunner

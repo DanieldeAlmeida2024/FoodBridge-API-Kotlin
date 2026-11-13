@@ -15,8 +15,12 @@ import com.br.foodbridge.exception.custom.ValidationException
 import com.br.foodbridge.service.utils.JwtService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.security.access.AccessDeniedException
+import com.br.foodbridge.domain.enums.UserStatus
 
 @Service
+@Transactional(readOnly = true)
 class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
@@ -48,6 +52,10 @@ class AuthService(
         val usuarioId = usuario.id
             ?: throw BusinessException("Usuário inválido")
 
+        if (usuarioStatus == UserStatus.SUSPENSO || usuarioStatus == UserStatus.INATIVO) {
+            throw AccessDeniedException("Conta indisponível")
+        }
+
         val vinculacoes = usuarioOrganizacaoRepository.findAllByUsuarioId(usuarioId)
         val organizacoes = mapearOrganizacoes(vinculacoes)
 
@@ -60,7 +68,7 @@ class AuthService(
         val accessToken: String?
         val tempToken: String?
 
-        if (adminOrg != null) {
+        if (adminOrg != null && usuarioStatus == UserStatus.VERIFICADO) {
             // 🔥 ADMIN entra direto com ACCESS
             val organizacaoId = adminOrg.organizacao?.id
                 ?: throw BusinessException("Organização inválida")
@@ -111,6 +119,10 @@ class AuthService(
 
         val usuario = usuarioRepository.findById(usuarioId)
             .orElseThrow { ResourceNotFoundException("Usuário não encontrado") }
+
+        if (usuario.status != UserStatus.VERIFICADO) {
+            throw AccessDeniedException("Usuário ainda não autorizado")
+        }
 
         val vinculo = usuarioOrganizacaoRepository
             .findByUsuarioIdAndOrganizacaoId(usuarioId, organizacaoId)

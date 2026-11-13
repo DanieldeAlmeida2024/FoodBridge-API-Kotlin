@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val jwtService: JwtService
 ) {
 
     @PostMapping("/login")
@@ -41,7 +42,6 @@ class AuthController(
         @RequestBody @Valid request: SelectOrganizationRequest
     ): ResponseEntity<out Any?> {
 
-        println(tokenData.status)
         if (tokenData.status != "VERIFICADO") {
             return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
@@ -61,7 +61,8 @@ class AuthController(
             token = loginResponse.accessToken
                 ?: throw BusinessException("Token de acesso não gerado"),
             usuarioId = tokenData.usuarioId,
-            vinculoId = organizacaoSelecionada.organizacaoId,
+            vinculoId = jwtService.extractAccessTokenData(loginResponse.accessToken!!).vinculoId
+                ?: throw BusinessException("Vínculo não encontrado no token"),
             organizacaoId = request.organizacaoId,
             role = organizacaoSelecionada.role.name
         )

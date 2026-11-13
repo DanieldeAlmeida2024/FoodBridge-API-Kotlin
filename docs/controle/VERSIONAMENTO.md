@@ -61,3 +61,27 @@ O run [#43233569951](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotli
 ### OCI-R07 — 8 casos simulados e proteção contra valores duplicados
 
 O teste `tests/ci/test_oracle_preflight_contract.py` passou de sete para **oito casos**: arquivo com `ddl-auto` duplicado reprova, mesmo que haja uma linha segura. `verificar-vm.sh` e `atualizar-api.sh` utilizam inspeção somente leitura e exigem uma única propriedade com `validate` ou `none`. A execução CI do último SHA precisa ser consultada antes da integração.
+
+## Integração funcional FB-INT-001 — 13/11/2026
+
+Branch de integração baseada em main `32e13fdd8c2b3c9fd4784ccc7e77fdd2df462224`.
+Consolida o código dos PRs #4 (organizações), #5 (voluntários), #6 (estoque),
+#9 (timeout de 20 s) e #10 (validação no clone), preservando suas suítes.
+O conflito funcional da coleta foi resolvido com `findByIdForColeta`, sem liberar acesso global a voluntários.
+
+Correções adicionais: revalidação de usuário/vínculo/organização em cada JWT autenticado;
+bloqueio de contas suspensas inclusive ADMIN; vínculo real na resposta de seleção;
+validação do enum de organização; transações de onboarding/admin/exclusão;
+criação concorrente de requisições sob o mesmo lock da doação;
+recusa de quantidades não finitas e doações expiradas; voluntário ativo novamente conferido na conclusão;
+JWT inválido → 401 e método HTTP incorreto → 405, sem revelar credenciais.
+
+`FluxoFuncionalHttpIntegrationTest` acrescenta sete testes HTTP/JWT/PostgreSQL:
+login/seleção, vínculo revogado, ADMIN suspenso, cadastro organizacional sem autoaprovação,
+ciclo doação → solicitação → aprovação → voluntário → coleta → indicadores,
+método incorreto e JWT malformado. **Novos testes pendentes da execução do CI nesta revisão.**
+
+Esta integração não comprova os 165 cenários planejados, o navegador real,
+a prontidão dos papéis de gestor, o SSH do runner, deploy ou rollback.
+A entrega total exige fechar a matriz [ENTREGA_FUNCIONAL](../projeto/ENTREGA_FUNCIONAL.md)
+com evidência por módulo. Produção, serviço, Nginx e banco original não foram alterados.

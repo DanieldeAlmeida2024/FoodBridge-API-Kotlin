@@ -69,8 +69,18 @@ check "JAR corresponde ao comando de inicialização efetivo"
 
 sudo -n systemctl is-active --quiet "$SERVICE" ||
   fail "Serviço não está ativo antes do deploy."
-curl --silent --show-error --fail --max-time 5 --output /dev/null "$HEALTH" ||
-  fail "Endpoint público de saúde não respondeu antes do deploy."
+# O dashboard publico consulta dados reais no PostgreSQL e levou ~6,25 s
+# na VM em 12/11/2026. A sondagem não deve terminar em 5 s.
+# O endpoint continua sendo um teste funcional pesado; criar /health/live leve
+# em uma revisão posterior e preservar verificação real da conectividade ao DB.
+TEMPO_HEALTH="$(curl --silent --show-error --fail --connect-timeout 2 --max-time 20 \
+  --output /dev/null --write-out '%{time_total}' "$HEALTH")" ||
+  fail "Endpoint público não respondeu em até 20 s; preflight bloqueado."
+printf 'Dashboard público respondeu em %ss (sem corpo de resposta)\n' "$TEMPO_HEALTH"
+if awk -v segundos="$TEMPO_HEALTH" 'BEGIN { exit (segundos >= 5.0 ? 0 : 1) }'; then
+  printf 'AVISO: dashboard público lento (>= 5 s); investigar consultas antes de auto-deploy.\n' >&2
+fi
+unset TEMPO_HEALTH
 check "serviço atual saudável via loopback"
 
 printf 'PREFLIGHT ORACLE: PASS (somente leitura, nenhum deploy executado)\n'

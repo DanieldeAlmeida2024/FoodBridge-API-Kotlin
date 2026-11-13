@@ -51,6 +51,14 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("dashboards/publico", preflight)
         self.assertIn("SPRING_CONFIG_ADDITIONAL_LOCATION=file:/etc/foodbridge/", preflight)
 
+    def test_slow_database_dashboard_does_not_cause_false_rollback(self):
+        # Measured successful HTTP 200 in VM ~6.25s; previous 5s cutoff was incorrect.
+        self.assertIn("--max-time 20", preflight)
+        self.assertEqual(deploy.count("--max-time 20"), 2)
+        self.assertNotIn("--max-time 5", preflight + deploy)
+        self.assertIn("--connect-timeout 2", preflight)
+        self.assertIn("AVISO: dashboard público lento", preflight)
+
     def test_integrity_backup_rollback_and_no_git_db_reset(self):
         self.assertIn("sha256sum --check --status", deploy)
         self.assertIn('sudo -n cp -p -- "$DESTINO" "$ANTIGO"', deploy)

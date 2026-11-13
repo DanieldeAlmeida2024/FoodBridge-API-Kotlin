@@ -199,7 +199,7 @@ class JwtService(
             organizacaoId = organizacaoId,
             vinculoId = vinculo.id,
             role = vinculo.role.name,
-            status = usuario.status as String
+            status = usuario.status!!.name
         )
     }
 }

@@ -68,7 +68,7 @@ unset UNIT_EXEC UNIT_DIR
 # Não substituir uma versão já indisponível: rollback não recuperaria saúde anterior.
 sudo -n systemctl is-active --quiet "$SERVICO" ||
   falhar "Serviço não está ativo antes da tentativa de deploy."
-curl --silent --show-error --fail --max-time 5 -o /dev/null \
+curl --silent --show-error --fail --connect-timeout 2 --max-time 20 -o /dev/null \
   "http://127.0.0.1:8080/dashboards/publico" ||
   falhar "Health do serviço atual falhou; deploy cancelado antes da troca do JAR."
 
@@ -84,7 +84,7 @@ NOVO=""
 
 saudavel() {
   sudo -n systemctl is-active --quiet "$SERVICO" &&
-    curl --silent --show-error --fail --max-time 5 -o /dev/null \
+    curl --silent --show-error --fail --connect-timeout 2 --max-time 20 -o /dev/null \
       "http://127.0.0.1:8080/dashboards/publico"
 }
 

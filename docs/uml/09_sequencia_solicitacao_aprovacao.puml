@@ -1,22 +1,38 @@
 @startuml
-actor ONG
-actor DOADOR
-participant "RequisicaoDoacaoController" as C
+title FoodBridge — aprovação serializada de requisições da mesma doação
+actor "ONG A (7 kg)" as A
+actor "ONG B (7 kg)" as B
 participant "RequisicaoDoacaoService" as S
-database PostgreSQL as DB
-ONG -> C : POST /requisicoes (ACCESS ONG)
-C -> S : criar solicitação
-S -> DB : consultar doação/saldo
-DB --> S : estoque/status
-S -> DB : gravar PENDENTE
-S --> ONG : requisicao criada
-DOADOR -> C : PATCH /requisicoes/{id}/aprovar
-C -> S : validar doador/estado/saldo
-S -> DB : atualizar APROVADO
-note right of DB
-Concorrência exige lock/CAS ou
-outro controle transacional.
-Cenário REQ-15 ainda é critério de aceite.
+database "PostgreSQL: doacoes" as D
+database "PostgreSQL: requisicoes_doacao" as R
+A -> S : PATCH aprovar req A (10 kg estoque)
+B -> S : PATCH aprovar req B (mesma doação)
+S -> R : SELECT doacao_id WHERE req_id = A
+S -> D : SELECT ... FOR UPDATE (doador/lote)
+activate D
+note right of D
+A transação de A detém lock
+exclusivo até COMMIT/ROLLBACK.
+B espera este mesmo registro.
 end note
-S --> DOADOR : resultado
+S -> R : carregar A após lock, verificar PENDENTE
+S -> R : somar APROVADO + CONCLUIDO = 0
+S -> R : UPDATE A para APROVADO (7 kg)
+S -> D : recalcular status do lote
+S -> D : COMMIT; liberar lock
+deactivate D
+S --> A : aprovada
+S -> D : B adquire FOR UPDATE após commit A
+activate D
+S -> R : carregar B após lock, verificar PENDENTE
+S -> R : somar APROVADO + CONCLUIDO = 7
+S -> S : restante 10 - 7 = 3 < 7
+S -> D : ROLLBACK; liberar lock
+deactivate D
+S --> B : 409 sem reserva adicional
+note bottom
+O mesmo mutex em doacoes governa PUT, DELETE,
+fechamento e demais transições de requisição.
+Os testes real-DB precisam provar uma única aprovação.
+end note
 @enduml

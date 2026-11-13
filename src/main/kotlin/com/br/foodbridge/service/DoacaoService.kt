@@ -11,6 +11,7 @@ import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
@@ -26,7 +27,7 @@ class DoacaoService(
             throw ValidationException("ID da organização inválido")
         }
 
-        if (request.quantidade <= 0) {
+        if (!request.quantidade.isFinite() || request.quantidade <= 0) {
             throw ValidationException("Quantidade deve ser maior que zero")
         }
 
@@ -68,9 +69,10 @@ class DoacaoService(
         )
 
         return doacaoRepository.findByStatusIn(statusDisponiveis)
-            .filter { it.organizacao.id != organizacaoId }
+            .filter { it.organizacao.id != organizacaoId && it.dataExpiracao.isAfter(LocalDateTime.now()) }
     }
 
+    @Transactional
     fun editarDoacao(id: Long?, request: DoacaoDTO, organizacaoId: Long?): Doacao {
 
         if (id == null || id <= 0) {
@@ -81,10 +83,21 @@ class DoacaoService(
             throw ValidationException("ID da organização inválido")
         }
 
-        val doacao = findDoacaoById(id)
+        val doacao = findDoacaoByIdComLock(id)
 
-        if (doacao.organizacao?.id != organizacaoId) {
+        if (doacao.organizacao.id != organizacaoId) {
             throw BusinessException("Doação não pertence a esta organização")
+        }
+
+        if (request.quantidade <= 0.0 || !request.quantidade.isFinite()) {
+            throw ValidationException("Quantidade deve ser finita e maior que zero")
+        }
+
+        val quantidadeComprometida = requisicaoDoacaoRepository.findByDoacaoAndStatusIn(
+            doacao, listOf(StatusReivindicacao.APROVADO, StatusReivindicacao.CONCLUIDO)
+        ).sumOf { it.quantidadeSolicitada }
+        if (request.quantidade < quantidadeComprometida) {
+            throw BusinessException("Quantidade não pode ser menor que a já aprovada ou coletada")
         }
 
         validarJanelasDisponiveis(request)
@@ -103,6 +116,7 @@ class DoacaoService(
         return doacaoRepository.save(atualizado)
     }
 
+    @Transactional
     fun deletarDoacao(id: Long?, organizacaoId: Long?) {
 
         if (id == null || id <= 0) {
@@ -113,12 +127,15 @@ class DoacaoService(
             throw ValidationException("ID da organização inválido")
         }
 
-        val doacao = findDoacaoById(id)
+        val doacao = findDoacaoByIdComLock(id)
 
         if (doacao.organizacao?.id != organizacaoId) {
             throw BusinessException("Doação não pertence a esta organização")
         }
 
+        if (requisicaoDoacaoRepository.findByDoacao(doacao).isNotEmpty()) {
+            throw BusinessException("Não é permitido excluir doação com requisições vinculadas")
+        }
         doacaoRepository.delete(doacao)
     }
 
@@ -146,15 +163,16 @@ class DoacaoService(
         )
     }
 
+    @Transactional
     fun fecharDoacao(id: Long?, request: FecharDoacaoRequest, organizacaoId: Long?): Doacao {
 
         if (organizacaoId == null || organizacaoId <= 0) {
             throw ValidationException("ID da organização inválido")
         }
 
-        val doacao = findDoacaoById(id)
+        val doacao = findDoacaoByIdComLock(id)
 
-        if (doacao.organizacao?.id != organizacaoId) {
+        if (doacao.organizacao.id != organizacaoId) {
             throw BusinessException("Doação não pertence a esta organização")
         }
 
@@ -167,6 +185,10 @@ class DoacaoService(
 
         if (doacao.status !in statusFechaveis) {
             throw BusinessException("A doação não pode ser fechada no status atual: ${doacao.status}")
+        }
+
+        if (!request.quantidadeColetada.isFinite() || request.quantidadeColetada < 0) {
+            throw ValidationException("Quantidade coletada deve ser finita e não negativa")
         }
 
         if (request.quantidadeColetada > doacao.quantidade) {
@@ -213,6 +235,14 @@ class DoacaoService(
     }
 
     // HELPERS
+    private fun findDoacaoByIdComLock(id: Long?): Doacao {
+        if (id == null || id <= 0) {
+            throw ValidationException("ID da doação inválido")
+        }
+        return doacaoRepository.findByIdForUpdate(id)
+            ?: throw ResourceNotFoundException("Doação não encontrada")
+    }
+
     private fun findDoacaoById(id: Long?): Doacao {
 
         if (id == null || id <= 0) {

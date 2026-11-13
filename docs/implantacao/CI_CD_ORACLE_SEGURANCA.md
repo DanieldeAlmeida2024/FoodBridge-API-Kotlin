@@ -56,3 +56,27 @@ O controle de acesso por organização e voluntários permanece com PRs #4/#5/#6
 ### Proteção contra chave repetida
 
 A validação de `spring.jpa.hibernate.ddl-auto` não considera suficiente encontrar qualquer linha `validate`: verifica que **existe exatamente uma definição explícita no arquivo de produção e que seu valor é validate ou none**. Define falha fechada para arquivo sem propriedade, definição duplicada, modo update/create ou override de ambiente incompatível. Configuração injetada por outras fontes do Spring permanece risco de revisão manual.
+
+## Integração funcional FB-INT-001 — 13/11/2026
+
+Branch de integração baseada em main `32e13fdd8c2b3c9fd4784ccc7e77fdd2df462224`.
+Consolida o código dos PRs #4 (organizações), #5 (voluntários), #6 (estoque),
+#9 (timeout de 20 s) e #10 (validação no clone), preservando suas suítes.
+O conflito funcional da coleta foi resolvido com `findByIdForColeta`, sem liberar acesso global a voluntários.
+
+Correções adicionais: revalidação de usuário/vínculo/organização em cada JWT autenticado;
+bloqueio de contas suspensas inclusive ADMIN; vínculo real na resposta de seleção;
+validação do enum de organização; transações de onboarding/admin/exclusão;
+criação concorrente de requisições sob o mesmo lock da doação;
+recusa de quantidades não finitas e doações expiradas; voluntário ativo novamente conferido na conclusão;
+JWT inválido → 401 e método HTTP incorreto → 405, sem revelar credenciais.
+
+`FluxoFuncionalHttpIntegrationTest` acrescenta sete testes HTTP/JWT/PostgreSQL:
+login/seleção, vínculo revogado, ADMIN suspenso, cadastro organizacional sem autoaprovação,
+ciclo doação → solicitação → aprovação → voluntário → coleta → indicadores,
+método incorreto e JWT malformado. **Novos testes pendentes da execução do CI nesta revisão.**
+
+Esta integração não comprova os 165 cenários planejados, o navegador real,
+a prontidão dos papéis de gestor, o SSH do runner, deploy ou rollback.
+A entrega total exige fechar a matriz [ENTREGA_FUNCIONAL](../projeto/ENTREGA_FUNCIONAL.md)
+com evidência por módulo. Produção, serviço, Nginx e banco original não foram alterados.

@@ -38,7 +38,7 @@ data class CreateUpdateOrganizacaoRequest(
     @field:Email("Email é obrigatório")
     val email: String,
     val website: String?,
-    @field:NotBlank("É obrigatório selecionar um tipo de organização")
+
 
     @field:ValidOrganizacaoRole
     val role: OrganizacaoRole,
