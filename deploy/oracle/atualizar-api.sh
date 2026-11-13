@@ -88,15 +88,25 @@ saudavel() {
       "http://127.0.0.1:8080/dashboards/publico"
 }
 
-echo "Reiniciando serviço $SERVICO (versão $IDENTIFICADOR)"
-if sudo -n systemctl restart "$SERVICO"; then
-  for tentativa in $(seq 1 30); do
+# Na Oracle com pouca RAM, o java pode iniciar somente depois de dezenas de segundos.
+# Esperar de forma limitada TANTO no deploy quanto no rollback. Não declarar
+# rollback indisponível ao primeiro "Connection refused" após systemctl restart.
+aguardar_saude() {
+  local inicio=$SECONDS
+  local limite_segundos=180
+  while (( SECONDS - inicio < limite_segundos )); do
     if saudavel; then
-      echo "DEPLOY OK: API respondeu no endpoint público. Backup: $ANTIGO"
-      exit 0
+      return 0
     fi
-    sleep 2
+    sleep 3
   done
+  return 1
+}
+
+echo "Reiniciando serviço $SERVICO (versão $IDENTIFICADOR)"
+if sudo -n systemctl restart "$SERVICO" && aguardar_saude; then
+  echo "DEPLOY OK: API respondeu no endpoint público. Backup: $ANTIGO"
+  exit 0
 fi
 
 echo "Falha de inicialização/health check. Restaurando o JAR anterior." >&2
@@ -104,10 +114,12 @@ NOVO="$DESTINO.rollback.$IDENTIFICADOR"
 sudo -n install -m 0644 -- "$ANTIGO" "$NOVO"
 sudo -n mv -f -- "$NOVO" "$DESTINO"
 NOVO=""
-sudo -n systemctl restart "$SERVICO" || true
-if saudavel; then
+if ! sudo -n systemctl restart "$SERVICO"; then
+  echo "AVISO: systemctl restart do rollback retornou erro; verificando saúde mesmo assim." >&2
+fi
+if aguardar_saude; then
   echo "Rollback executado e versão anterior voltou a responder." >&2
 else
-  echo "Rollback aplicado no disco, mas o serviço permanece indisponível. Verifique journalctl." >&2
+  echo "Rollback aplicado no disco, mas serviço não respondeu dentro da janela de 180s. Verifique journalctl." >&2
 fi
 exit 1
