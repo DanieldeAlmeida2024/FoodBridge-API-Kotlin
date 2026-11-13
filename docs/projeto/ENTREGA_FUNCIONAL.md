@@ -35,3 +35,9 @@ A revisão atual torna o deploy da API **exclusivamente manual** (`workflow_disp
 `deploy=true`, `preflight=false` e `OCI_DEPLOY_ENABLED=true`).
 Um push/merge na main não inicia deploy, independentemente de variáveis antigas de auto-deploy.
 O contrato automatizado verifica essa restrição; a nova revisão exige seu próprio CI.
+
+### Execução remota dedicada
+`.github/workflows/oracle-preflight.yml` testa SSH e preflight na main,
+no environment oracle-production. Roda manualmente ou quando seu próprio arquivo/script muda;
+não publica artefatos na VM. Exige a fingerprint da RSA dedicada, chave sem prompt
+e host key já validada em OCI_SSH_KNOWN_HOSTS. O resultado ainda é pendente até o Actions real.

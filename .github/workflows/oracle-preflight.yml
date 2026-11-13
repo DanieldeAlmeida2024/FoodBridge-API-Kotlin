@@ -1,0 +1,73 @@
+name: Oracle - SSH RSA e preflight somente leitura
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/oracle-preflight.yml'
+      - 'deploy/oracle/verificar-vm.sh'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: foodbridge-oracle-readonly
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: oracle-production
+    env:
+      OCI_SSH_HOST: ${{ vars.OCI_SSH_HOST }}
+      OCI_SSH_USER: ${{ vars.OCI_SSH_USER }}
+      OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+      OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+      # Fingerprint pública da chave RSA dedicada conferida no Windows.
+      EXPECTED_RSA_FINGERPRINT: SHA256:3zV6jlZeYgt19xz4h0KrumznEr3SNlyAEiolj+XrmO8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar configuração e chave dedicada sem prompt
+        shell: bash
+        run: |
+          set -euo pipefail
+          for nome in OCI_SSH_HOST OCI_SSH_USER OCI_SSH_PRIVATE_KEY OCI_SSH_KNOWN_HOSTS; do
+            if [[ -z "${!nome:-}" ]]; then
+              echo "::error::Configuração ausente: $nome no environment oracle-production"
+              exit 1
+            fi
+          done
+          umask 077
+          mkdir -p "$RUNNER_TEMP/foodbridge-ssh"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$RUNNER_TEMP/foodbridge-ssh/key"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/foodbridge-ssh/known_hosts"
+          if ! ssh-keygen -y -f "$RUNNER_TEMP/foodbridge-ssh/key" -P '' > "$RUNNER_TEMP/foodbridge-ssh/key.pub"; then
+            echo "::error::A chave dedicada não pode ser lida com passphrase vazia; desbloquear a cópia local antes de atualizar o secret."
+            exit 1
+          fi
+          FINGERPRINT="$(ssh-keygen -lf "$RUNNER_TEMP/foodbridge-ssh/key.pub" -E sha256 | awk '{print $2}')"
+          [[ "$FINGERPRINT" == "$EXPECTED_RSA_FINGERPRINT" ]] || {
+            echo "::error::O secret não corresponde à chave RSA dedicada esperada."
+            exit 1
+          }
+      - name: Autenticar e verificar VM sem escrita
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$RUNNER_TEMP/foodbridge-ssh/key" -o IdentityAgent=none -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/foodbridge-ssh/known_hosts" -o BatchMode=yes -o ConnectTimeout=10)
+          set +e
+          ssh -n "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'printf "SSH_RSA_OK\n"'
+          SSH_EXIT=$?
+          set -e
+          printf 'SSH_EXIT=%s\n' "$SSH_EXIT"
+          [[ "$SSH_EXIT" == 0 ]] || exit "$SSH_EXIT"
+          ssh "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'bash -s' < deploy/oracle/verificar-vm.sh
+      - name: Remover arquivos temporários do runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/foodbridge-ssh/key" "$RUNNER_TEMP/foodbridge-ssh/key.pub" "$RUNNER_TEMP/foodbridge-ssh/known_hosts"
