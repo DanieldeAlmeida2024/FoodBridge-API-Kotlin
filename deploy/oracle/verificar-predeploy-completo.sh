@@ -48,7 +48,11 @@ check WEB_TOOLS_COMMANDS bash -c 'command -v tar >/dev/null && command -v python
 check WEB_RESTORECON_SUDO sudo -n true
 
 echo '==== OTHER_APPS_READ_ONLY ===='
-check ANIMEDEX_WORKER_HEALTH curl -sf --connect-timeout 2 --max-time 8 -o /dev/null http://127.0.0.1:8787/health
+if curl -sf --connect-timeout 2 --max-time 8 -o /dev/null http://127.0.0.1:8787/health; then
+  echo 'ANIMEDEX_WORKER_HEALTH=PASS (informativo, nao bloqueia o deploy FoodBridge)'
+else
+  echo 'ANIMEDEX_WORKER_HEALTH=UNAVAILABLE (informativo, nao bloqueia o deploy FoodBridge)'
+fi
 
 echo "DEPLOY_READINESS_FAILURES=$failures"
 if (( failures > 0 )); then
