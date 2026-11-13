@@ -27,7 +27,7 @@ FoodBridge organiza a redistribuição de alimentos e o ciclo institucional entr
 | FB-15 | CI do frontend | — | Vite, ESLint, TypeScript, `tests/session.test.ts` | CI PASS e build aprovado |
 | FB-16 | CD automático da API | `foodbridge-ci-cd.yml`, SSH, `atualizar-api.sh` | — | **Deploy real em push na main PASS** run #43465999269 (13/11) |
 | FB-17 | CD automático web | — | `deploy.yml`, `atualizar-frontend.sh` | **Deploy real em push na main PASS** run #43465805656 (13/11), Nginx local/externo HTTP 200 |
-| FB-18 | Infraestrutura e serviço auxiliar AnimeDex | Oracle Linux 9; Nginx; PostgreSQL; Java; Docker | build `dist` estático | Scraper Docker respondeu HTTP 200 em auditoria; vínculo funcional com FoodBridge **não está demonstrado** no código destes dois repositórios |
+| FB-18 | Infraestrutura de execução do FoodBridge | Oracle Linux 9; Nginx; Java 21/systemd; PostgreSQL FoodBridge; SSH/CI/CD | build `dist` estático | API e site publicados na Oracle e verificados pelos workflows; a instância é compartilhada, mas serviços de outros projetos não fazem parte do escopo funcional |
 
 ## Regras de negócio observadas
 
@@ -51,7 +51,7 @@ Esses runs demonstram publicação automatizada, **não** provam cada fluxo de n
 3. Banco PostgreSQL: validação de schema por `ddl-auto=validate`, porém não há prova de migrações versionadas com Flyway/Liquibase nem teste de restauração recente do banco produtivo.
 4. Acesso legal a CPF, endereço e contatos; exercer minimização, auditoria, retenção e LGPD (sem presumir certificação).
 5. Observabilidade/uptime, alertas, disponibilidade contínua e ensaio de desastre sob falha real continuam importantes.
-6. E2.1.Micro tem ~945 MiB utilizáveis e swap; CD automático já passou, mas há risco operacional de lentidão sob concorrência e uso ativo de Puppeteer.
+6. E2.1.Micro tem ~945 MiB utilizáveis e swap; o CD automático passou, mas ainda há risco de lentidão em picos de acesso ao frontend, consultas ao PostgreSQL e inicialização da API Java.
 7. O frontend tenta `/doacoes/publicadas` como fallback, endpoint não presente no backend atual; racionalizar chamadas.
 8. Cadastro `Register.tsx` faz `fetch("/usuarios")` relativo, enquanto outros componentes usam Axios com `VITE_API_BASE_URL`; padronizar para evitar comportamento distinto entre ambientes.
 9. Cobertura browser E2E, acessibilidade e testes de integração externa cobrindo todos os módulos ainda não foram comprovados. O plano histórico lista 165 cenários planejados, não executados integralmente.
