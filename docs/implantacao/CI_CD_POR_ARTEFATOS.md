@@ -1,5 +1,7 @@
 # FoodBridge — CI/CD da Oracle por artefatos aprovados (sem VPN)
 
+> **ALTERNATIVA NÃO SELECIONADA (13/11/2026):** a opção de agentes/timers na VM não está instalada nem ativada. O plano operacional escolhido é [SSH direto do GitHub Actions](CI_CD_ORACLE_SSH_DIRETO.md). Não instalar agentes ou timers deste documento sem nova decisão.
+
 FB-OCI-PULL-001 | v1.0.0 | 13/11/2026 | implementação em revisão; produção NÃO atualizada.
 
 ## Objetivo e arquitetura

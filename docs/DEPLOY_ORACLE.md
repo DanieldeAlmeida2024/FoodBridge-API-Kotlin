@@ -1,5 +1,18 @@
 # CI/CD FoodBridge API → Oracle Cloud
 
+> **ESTADO ATUAL — 13/11/2026:** SSH direto do runner GitHub até Oracle
+> **HOMOLOGADO**: workflow #43355411573 (última tentativa), `SSH_RSA_OK`,
+> `SSH_EXIT=0`, `PREFLIGHT ORACLE: PASS`. A credencial efetiva é RSA-4096
+> dedicada de fingerprint `SHA256:3zV6jlZeYgt19xz4h0KrumznEr3SNlyAEiolj+XrmO8`,
+> já instalada na VM e cadastrada no environment `oracle-production` da API.
+> **Não gerar outra chave ED25519 nem repetir `preparar-vm.sh` sem necessidade.**
+> O workflow direto da main foi atualizado no PR #15 com gates de deploy
+> manual/automático desativados por padrão. Leia primeiro
+> [CI_CD_ORACLE_SSH_DIRETO.md](implantacao/CI_CD_ORACLE_SSH_DIRETO.md);
+> comandos antigos abaixo são históricos. A abertura pública da porta 22
+> na VPC foi uma decisão operacional do mantenedor; amplia exposição e exige
+> endurecimento/monitoramento SSH. Nenhum deploy foi executado neste diagnóstico.
+
 ## Ambiente existente (não recriar)
 
 - Oracle Linux 9; acesso via SSH ao usuário `opc`.
@@ -104,7 +117,7 @@ Na VM, somente leitura:
 sudo systemctl status foodbridge.service --no-pager
 # Logs podem conter dados internos; consulte localmente e não cole saída bruta em chat/issue.
 sudo journalctl -u foodbridge.service -n 80 --no-pager
-curl --fail --silent --show-error --max-time 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/dashboards/publico
+curl --fail --silent --show-error --max-time 20 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/dashboards/publico
 ```
 
 **Rollback:** `deploy/oracle/atualizar-api.sh` restaura automaticamente o JAR anterior se o endpoint público não responder. Os backups ficam em `/opt/foodbridge/FoodBridge-API-Kotlin/deploy-backups`.
@@ -132,7 +145,7 @@ Na VM, inspecione **sem exibir a configuração**:
 sudo -n systemctl is-active foodbridge.service
 sudo -n systemctl show foodbridge.service -p User -p WorkingDirectory
 sudo -n test -s /etc/foodbridge/application.properties && echo "Config externa existe"
-curl --fail --silent --show-error --max-time 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/dashboards/publico
+curl --fail --silent --show-error --max-time 20 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/dashboards/publico
 ```
 
 Antes de executar `preparar-vm.sh`, **revise seu diff e seu conteúdo**. O script prepara configuração externa e override systemd, mas não reinicia serviço nem mexe no banco. Se o serviço usa um JAR diferente do caminho do pipeline, ele agora recusa a preparação; corrigir essa discrepância manualmente após identificar a unidade real. Não fazer git reset/pull em checkout com alterações locais.
