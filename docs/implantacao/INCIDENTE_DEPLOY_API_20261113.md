@@ -17,6 +17,30 @@ A instância tem apenas aproximadamente 512 MB de RAM física e executa PostgreS
 
 O `systemd` mostra `TimeoutStartUSec=1min30s` e `TimeoutStopUSec=1min30s`, mas o script de atualização usa sua própria janela de 30 verificações com sleeps. O dashboard de saúde é uma **consulta funcional pesada** (~8–10s). O preflight não deve depender apenas desse endpoint para estimar liveness; uma futura versão deverá acrescentar `/health/live` leve, sem comprometer a verificação do banco.
 
+## Recuperação de memória via boot Oracle Linux 9 (13/11/2026)
+
+O operador informou que sua instância é **VM.Standard.E2.1.Micro (x86_64)**. A VM apresentava somente **498 MiB** de RAM visível apesar de ter 1 GB nominal. Diagnóstico de leitura confirmou:
+
+```text
+crashkernel=1G-64G:448M,64G-:512M
+sudo kdumpctl estimate => Reserved crashkernel: 448M; Recommended: 184M
+systemctl is-active kdump => active
+```
+
+O operador **deliberadamente** executou no host (fora do GitHub Actions) `sudo systemctl disable --now kdump`, `sudo grubby --update-kernel=ALL --remove-args=crashkernel`, conferiu `grubby --info=DEFAULT` sem o argumento e efetuou reboot planejado. Após alguns erros de SSH transitórios esperados durante a inicialização, o SSH voltou a responder. Resultado fornecido pelo operador:
+
+| Métrica | Antes | Após reboot |
+| --- | --- | --- |
+| RAM visível (`free -h`) | 498 MiB | **945 MiB** |
+| RAM disponível (`MemAvailable`) | 226 MiB | **355 MiB** |
+| Swap usado | 782 MiB | **48 MiB** |
+
+**Recuperação de RAM visível: +447 MiB**. A redução de swap pode refletir o reboot; não comprova por si só estabilidade sob carga. A mudança retira a reserva de memória para dumps do kernel; em caso de falha grave do kernel, não haverá dump de Kdump. O risco foi aceito pelo operador para privilegiar disponibilidade da aplicação nesta shape pequena.
+
+O workflow read-only de diagnóstico passa a verificar `CRASHKERNEL_ARG_PRESENT` e `KDUMP_SERVICE_STATUS`, juntamente com HTTP local, PostgreSQL e memória. **Não altera a configuração de boot nem reinicia serviços.**
+
+**Gate de deploy ainda bloqueante:** `deploy/oracle/verificar-recursos-deploy.sh` exige `MemTotal >= 1048576 KiB` (1024 MiB), mas a instância agora tem somente 945 MiB visíveis. Não reduzir esse limite automaticamente ou publicar novo JAR somente porque o reboot recuperou memória. Validar capacidade após estabilização da carga, saúde dos quatro serviços e uma estratégia de deploy de baixo risco antes de reavaliar o gate.
+
 ## Mitigação versionada
 
 - `deploy/oracle/verificar-recursos-deploy.sh` é um **gate somente leitura** que bloqueia a transferência e o restart quando `MemTotal < 1 GiB` ou `MemAvailable < 256 MiB`. O limiar é um mínimo conservador, não um dimensionamento recomendado. Priorizar ao menos **2 GiB de RAM real**, preferencialmente mais se Chrome/Puppeteer e banco permanecerem na mesma máquina.

@@ -29,6 +29,16 @@ else
   echo 'POSTGRES_TCP_READY_EXIT=NOT_AVAILABLE'
 fi
 
+echo '=== KERNEL_CRASH_RESERVATION ==='
+# Nao imprimir a command line inteira (pode conter parametros desconhecidos).
+if grep -Eq '(^|[[:space:]])crashkernel=' /proc/cmdline; then
+  echo 'CRASHKERNEL_ARG_PRESENT=YES'
+else
+  echo 'CRASHKERNEL_ARG_PRESENT=NO'
+fi
+kdump_status="$(systemctl is-active kdump 2>/dev/null || true)"
+echo "KDUMP_SERVICE_STATUS=$kdump_status"
+
 echo '=== HOST_CAPACITY ==='
 df -P /opt/foodbridge | awk 'NR==2 {print "DISK_USE=" $5}'
 awk '/^(MemTotal|MemAvailable|SwapTotal|SwapFree):/ {key=$1; sub(/:$/, "", key); print "MEMINFO_" key "_KB=" $2}' /proc/meminfo

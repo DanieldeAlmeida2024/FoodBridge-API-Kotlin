@@ -24,6 +24,9 @@ class OracleAPIIncidentContract(unittest.TestCase):
                 self.assertIn("HTTP_", SCRIPT)
             else:
                 self.assertIn(expected, SCRIPT)
+        self.assertIn("CRASHKERNEL_ARG_PRESENT", SCRIPT)
+        self.assertIn("KDUMP_SERVICE_STATUS", SCRIPT)
+        self.assertIn("grep -Eq", SCRIPT)
         self.assertNotIn("journalctl -u foodbridge.service --no-pager -n 1200 | tee", SCRIPT)
 
     def test_pinned_ssh_and_only_main_without_deploy(self):
