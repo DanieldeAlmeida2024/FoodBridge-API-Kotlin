@@ -75,6 +75,35 @@ No `vmstat 1 10`, a primeira linha foi **média desde boot** (`si=11, so=76`), e
 
 **Limitação:** comando remoto de `cat /proc/pressure/memory` foi concatenado incorretamente pelo shell PowerShell/SSH, então PSI não foi medido nessa amostra. O workflow de diagnóstico read-only passa a coletar `PSI some/full avg10`, estatísticas de swap de **cinco intervalos atuais**, eliminando a primeira média de boot, e memória do container. Nenhum teste foi realizado com Chromium sob uso real ou durante restart da API; não é seguro concluir capacidade de publicação a partir do repouso. **Gate conservador segue ativo.**
 
+### Auditoria remota de pressão de memória e troca ativa — 13/11/2026 12h06 BRT
+
+O [PR #27](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/27) passou no CI e foi integrado à main. A auditoria read-only [#43449198044](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43449198044) terminou **SUCCESS**, confirmando saúde do conjunto:
+
+```text
+UNIT_foodbridge_service=active
+UNIT_nginx=active
+UNIT_docker=active
+HTTP_80_STATUS=200
+HTTP_8080_STATUS=200
+HTTP_8787_STATUS=200
+POSTGRES_TCP_READY_EXIT=0
+MEMINFO_MemTotal_KB=968600
+MEMINFO_MemAvailable_KB=372472
+MEMINFO_SwapTotal_KB=3064824
+MEMINFO_SwapFree_KB=2573760
+MEMORY_PSI_STATUS=UNAVAILABLE
+VMSTAT_INTERVALS=5
+VMSTAT_SWAP_ACTIVE_INTERVALS=1
+VMSTAT_MAX_SWAPIN_KIBPS=232
+VMSTAT_MAX_SWAPOUT_KIBPS=0
+VMSTAT_MIN_CPU_IDLE_PCT=88
+VMSTAT_MAX_IOWAIT_PCT=2
+DOCKER_CONTAINER=animedex-scraper DOCKER_MEMORY=21.62MiB / 945.9MiB
+KERNEL_OOM_SIGNALS=0
+```
+
+RAM disponível ~364 MiB e swap ocupada ~480 MiB. **Um dos cinco intervalos registrou entrada de swap de até 232 KiB/s**, sem saída de swap e com espera de I/O de no máximo 2%. Portanto, não se observou `thrashing` contínuo no período, mas não é correto afirmar troca de swap completamente ausente. PSI em `/proc/pressure/memory` apareceu **UNAVAILABLE** na VM e não pode ser usado como critério de publicação sem investigação adicional. O uso do container foi medido sem carga ativa do Chromium. Não houve ensaio de restart nem de carga simultânea; gate de release continua bloqueando publicação nesta Micro.
+
 ## Mitigação versionada
 
 - `deploy/oracle/verificar-recursos-deploy.sh` é um **gate somente leitura** que bloqueia a transferência e o restart quando `MemTotal < 1 GiB` ou `MemAvailable < 256 MiB`. O limiar é um mínimo conservador, não um dimensionamento recomendado. Priorizar ao menos **2 GiB de RAM real**, preferencialmente mais se Chrome/Puppeteer e banco permanecerem na mesma máquina.
