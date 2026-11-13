@@ -125,3 +125,14 @@ A correção reutiliza `aguardar_saude`, com janela limitada a 180 segundos **ta
 4. Somente depois executar um **único** novo deploy manual com backup, health e rollback. Não habilitar auto-deploy até esse ensaio passar.
 
 **Escopo desta revisão:** GitHub Actions e documentação. Não houve acesso mutante a serviço, JAR, frontend, container ou PostgreSQL.
+
+## Encerramento do incidente — CD automático homologado (13/11/2026)
+
+A limitação física de `MemTotal=945 MiB` após remover Kdump foi tratada como restrição permanente da shape `VM.Standard.E2.1.Micro`. O operador solicitou explicitamente CI/CD **automático sem flags nem bloqueios artificiais de RAM** na instância existente.
+
+O [PR #28 da API](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/28) substituiu o bloqueio de memória por telemetria de aviso, habilitou deploy em `push` de código na `main`, adicionou `GET /health/live` e manteve verificação de integração do dashboard/PostgreSQL, backup, SHA-256 e rollback. O [run #43465999269](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269) foi iniciado automaticamente, terminou **SUCCESS** e mostrou `DEPLOY OK: API respondeu no endpoint público` depois de aproximadamente 65 segundos de restart. Backup da versão anterior disponível em `deploy-backups/foodbridge-20261113T164823Z-582f6dd83336.jar`.
+
+O frontend foi corrigido para não publicar `dist` com permissões 0700/0600 (causando HTTP 403). Após a correção do [PR #11 do frontend](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/pull/11), o [deploy automático #43465805656](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656) terminou **SUCCESS**, com Nginx local e HTTP externo 200.
+
+**Status final do incidente:** backend e frontend com primeiro CD automático homologado em produção; os dois rodam na E2.1.Micro, sem aumentar shape, sem recriar banco e sem agente pull/Tailscale. Manter alertas de memória e monitorar disponibilidade, pois a capacidade física continua limitada. Os limites antigos de 1 GiB e 256 MiB documentados acima são históricos e **não são mais condições bloqueantes**.
+
