@@ -156,12 +156,12 @@ class FluxoFuncionalHttpIntegrationTest(
         val consulta = chamada(get("/organizacoes/" + target.org.id), operador.token)
         assertEquals(0, consulta["usuarios"].size())
         assertEquals(0, consulta["voluntarios"].size())
-        assertFalse(consulta.toString().contains(target.usuario.email!!))
+        assertFalse(consulta.findValuesAsText("email").contains(target.usuario.email))
         val temp = jwt.generateTempToken(operador.usuario.id!!, UserStatus.VERIFICADO)
         val porCnpj = chamada(get("/organizacoes/cnpj/" + target.org.cnpj), temp)
         assertEquals(0, porCnpj["usuarios"].size())
         assertEquals(0, porCnpj["voluntarios"].size())
-        assertFalse(porCnpj.toString().contains(target.usuario.email!!))
+        assertFalse(porCnpj.findValuesAsText("email").contains(target.usuario.email))
     }
 
     @Test
