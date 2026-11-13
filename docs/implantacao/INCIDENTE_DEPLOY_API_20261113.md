@@ -67,6 +67,14 @@ INCIDENT_DIAGNOSTIC_FINISHED=YES (somente leitura)
 
 **Interpretação:** memória total utilizável ~946 MiB; memória disponível sob carga ~218 MiB; swap usado ~271 MiB. Após reboot, os serviços foram recuperados, mas continuamos abaixo dos dois limiares do gate de publicação (`MemTotal >= 1024 MiB`, `MemAvailable >= 256 MiB`). Não tentar novo deploy manual ou automático antes de reavaliar a capacidade e a estabilidade do serviço. A queda de swap no primeiro `free -h` pós-reboot não foi sustentada após a carga voltar.
 
+### Verificação manual de processos e swap — 13/11/2026 11h31 BRT
+
+Operador confirmou após o reboot: `MemTotal=945 MiB`, `MemAvailable=312 MiB` e **400 MiB de swap ocupada**. A ordem por RSS encontrou `java ~184 MiB` (maior processo), `python3 ~42 MiB`, agente Oracle ~41 MiB, `dockerd ~28 MiB`, `node ~21 MiB` e postgres master ~16 MiB. RSS por processo não captura sozinho a pressão da memória compartilhada ou o pico do Chromium.
+
+No `vmstat 1 10`, a primeira linha foi **média desde boot** (`si=11, so=76`), e os nove intervalos seguintes mostraram `si=0`, `so=0`, CPU `id=99–100%` e `wa=0%` sob carga ociosa. O container AnimeDex estava sem navegação ativa: `18,78 MiB` de memória Docker no snapshot. O grupo systemd `foodbridge.service` reportou `MemoryCurrent=140705792` bytes (~134 MiB) e `MemoryPeak=339656704` bytes (~324 MiB); esses indicadores não são equivalentes ao RSS do processo Java.
+
+**Limitação:** comando remoto de `cat /proc/pressure/memory` foi concatenado incorretamente pelo shell PowerShell/SSH, então PSI não foi medido nessa amostra. O workflow de diagnóstico read-only passa a coletar `PSI some/full avg10`, estatísticas de swap de **cinco intervalos atuais**, eliminando a primeira média de boot, e memória do container. Nenhum teste foi realizado com Chromium sob uso real ou durante restart da API; não é seguro concluir capacidade de publicação a partir do repouso. **Gate conservador segue ativo.**
+
 ## Mitigação versionada
 
 - `deploy/oracle/verificar-recursos-deploy.sh` é um **gate somente leitura** que bloqueia a transferência e o restart quando `MemTotal < 1 GiB` ou `MemAvailable < 256 MiB`. O limiar é um mínimo conservador, não um dimensionamento recomendado. Priorizar ao menos **2 GiB de RAM real**, preferencialmente mais se Chrome/Puppeteer e banco permanecerem na mesma máquina.
