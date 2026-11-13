@@ -5,6 +5,15 @@ on:
     branches: [main]
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'deploy/oracle/**'
+      - '.github/workflows/foodbridge-ci-cd.yml'
   workflow_dispatch:
     inputs:
       preflight:
