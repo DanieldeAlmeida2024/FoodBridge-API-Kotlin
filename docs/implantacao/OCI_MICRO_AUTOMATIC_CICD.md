@@ -25,3 +25,29 @@ Após cada merge, conferir o CI e o job `Publicar na VM Oracle`: a sequência de
 Os secrets não são versionados. O GitHub environment continua sendo uma dependência de segurança e credenciais — não é uma flag manual para bloquear deploy. Regras de PR/branch protection são recomendadas para evitar código não revisado em produção.
 
 Relatório anterior: `docs/implantacao/INCIDENTE_DEPLOY_API_20261113.md`.
+
+## Homologação real — primeiro push automático da API
+
+O [PR #28](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/28) foi mesclado na `main` (commit de merge `6b3e32b774df37900fbd6a0f6b935a41664274fb`). O evento `push` acionou o [workflow #43465999269](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269) **sem intervenção manual nem alterações em flags**, e todos os jobs finalizaram **SUCCESS**.
+
+A execução confirmou CI Kotlin/Java 21 com PostgreSQL descartável, recuperação do JAR do mesmo run, preflight e telemetria Oracle, SSH e substituição/saúde do backend com backup:
+
+```text
+PREFLIGHT ORACLE: PASS (somente leitura, nenhum deploy executado)
+RAM_TOTAL_MIB=945
+RAM_AVAILABLE_MIB=365
+SWAP_USED_MIB=585
+DEPLOY_CAPACITY=WARNING motivo=oracle_micro_ram_fisica_abaixo_1GiB
+DEPLOY_CAPACITY=PASS modo=telemetria_micro_sem_bloqueio
+Reiniciando serviço foodbridge.service (versão 20261113T164823Z-582f6dd83336)
+DEPLOY OK: API respondeu no endpoint público.
+```
+
+Backup criado na VM:
+
+`/opt/foodbridge/FoodBridge-API-Kotlin/deploy-backups/foodbridge-20261113T164823Z-582f6dd83336.jar`
+
+O restart começou às 16:48:23 UTC e a health/readiness foi confirmada às 16:49:29 UTC (~65 segundos). A aplicação nova **foi publicada com sucesso e não exigiu rollback**. O indicador RAM continua baixo; avisos de capacidade persistem, porém não impedem CD. As validações de CI, integridade SSH/SHA256, backups, conexão ao banco e rollback permanecem obrigatórias.
+
+O frontend também possui CD automático homologado em [run #43465805656](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656) com `DEPLOY FRONTEND: PASS`, Nginx local HTTP 200 e HTTP externo 200. **Resultado: front e API publicam automaticamente na mesma instância E2.1.Micro.**
+
