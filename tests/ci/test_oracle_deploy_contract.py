@@ -17,7 +17,9 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("concurrency:", wf)
         self.assertIn("cancel-in-progress: false", wf)
         self.assertIn("OCI_DEPLOY_ENABLED == 'true'", wf)
-        self.assertIn("OCI_AUTO_DEPLOY_ENABLED == 'true'", wf)
+        deploy_job = wf.split("  deploy-oracle:", 1)[1]
+        self.assertNotIn("github.event_name == 'push'", deploy_job)
+        self.assertIn("github.event_name == 'workflow_dispatch'", deploy_job)
         self.assertIn("github.event_name == 'workflow_dispatch' && inputs.deploy == true", wf)
         self.assertIn("!inputs.preflight", wf)
 

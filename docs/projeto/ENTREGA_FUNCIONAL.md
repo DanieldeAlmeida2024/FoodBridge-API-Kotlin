@@ -25,3 +25,13 @@ Esta matriz registra o estado real; código consolidado ou CI isolado não equiv
 - Estado inicial deste documento: execução combinada pendente; atualizar com SHA e Actions reais.
 - Os 49 endpoints/165 cenários do plano histórico continuam sendo referência de cobertura,
   sem declaração de que todos foram executados.
+ 
+### Evidência combinada e publicação manual
+O [Actions #43336071509](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43336071509)
+no SHA `c7886081a2130a51ee42786336f731cfceb62bf6` aprovou `clean test bootJar`,
+PostgreSQL efêmero, sintaxe Bash e 18 testes de contrato. Preflight/Oracle ficaram skipped.
+O frontend integrado está no [PR web #3](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/pull/3).
+A revisão atual torna o deploy da API **exclusivamente manual** (`workflow_dispatch`,
+`deploy=true`, `preflight=false` e `OCI_DEPLOY_ENABLED=true`).
+Um push/merge na main não inicia deploy, independentemente de variáveis antigas de auto-deploy.
+O contrato automatizado verifica essa restrição; a nova revisão exige seu próprio CI.
