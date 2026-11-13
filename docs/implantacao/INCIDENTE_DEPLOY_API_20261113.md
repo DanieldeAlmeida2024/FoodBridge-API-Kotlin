@@ -41,6 +41,32 @@ O workflow read-only de diagnóstico passa a verificar `CRASHKERNEL_ARG_PRESENT`
 
 **Gate de deploy ainda bloqueante:** `deploy/oracle/verificar-recursos-deploy.sh` exige `MemTotal >= 1048576 KiB` (1024 MiB), mas a instância agora tem somente 945 MiB visíveis. Não reduzir esse limite automaticamente ou publicar novo JAR somente porque o reboot recuperou memória. Validar capacidade após estabilização da carga, saúde dos quatro serviços e uma estratégia de deploy de baixo risco antes de reavaliar o gate.
 
+### Auditoria pós-reboot com serviços ativos — 13/11/2026 11:12 BRT
+
+O PR [#26](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/26) foi aprovado no CI e mesclado, acrescentando a checagem read-only de reserva de crashkernel. O workflow [#43440493532](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43440493532) terminou **SUCCESS**, sem nenhum restart ou alteração na VM:
+
+```text
+CRASHKERNEL_ARG_PRESENT=NO
+KDUMP_SERVICE_STATUS=inactive
+UNIT_foodbridge_service=active
+UNIT_nginx=active
+UNIT_docker=active
+HTTP_80_CURL_EXIT=0 HTTP_80_STATUS=200
+HTTP_8080_CURL_EXIT=0 HTTP_8080_STATUS=200
+HTTP_8787_CURL_EXIT=0 HTTP_8787_STATUS=200
+POSTGRES_TCP_READY_EXIT=0
+MEMINFO_MemTotal_KB=968600
+MEMINFO_MemAvailable_KB=222988
+MEMINFO_SwapTotal_KB=3064824
+MEMINFO_SwapFree_KB=2787272
+KERNEL_OOM_SIGNALS=0
+CURRENT_JAR_SHA256=8b61592f7f0c783307ed2a0e3799f6cf39066bb77c83923ba18202da5d2083fa
+LATEST_BACKUP_SHA256=8b61592f7f0c783307ed2a0e3799f6cf39066bb77c83923ba18202da5d2083fa
+INCIDENT_DIAGNOSTIC_FINISHED=YES (somente leitura)
+```
+
+**Interpretação:** memória total utilizável ~946 MiB; memória disponível sob carga ~218 MiB; swap usado ~271 MiB. Após reboot, os serviços foram recuperados, mas continuamos abaixo dos dois limiares do gate de publicação (`MemTotal >= 1024 MiB`, `MemAvailable >= 256 MiB`). Não tentar novo deploy manual ou automático antes de reavaliar a capacidade e a estabilidade do serviço. A queda de swap no primeiro `free -h` pós-reboot não foi sustentada após a carga voltar.
+
 ## Mitigação versionada
 
 - `deploy/oracle/verificar-recursos-deploy.sh` é um **gate somente leitura** que bloqueia a transferência e o restart quando `MemTotal < 1 GiB` ou `MemAvailable < 256 MiB`. O limiar é um mínimo conservador, não um dimensionamento recomendado. Priorizar ao menos **2 GiB de RAM real**, preferencialmente mais se Chrome/Puppeteer e banco permanecerem na mesma máquina.
