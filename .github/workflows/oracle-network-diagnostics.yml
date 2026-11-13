@@ -1,0 +1,118 @@
+name: Oracle - diagnostico Nginx e AnimeDex sem escrita
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/oracle-network-diagnostics.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: foodbridge-oracle-diagnostics
+  cancel-in-progress: false
+
+jobs:
+  diagnostico:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment: oracle-production
+    env:
+      OCI_SSH_HOST: ${{ vars.OCI_SSH_HOST }}
+      OCI_SSH_USER: ${{ vars.OCI_SSH_USER }}
+      OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+      OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Preparar SSH com chave e host previamente aprovados
+        shell: bash
+        run: |
+          set -euo pipefail
+          for v in OCI_SSH_HOST OCI_SSH_USER OCI_SSH_PRIVATE_KEY OCI_SSH_KNOWN_HOSTS; do
+            [[ -n "${!v:-}" ]] || { echo "::error::Falta $v no environment"; exit 1; }
+          done
+          umask 077
+          mkdir -p "$RUNNER_TEMP/oci-net-diagnostic"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$RUNNER_TEMP/oci-net-diagnostic/id_rsa"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/oci-net-diagnostic/known_hosts"
+          ssh-keygen -y -f "$RUNNER_TEMP/oci-net-diagnostic/id_rsa" -P '' > "$RUNNER_TEMP/oci-net-diagnostic/id_rsa.pub"
+          FP="$(ssh-keygen -lf "$RUNNER_TEMP/oci-net-diagnostic/id_rsa.pub" -E sha256 | awk '{print $2}')"
+          [[ "$FP" == 'SHA256:3zV6jlZeYgt19xz4h0KrumznEr3SNlyAEiolj+XrmO8' ]] || { echo '::error::RSA nao aprovada'; exit 1; }
+      - name: Testar acesso publico HTTP do proprio runner
+        shell: bash
+        run: |
+          set -uo pipefail
+          for pair in '80|/' '8787|/health'; do
+            port="${pair%%|*}"
+            path="${pair#*|}"
+            echo "===== EXTERNAL_PORT_$port ====="
+            code="$(curl -4 --noproxy '*' --silent --show-error --connect-timeout 6 --max-time 10 -o /dev/null -w '%{http_code}' "http://${OCI_SSH_HOST}:${port}${path}" 2>&1)"
+            rc=$?
+            echo "EXTERNAL_PORT_${port}_CURL_EXIT=$rc"
+            echo "EXTERNAL_PORT_${port}_RESULT=$code"
+          done
+      - name: Diagnosticar listeners e servicos internos via SSH somente leitura
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$RUNNER_TEMP/oci-net-diagnostic/id_rsa"
+            -o IdentityAgent=none -o IdentitiesOnly=yes -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="$RUNNER_TEMP/oci-net-diagnostic/known_hosts"
+            -o ConnectTimeout=15)
+          ssh "${SSH_OPTS[@]}" "$OCI_SSH_USER@$OCI_SSH_HOST" 'bash -s' <<'REMOTE'
+          set -uo pipefail
+          echo '===== SERVICE_STATES ====='
+          for svc in sshd firewalld nginx docker foodbridge.service; do
+            status="$(systemctl is-active "$svc" 2>/dev/null || true)"
+            echo "SERVICE_${svc//./_}=$status"
+          done
+          echo '===== LISTENING_PORTS ====='
+          ss -H -lnt | awk '$4 ~ /:(22|80|443|8080|8787)$/ {print "LISTEN=" $4}' || true
+          echo '===== LOCAL_HTTP ====='
+          for pair in '80|/' '8787|/health'; do
+            port="${pair%%|*}"
+            path="${pair#*|}"
+            code="$(curl --noproxy '*' --silent --show-error --connect-timeout 3 --max-time 10 -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}${path}" 2>&1)"
+            rc=$?
+            echo "LOCAL_PORT_${port}_CURL_EXIT=$rc"
+            echo "LOCAL_PORT_${port}_RESULT=$code"
+          done
+          echo '===== NGINX_CONFIG_TEST ====='
+          if sudo -n nginx -t 2>&1; then echo 'NGINX_CONFIG=PASS'; else echo 'NGINX_CONFIG=FAIL'; fi
+          echo '===== DOCKER_ANIMEDEX ====='
+          if command -v docker >/dev/null 2>&1; then
+            sudo -n docker ps -a --filter name=animedex --format 'CONTAINER={{.Names}} STATE={{.State}} PORTS={{.Ports}}' 2>&1 || echo 'DOCKER_INSPECT=FAILED'
+          else
+            echo 'DOCKER=NOT_INSTALLED'
+          fi
+          echo '===== FIREWALLD_ACTIVE_ZONE_RULES ====='
+          if systemctl is-active --quiet firewalld; then
+            zones="$(sudo -n firewall-cmd --get-active-zones 2>/dev/null | awk '/^[^[:space:]]/{print $1}')"
+            if [[ -z "$zones" ]]; then zones="$(sudo -n firewall-cmd --get-default-zone 2>/dev/null || true)"; fi
+            for zone in $zones; do
+              echo "FIREWALL_ZONE=$zone"
+              for service in ssh http https; do
+                if sudo -n firewall-cmd --zone="$zone" --query-service="$service" >/dev/null 2>&1; then
+                  echo "ZONE_${zone}_SERVICE_${service}=ALLOW"
+                else
+                  echo "ZONE_${zone}_SERVICE_${service}=NOT_ALLOW_BY_SERVICE"
+                fi
+              done
+              for port in 80 443 8787; do
+                if sudo -n firewall-cmd --zone="$zone" --query-port="${port}/tcp" >/dev/null 2>&1; then
+                  echo "ZONE_${zone}_PORT_${port}=ALLOW"
+                else
+                  echo "ZONE_${zone}_PORT_${port}=NOT_ALLOW_BY_PORT"
+                fi
+              done
+            done
+          fi
+          echo 'DIAGNOSTIC_DONE=YES'
+          REMOTE
+      - name: Limpar arquivos temporarios no runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/oci-net-diagnostic/id_rsa" "$RUNNER_TEMP/oci-net-diagnostic/id_rsa.pub" "$RUNNER_TEMP/oci-net-diagnostic/known_hosts"
