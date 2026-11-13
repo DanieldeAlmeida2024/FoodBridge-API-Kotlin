@@ -100,3 +100,20 @@ Esta integração não comprova os 165 cenários planejados, o navegador real,
 a prontidão dos papéis de gestor, o SSH do runner, deploy ou rollback.
 A entrega total exige fechar a matriz [ENTREGA_FUNCIONAL](../projeto/ENTREGA_FUNCIONAL.md)
 com evidência por módulo. Produção, serviço, Nginx e banco original não foram alterados.
+
+## Perfil de usuário — FB-USR-002
+Correção de USR-07: campos ausentes no PUT preservam nome/e-mail/senha.
+Cadastro usa Bean Validation; atualização aceita campos opcionais e recusa nome/e-mail
+em branco. Status informado pelo cliente não é aplicado. Exclusão segue transacional.
+
+| Métodos em PerfilHttpIntegrationTest | Casos do plano |
+|---|---|
+| cadastroValidoUsaBcryptENaoAceitaAutoAprovacao | USR-01/02/04/11 |
+| cadastroInvalidoRecusaNomeEmailESenha | USR-03 |
+| alterarApenasNomePreservaEmailSenhaEStatus | USR-07/11 |
+| emailDuplicadoNaoAlteraPerfil | USR-08 |
+| trocaDeSenhaInvalidaSenhaAntigaEPermiteNova | USR-09 |
+| exclusaoRemoveContaEVinculosEPreservaOrganizacao | USR-10/AUT-15 |
+
+Seis novos testes HTTP/PostgreSQL estão adicionados no PR #12.
+Execução do CI ainda pendente nesta revisão; não é homologação do navegador/VM.

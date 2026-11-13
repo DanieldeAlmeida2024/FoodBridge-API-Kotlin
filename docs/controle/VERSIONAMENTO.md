@@ -95,3 +95,20 @@ A revisão atual torna o deploy da API **exclusivamente manual** (`workflow_disp
 `deploy=true`, `preflight=false` e `OCI_DEPLOY_ENABLED=true`).
 Um push/merge na main não inicia deploy, independentemente de variáveis antigas de auto-deploy.
 O contrato automatizado verifica essa restrição; a nova revisão exige seu próprio CI.
+
+## Perfil de usuário — FB-USR-002
+Correção de USR-07: campos ausentes no PUT preservam nome/e-mail/senha.
+Cadastro usa Bean Validation; atualização aceita campos opcionais e recusa nome/e-mail
+em branco. Status informado pelo cliente não é aplicado. Exclusão segue transacional.
+
+| Métodos em PerfilHttpIntegrationTest | Casos do plano |
+|---|---|
+| cadastroValidoUsaBcryptENaoAceitaAutoAprovacao | USR-01/02/04/11 |
+| cadastroInvalidoRecusaNomeEmailESenha | USR-03 |
+| alterarApenasNomePreservaEmailSenhaEStatus | USR-07/11 |
+| emailDuplicadoNaoAlteraPerfil | USR-08 |
+| trocaDeSenhaInvalidaSenhaAntigaEPermiteNova | USR-09 |
+| exclusaoRemoveContaEVinculosEPreservaOrganizacao | USR-10/AUT-15 |
+
+Seis novos testes HTTP/PostgreSQL estão adicionados no PR #12.
+Execução do CI ainda pendente nesta revisão; não é homologação do navegador/VM.
