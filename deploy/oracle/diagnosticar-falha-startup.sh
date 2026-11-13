@@ -7,7 +7,7 @@ for unit in foodbridge.service nginx docker; do
   state="$(systemctl is-active "$unit" 2>/dev/null || true)"
   printf 'UNIT_%s=%s\n' "$(echo "$unit" | tr '.-' '__')" "$state"
 done
-sudo -n systemctl show foodbridge.service -p ActiveState -p SubState -p Result -p ExecMainCode -p ExecMainStatus -p NRestarts -p ActiveEnterTimestamp 2>/dev/null || true
+sudo -n systemctl show foodbridge.service -p ActiveState -p SubState -p Result -p ExecMainCode -p ExecMainStatus -p NRestarts -p ActiveEnterTimestamp -p ExecMainStartTimestamp -p TimeoutStartUSec -p TimeoutStopUSec -p Restart -p MemoryCurrent -p MemoryMax -p StandardOutput -p StandardError 2>/dev/null || true
 
 echo '=== LISTENERS ==='
 ss -H -lnt | awk '$4 ~ /:(80|8080|5432|8787)$/ {print "LISTEN=" $4}' || true
@@ -31,7 +31,14 @@ fi
 
 echo '=== HOST_CAPACITY ==='
 df -P /opt/foodbridge | awk 'NR==2 {print "DISK_USE=" $5}'
-awk '/MemAvailable:/ {print "MEM_AVAILABLE_KB=" $2}' /proc/meminfo
+awk '/^(MemTotal|MemAvailable|SwapTotal|SwapFree):/ {key=$1; sub(/:$/, "", key); print "MEMINFO_" key "_KB=" $2}' /proc/meminfo
+if command -v swapon >/dev/null 2>&1; then
+  swapon --noheadings --show=NAME,SIZE,USED --bytes 2>/dev/null | awk '{print "SWAP_DEVICE_PRESENT=YES"}' | head -n 1
+fi
+if sudo -n journalctl -k --since '2026-11-13 12:58:00 UTC' --no-pager -o cat >/dev/null 2>&1; then
+  kernel_oom="$(sudo -n journalctl -k --since '2026-11-13 12:58:00 UTC' --no-pager -o cat 2>/dev/null | grep -Eic 'out of memory|killed process|oom-kill' || true)"
+  echo "KERNEL_OOM_SIGNALS=$kernel_oom"
+fi
 ps -eo comm,%mem,%cpu,etime --no-headers | awk '$1 == "java" {print "JAVA_MEM_PCT=" $2, "JAVA_CPU_PCT=" $3, "JAVA_ETIME=" $4}' | head -n 5
 
 echo '=== CURRENT_JAR_AND_BACKUPS ==='
@@ -44,6 +51,10 @@ else
 fi
 if sudo -n test -d "$backups"; then
   sudo -n find "$backups" -maxdepth 1 -type f -name '*.jar' -printf '%T@ %f\n' | sort -nr | head -n 5 | cut -d' ' -f2- | sed 's/^/RECENT_BACKUP=/'
+  recent="$(sudo -n find "$backups" -maxdepth 1 -type f -name '*.jar' -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)"
+  if [[ -n "$recent" ]]; then
+    sudo -n sha256sum "$recent" | awk '{print "LATEST_BACKUP_SHA256=" $1}'
+  fi
 fi
 
 echo '=== JOURNAL_CLASSIFIED_WITHOUT_RAW_LOG_TEXT ==='
