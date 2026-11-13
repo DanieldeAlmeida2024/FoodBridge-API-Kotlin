@@ -1,4 +1,4 @@
-# FoodBridge — entrega direta do GitHub Actions via SSH
+# FoodBridge — entrega direta do GitHub Actions via SSH\n\n> **IMPORTANTE — Atualização do contrato em 13/11/2026:** esta página contém o histórico de implantação manual e flags de homologação. O CD atual é **automático em push de código na main, sem flags OCI_DEPLOY_ENABLED/OCI_AUTO_DEPLOY_ENABLED**. Para operação presente consulte [OCI_MICRO_AUTOMATIC_CICD.md](OCI_MICRO_AUTOMATIC_CICD.md). Os comandos antigos de ligar/desligar flags não controlam mais a publicação.\n
 
 **FB-OCI-SSH-CD-003 · 13/11/2026 · CI/CD com primeiro deploy manual e auto-deploy opt-in.**
 
