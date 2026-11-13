@@ -58,6 +58,12 @@ class FluxoFuncionalHttpIntegrationTest(
     }
 
     @Test
+    fun endpointDeLivenessRespondeSemJwtESemConsultaAoBanco() {
+        val resposta = chamada(get("/health/live"))
+        assertEquals("UP", resposta["status"].asText())
+    }
+
+    @Test
     fun loginSelecaoRetornaIdRealDoVinculoETokenValido() {
         val c = conta(OrganizacaoRole.ONG)
         val login = chamada(post("/auth/login"), body = mapOf("email" to c.usuario.email, "senha" to "senha-sintetica"))
