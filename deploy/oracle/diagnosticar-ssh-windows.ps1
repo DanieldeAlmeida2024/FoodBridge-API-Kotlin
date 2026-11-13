@@ -97,7 +97,7 @@ $sshArgs = @(
     '-o', 'StrictHostKeyChecking=yes',
     '-o', 'ConnectTimeout=10',
     "$SshUser@$SshHost",
-    'printf "SSH_RSA_OK\n"'
+    'echo SSH_RSA_OK'
 )
 & ssh.exe @sshArgs
 $sshExit = $LASTEXITCODE
