@@ -1,4 +1,4 @@
-# FoodBridge API: primeiro deploy manual via GitHub Actions SSH, gates restaurados.
+# FoodBridge API: disparo manual opcional (CD na main ja e automatico).
 # Windows PowerShell 5.1, gh autenticado. Nao imprime segredo.
 [CmdletBinding()]
 param(
@@ -25,15 +25,6 @@ if (-not (Get-Command gh.exe -ErrorAction SilentlyContinue)) {
 
 & gh.exe auth status
 Check-LastExit 'gh auth status'
-& gh.exe variable set OCI_AUTO_DEPLOY_ENABLED --body 'false' --repo $Repo
-Check-LastExit 'desligar auto-deploy'
-
-$manualGateOpened = $false
-try {
-    & gh.exe variable set OCI_DEPLOY_ENABLED --body 'true' --repo $Repo
-    Check-LastExit 'liberar deploy manual'
-    $manualGateOpened = $true
-
     # Identifica exatamente o workflow recem-disparado, sem corrida com outros runs.
     $dispatchOutput = (& gh.exe workflow run foodbridge-ci-cd.yml --ref main -f preflight=false -f deploy=true --repo $Repo | Out-String)
     Check-LastExit 'workflow_dispatch API'
@@ -64,19 +55,8 @@ try {
     $code = (& curl.exe -4 --noproxy '*' --silent --show-error --connect-timeout 3 --max-time 20 --output NUL --write-out '%{http_code}' $siteUrl | Out-String).Trim()
     Check-LastExit 'smoke HTTP externo do site'
     if ($code -ne '200') {
-        throw "O job de deploy API passou, mas o Nginx externo retornou $code. Investigar separadamente antes de habilitar auto-deploy."
+        throw "O job de deploy API passou, mas o Nginx externo retornou $code. Investigar a rota externa do Nginx."
     }
     Write-Host 'SITE_EXTERNAL_HTTP=200' -ForegroundColor Green
     Write-Host 'API_INTERNAL_HEALTH=VERIFIED_BY_REMOTE_DEPLOY_JOB' -ForegroundColor Green
     Write-Host 'API_MANUAL_DEPLOY=PASS' -ForegroundColor Green
-}
-finally {
-    if ($manualGateOpened) {
-        & gh.exe variable set OCI_DEPLOY_ENABLED --body 'false' --repo $Repo
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning 'ATENCAO: erro ao fechar OCI_DEPLOY_ENABLED. Desative manualmente no GitHub.'
-        } else {
-            Write-Host 'OCI_DEPLOY_ENABLED=false (restaurado)' -ForegroundColor Cyan
-        }
-    }
-}

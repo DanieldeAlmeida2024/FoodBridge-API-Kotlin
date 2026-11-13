@@ -68,9 +68,10 @@ unset UNIT_EXEC UNIT_DIR
 # Não substituir uma versão já indisponível: rollback não recuperaria saúde anterior.
 sudo -n systemctl is-active --quiet "$SERVICO" ||
   falhar "Serviço não está ativo antes da tentativa de deploy."
-curl --silent --show-error --fail --connect-timeout 2 --max-time 20 -o /dev/null \
-  "http://127.0.0.1:8080/dashboards/publico" ||
-  falhar "Health do serviço atual falhou; deploy cancelado antes da troca do JAR."
+if ! curl --silent --show-error --fail --connect-timeout 2 --max-time 20 -o /dev/null \
+  "http://127.0.0.1:8080/dashboards/publico"; then
+  echo "AVISO: dashboard da versão anterior não respondeu; prosseguindo com backup e validação após restart." >&2
+fi
 
 IDENTIFICADOR="$(date -u +%Y%m%dT%H%M%SZ)-${SHA_ESPERADO:0:12}"
 ANTIGO="$BACKUPS/foodbridge-$IDENTIFICADOR.jar"
@@ -83,9 +84,24 @@ sudo -n mv -f -- "$NOVO" "$DESTINO"
 NOVO=""
 
 saudavel() {
-  sudo -n systemctl is-active --quiet "$SERVICO" &&
-    curl --silent --show-error --fail --connect-timeout 2 --max-time 20 -o /dev/null \
+  sudo -n systemctl is-active --quiet "$SERVICO" || return 1
+  # JAR novo: rota leve; JAR anterior: fallback funcional durante rollback.
+  curl --silent --fail --connect-timeout 2 --max-time 4 -o /dev/null \
+      "http://127.0.0.1:8080/health/live" ||
+    curl --silent --fail --connect-timeout 2 --max-time 20 -o /dev/null \
       "http://127.0.0.1:8080/dashboards/publico"
+}
+
+# Confirma a integração real com PostgreSQL sem tornar a liveness pesada.
+aguardar_readiness() {
+  for tentativa in 1 2 3; do
+    if curl --silent --fail --connect-timeout 2 --max-time 20 -o /dev/null \
+        "http://127.0.0.1:8080/dashboards/publico"; then
+      return 0
+    fi
+    sleep 3
+  done
+  return 1
 }
 
 # Na Oracle com pouca RAM, o java pode iniciar somente depois de dezenas de segundos.
@@ -104,7 +120,7 @@ aguardar_saude() {
 }
 
 echo "Reiniciando serviço $SERVICO (versão $IDENTIFICADOR)"
-if sudo -n systemctl restart "$SERVICO" && aguardar_saude; then
+if sudo -n systemctl restart "$SERVICO" && aguardar_saude && aguardar_readiness; then
   echo "DEPLOY OK: API respondeu no endpoint público. Backup: $ANTIGO"
   exit 0
 fi

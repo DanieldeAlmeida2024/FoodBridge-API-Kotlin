@@ -16,11 +16,11 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("clean test bootJar", wf)
         self.assertIn("concurrency:", wf)
         self.assertIn("cancel-in-progress: false", wf)
-        self.assertIn("OCI_DEPLOY_ENABLED == 'true'", wf)
         deploy_job = wf.split("  deploy-oracle:", 1)[1]
         self.assertIn("github.event_name == 'workflow_dispatch' && inputs.deploy == true", deploy_job)
-        self.assertIn("github.event_name == 'push' && vars.OCI_AUTO_DEPLOY_ENABLED == 'true'", deploy_job)
-        self.assertIn("vars.OCI_DEPLOY_ENABLED == 'true'", deploy_job)
+        self.assertIn("github.event_name == 'push'", deploy_job)
+        self.assertNotIn("vars.OCI_AUTO_DEPLOY_ENABLED", deploy_job)
+        self.assertNotIn("vars.OCI_DEPLOY_ENABLED", deploy_job)
         self.assertIn("github.ref == 'refs/heads/main'", deploy_job)
         self.assertIn("needs: [build-e-testes]", deploy_job)
         self.assertIn("!inputs.preflight", deploy_job)
@@ -59,7 +59,7 @@ class OracleDeployContract(unittest.TestCase):
     def test_slow_database_dashboard_does_not_cause_false_rollback(self):
         # Measured successful HTTP 200 in VM ~6.25s; previous 5s cutoff was incorrect.
         self.assertIn("--max-time 20", preflight)
-        self.assertEqual(deploy.count("--max-time 20"), 2)
+        self.assertEqual(deploy.count("--max-time 20"), 3)
         self.assertNotIn("--max-time 5", preflight + deploy)
         self.assertIn("--connect-timeout 2", preflight)
         self.assertIn("AVISO: dashboard público lento", preflight)
@@ -70,9 +70,11 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("aguardar_saude() {", deploy)
         self.assertIn("local limite_segundos=180", deploy)
         self.assertIn("SECONDS - inicio < limite_segundos", deploy)
-        self.assertIn('if sudo -n systemctl restart "$SERVICO" && aguardar_saude; then', deploy)
+        self.assertIn('if sudo -n systemctl restart "$SERVICO" && aguardar_saude && aguardar_readiness; then', deploy)
         self.assertIn("if aguardar_saude; then", deploy)
-        self.assertEqual(deploy.count("aguardar_saude; then"), 2)
+        self.assertIn("aguardar_readiness() {", deploy)
+        self.assertIn("/health/live", deploy)
+        self.assertIn("aguardar_saude && aguardar_readiness; then", deploy)
         self.assertNotIn('if saudavel; then\n  echo "Rollback executado', deploy)
     def test_integrity_backup_rollback_and_no_git_db_reset(self):
         self.assertIn("sha256sum --check --status", deploy)

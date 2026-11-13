@@ -5,6 +5,15 @@ on:
     branches: [main]
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'deploy/oracle/**'
+      - '.github/workflows/foodbridge-ci-cd.yml'
   workflow_dispatch:
     inputs:
       preflight:
@@ -57,7 +66,7 @@ jobs:
       APP_ADMIN_PASSWORD: senha_ci_descartavel
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Java 21 (Temurin)
         uses: actions/setup-java@v4
@@ -167,17 +176,16 @@ jobs:
   deploy-oracle:
     name: Publicar na VM Oracle
     needs: [build-e-testes]
-    # Homologacao manual primeiro; deploy automatico so com dois gates explicitos.
-    # Em pull_request ou preflight somente leitura, nunca publica.
+    # CI/CD continuo: push aprovado na main publica apos o build/testes.
+    # PRs nunca publicam; preflight manual permanece somente leitura.
     if: >-
       github.ref == 'refs/heads/main' &&
-      vars.OCI_DEPLOY_ENABLED == 'true' &&
       (
-        (github.event_name == 'workflow_dispatch' && inputs.deploy == true && !inputs.preflight) ||
-        (github.event_name == 'push' && vars.OCI_AUTO_DEPLOY_ENABLED == 'true')
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && inputs.deploy == true && !inputs.preflight)
       )
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: oracle-production
     env:
       OCI_SSH_HOST: ${{ vars.OCI_SSH_HOST }}

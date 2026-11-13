@@ -36,6 +36,11 @@ class JwtFilterRotasPublicasTest {
     }
 
     @Test
+    fun livenessPermiteAcessoSemValidacaoDoToken() {
+        verificarRotaPublica("GET", "/health/live")
+    }
+
+    @Test
     fun loginPermiteAcessoSemValidacaoDoToken() {
         verificarRotaPublica("POST", "/auth/login")
     }

@@ -11,11 +11,10 @@ class ManualAPIDeployGate(unittest.TestCase):
         self.assertIn("if (-not $Publicar)", PS)
         self.assertIn("gh.exe auth status", PS)
 
-    def test_only_dispatch_not_auto_deploy(self):
-        self.assertIn("OCI_AUTO_DEPLOY_ENABLED --body 'false'", PS)
-        self.assertIn("OCI_DEPLOY_ENABLED --body 'true'", PS)
+    def test_manual_dispatch_does_not_toggle_auto_cd(self):
         self.assertIn("workflow run foodbridge-ci-cd.yml --ref main -f preflight=false -f deploy=true", PS)
-        self.assertNotIn("OCI_AUTO_DEPLOY_ENABLED --body 'true'", PS)
+        self.assertNotIn("OCI_AUTO_DEPLOY_ENABLED", PS)
+        self.assertNotIn("OCI_DEPLOY_ENABLED", PS)
 
     def test_waits_for_real_job_and_external_http(self):
         for text in ("actions/runs/([0-9]+)", "run watch $runId", "--exit-status",
@@ -25,9 +24,8 @@ class ManualAPIDeployGate(unittest.TestCase):
             self.assertIn(text, PS)
         self.assertNotIn("gh.exe run list", PS)
 
-    def test_restores_manual_flag_and_does_not_handle_secrets(self):
-        self.assertIn("finally {", PS)
-        self.assertIn("OCI_DEPLOY_ENABLED --body 'false'", PS)
+    def test_manual_script_is_secret_free_and_does_not_modify_gates(self):
+        self.assertNotIn("gh.exe variable set", PS)
         self.assertNotIn("OCI_SSH_PRIVATE_KEY", PS)
         self.assertNotIn("postgresql", PS.lower())
         self.assertNotIn("systemctl restart", PS)

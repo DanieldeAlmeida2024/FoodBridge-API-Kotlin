@@ -39,7 +39,8 @@ class JwtFilter(
         return caminho == "/auth/login" ||
             caminho == "/error" ||
             (request.method == "POST" && caminho == "/usuarios") ||
-            (request.method == "GET" && caminho == "/dashboards/publico")
+            (request.method == "GET" && caminho == "/dashboards/publico") ||
+            (request.method == "GET" && caminho == "/health/live")
     }
 
     override fun doFilterInternal(
