@@ -98,6 +98,7 @@ jobs:
           bash -n deploy/oracle/preparar-vm.sh
           bash -n deploy/oracle/atualizar-api.sh
           bash -n deploy/oracle/verificar-vm.sh
+          bash -n deploy/oracle/pull-approved-artifact.sh
           python3 -m unittest discover -s tests/ci -p 'test_*_contract.py' -v
 
       - name: Publicar relatorios de testes

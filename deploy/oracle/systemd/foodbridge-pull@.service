@@ -1,0 +1,13 @@
+[Unit]
+Description=FoodBridge - publicacao de artefatos GitHub Actions (%i)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=opc
+Group=opc
+EnvironmentFile=/etc/foodbridge/pull-deploy.conf
+ExecStart=/opt/foodbridge/deploy-agent/pull-approved-artifact.sh %i --apply
+TimeoutStartSec=25min
+UMask=0077
