@@ -62,6 +62,28 @@ Somente após SSH_RSA_OK e exit 0:
 
 ## Evidência e limites
 
-Este documento e o script foram preparados por análise remota do repositório; **não foram executados na máquina Windows** nesta etapa. O motivo da criptografia persistente ainda deve ser demonstrado pelo script. Em cada execução, anotar somente estado cipher/kdf, fingerprint pública, resultado do SSH e código de saída (sem chaves, senhas nem corpo de arquivos).
+### Evidência local recebida em 12/11/2026
+
+O operador clonou a branch em C:\foodbridge-ssh-check e executou o diagnóstico real no Windows:
+
+- Primeiro resultado: `SSH_CIPHER=aes256-ctr`, `SSH_KDF=bcrypt`, fingerprint RSA esperada, `DIAGNOSTICO_EXIT=21`. Isso confirmou que a cópia permanecia criptografada; nenhum SSH foi tentado nesse estágio.
+- Após executar `ssh-keygen.exe --% -p -N "" -f C:\Users\danie\.ssh\foodbridge-ci-rsa-test` e informar a passphrase antiga no prompt: `SSH_CIPHER=none`, `SSH_KDF=none`, fingerprint inalterada e `SSH_KEY_UNENCRYPTED=YES`.
+- A execução local com `-TestSsh` retornou **`SSH_EXIT=0`**, com marcador visual `SSH_RSA_OKn` (escape de linha interpretado pelo PowerShell 5.1); isso comprova autenticação do teste remoto, mas o marcador não saiu formatado como planejado.
+- O marcador do script foi ajustado para `echo SSH_RSA_OK` no commit posterior; **esse ajuste cosmético ainda não foi retestado no desktop**.
+- Nenhum deploy, modificação do banco original, JAR ou reinício de `foodbridge.service` foi realizado.
+
+**Gate SSH local: PASS (exit 0). Gate GitHub Actions remoto: pendente.**
+
+### Próximo controle: environment do GitHub Actions
+
+1. Confirmar `oracle-production`, preferencialmente protegido para execuções aprovadas na `main`.
+2. Definir vars de environment `OCI_SSH_HOST=163.176.133.210` e `OCI_SSH_USER=opc`.
+3. Definir `OCI_DEPLOY_ENABLED=false` e `OCI_AUTO_DEPLOY_ENABLED=false` como vars do repositório. A condição de habilitação do job de deploy deve continuar falsa.
+4. Conferir no servidor a fingerprint da chave pública de host por sessão SSH já autenticada, e só então fixar uma entrada correspondente de `known_hosts` para o IP. Não tratar `ssh-keyscan` isolado como verificação.
+5. Cadastrar a cópia privada RSA sem passphrase como secret de environment `OCI_SSH_PRIVATE_KEY`, e a entrada de host validada como `OCI_SSH_KNOWN_HOSTS`. Não enviar nenhum conteúdo sensível para Git, issue, console ou chat.
+6. Disparar exclusivamente `Oracle - SSH RSA e preflight somente leitura` via `workflow_dispatch` na `main`. Exigir confirmação dos passos de fingerprint da RSA, `SSH_RSA_OK`, `SSH_EXIT=0` e `verificar-vm.sh` PASS. Falhas de ambiente/configuração não provam falha de SSH.
+7. Nenhum passo de publicação de JAR, restart, acesso SQL destrutivo ou alteração da VM faz parte desse gate.
+
+Em cada execução, anotar somente estado cipher/kdf, fingerprint pública, resultado do SSH e código de saída (sem chaves, senhas nem conteúdo de arquivos).
 
 Referências: [issue #8](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/issues/8), [run CI #43340862650](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43340862650), [run Oracle #43339087021](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43339087021), [segurança CI/CD](implantacao/CI_CD_ORACLE_SEGURANCA.md).
