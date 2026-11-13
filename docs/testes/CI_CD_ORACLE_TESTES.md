@@ -73,3 +73,10 @@ Esta integração não comprova os 165 cenários planejados, o navegador real,
 a prontidão dos papéis de gestor, o SSH do runner, deploy ou rollback.
 A entrega total exige fechar a matriz [ENTREGA_FUNCIONAL](../projeto/ENTREGA_FUNCIONAL.md)
 com evidência por módulo. Produção, serviço, Nginx e banco original não foram alterados.
+
+### USR-10 / AUT-15 — Rota de exclusao de perfil e restricao ADMIN (13/11/2026)
+
+- Falha inicial [Actions #43339468251](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43339468251): teste de exclusao via `DELETE /usuarios/me` obteve HTTP 403 em vez de 204 devido a matcher ADMIN generico `/usuarios/*`.
+- A regra exata `DELETE /usuarios/me` foi adicionada **antes** da regra de administrador, exigindo `TOKEN_ACCESS`. Teste existente exige exclusao de conta/vinculos, organizacao preservada e token antigo rejeitado.
+- Novo teste negativo garante que usuario comum receba 403 ao tentar `DELETE /usuarios/{id}` de outra conta.
+- Execucao de CI da revisao posterior: PENDENTE. Nenhum teste de delete foi feito contra o banco original.

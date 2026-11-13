@@ -35,6 +35,10 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/organizacoes").hasAuthority("TOKEN_TEMP")
                     .requestMatchers(HttpMethod.GET, "/organizacoes/cnpj/**").hasAuthority("TOKEN_TEMP")
 
+                    // O proprio titular pode excluir /usuarios/me com token ACCESS.
+                    // Deve preceder /usuarios/*, restrito a administradores.
+                    .requestMatchers(HttpMethod.DELETE, "/usuarios/me").hasAuthority("TOKEN_ACCESS")
+
                     // Rotas ADMIN
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET,"/organizacoes").hasRole("ADMIN")

@@ -95,3 +95,27 @@ A revisão atual torna o deploy da API **exclusivamente manual** (`workflow_disp
 `deploy=true`, `preflight=false` e `OCI_DEPLOY_ENABLED=true`).
 Um push/merge na main não inicia deploy, independentemente de variáveis antigas de auto-deploy.
 O contrato automatizado verifica essa restrição; a nova revisão exige seu próprio CI.
+
+## Perfil de usuário — FB-USR-002
+Correção de USR-07: campos ausentes no PUT preservam nome/e-mail/senha.
+Cadastro usa Bean Validation; atualização aceita campos opcionais e recusa nome/e-mail
+em branco. Status informado pelo cliente não é aplicado. Exclusão segue transacional.
+
+| Métodos em PerfilHttpIntegrationTest | Casos do plano |
+|---|---|
+| cadastroValidoUsaBcryptENaoAceitaAutoAprovacao | USR-01/02/04/11 |
+| cadastroInvalidoRecusaNomeEmailESenha | USR-03 |
+| alterarApenasNomePreservaEmailSenhaEStatus | USR-07/11 |
+| emailDuplicadoNaoAlteraPerfil | USR-08 |
+| trocaDeSenhaInvalidaSenhaAntigaEPermiteNova | USR-09 |
+| exclusaoRemoveContaEVinculosEPreservaOrganizacao | USR-10/AUT-15 |
+
+Seis novos testes HTTP/PostgreSQL estão adicionados no PR #12.
+Execução do CI ainda pendente nesta revisão; não é homologação do navegador/VM.
+
+### FB-USR-003 — Security matcher DELETE /usuarios/me (13/11/2026)
+
+- O CI [#43339468251](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43339468251) reprovou 1/60 testes: `PerfilHttpIntegrationTest.exclusaoRemoveContaEVinculosEPreservaOrganizacao`, `expected 204 but was 403`. Evidencia direta do XML `foodbridge-relatorios` do run.
+- Causa: `.requestMatchers(HttpMethod.DELETE, "/usuarios/*").hasRole("ADMIN")` em `SecurityConfig` interceptava `/usuarios/me` antes da regra de token ACCESS.
+- Correcao isolada: matcher exato `DELETE /usuarios/me` com `TOKEN_ACCESS` antes da restricao administrativa. Permanecem proibidas exclusoes de terceiros por usuario comum. Teste HTTP/PostgreSQL negativo adicionado para `DELETE /usuarios/{id}`; teste de exclusao transacional existente deve passar (204 e posteriormente JWT 403).
+- O resultado final depende de novo CI; nenhum deploy Oracle/alteracao na VM foi feito.

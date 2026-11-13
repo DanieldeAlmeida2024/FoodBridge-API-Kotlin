@@ -49,3 +49,29 @@ relações JPA de usuários, voluntários ou doações. A validação Bean Valid
 ativada no POST/PUT de organização; ADMIN é recusado no cadastro comum.
 Dois testes HTTP adicionais comprovam minimização de vínculos e recusa de ADMIN sem persistência.
 A suíte integrada passa de sete para nove testes HTTP. CI desta revisão ainda pendente.
+
+## Perfil de usuário — FB-USR-002
+Correção de USR-07: campos ausentes no PUT preservam nome/e-mail/senha.
+Cadastro usa Bean Validation; atualização aceita campos opcionais e recusa nome/e-mail
+em branco. Status informado pelo cliente não é aplicado. Exclusão segue transacional.
+
+| Métodos em PerfilHttpIntegrationTest | Casos do plano |
+|---|---|
+| cadastroValidoUsaBcryptENaoAceitaAutoAprovacao | USR-01/02/04/11 |
+| cadastroInvalidoRecusaNomeEmailESenha | USR-03 |
+| alterarApenasNomePreservaEmailSenhaEStatus | USR-07/11 |
+| emailDuplicadoNaoAlteraPerfil | USR-08 |
+| trocaDeSenhaInvalidaSenhaAntigaEPermiteNova | USR-09 |
+| exclusaoRemoveContaEVinculosEPreservaOrganizacao | USR-10/AUT-15 |
+
+Seis novos testes HTTP/PostgreSQL estão adicionados no PR #12.
+Execução do CI ainda pendente nesta revisão; não é homologação do navegador/VM.
+
+### Evidência remota — SSH e preflight
+[Actions #43339087021](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43339087021)
+executou o workflow dedicado na main `6b78bf47e5a4113f46098dad47a8978db7635f75`.
+O job parou com `Configuração ausente: OCI_SSH_HOST no environment oracle-production`.
+No job, OCI_SSH_HOST, OCI_SSH_USER, OCI_SSH_PRIVATE_KEY e OCI_SSH_KNOWN_HOSTS
+não estavam disponíveis. A autenticação SSH e o preflight da VM ficaram skipped.
+Nenhum SSH_RSA_OK, SSH_EXIT=0, deploy, restart ou SQL foi executado.
+O acesso à administração de variáveis/secrets não está exposto pelo conector atual.

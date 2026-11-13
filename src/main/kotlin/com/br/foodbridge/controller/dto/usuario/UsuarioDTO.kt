@@ -16,6 +16,7 @@ data class CreateUpdateUserRequest(
     @field:NotBlank(message = "Nome é obrigatório")
     val nome: String = "",
 
+    @field:NotBlank(message = "Email é obrigatório")
     @field:Email(message = "Email inválido")
     val email: String = "",
 
@@ -37,4 +38,13 @@ data class UsuarioResponse(
     val nome: String?,
     val email: String?,
     val status: UserStatus?
+)
+
+/** Campos ausentes preservam o perfil; status informado pelo cliente não é aplicado. */
+data class UpdateUserRequest(
+    val nome: String? = null,
+    @field:Email(message = "Email inválido")
+    val email: String? = null,
+    val senha: String? = null,
+    val status: UserStatus? = null
 )
