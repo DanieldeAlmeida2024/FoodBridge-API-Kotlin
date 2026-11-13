@@ -99,6 +99,7 @@ jobs:
           bash -n deploy/oracle/atualizar-api.sh
           bash -n deploy/oracle/verificar-vm.sh
           bash -n deploy/oracle/pull-approved-artifact.sh
+          bash -n deploy/oracle/verificar-recursos-deploy.sh
           python3 -m unittest discover -s tests/ci -p 'test_*_contract.py' -v
 
       - name: Publicar relatorios de testes
@@ -217,6 +218,12 @@ jobs:
           set -euo pipefail
           SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10)
           ssh "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'bash -s' < deploy/oracle/verificar-vm.sh
+      - name: Gate de recursos para release - somente leitura
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-i "$HOME/.ssh/foodbridge_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10)
+          ssh "${SSH_OPTS[@]}" "${OCI_SSH_USER}@${OCI_SSH_HOST}" 'bash -s' < deploy/oracle/verificar-recursos-deploy.sh
       - name: Transferir JAR e aplicar com rollback
         shell: bash
         run: |
