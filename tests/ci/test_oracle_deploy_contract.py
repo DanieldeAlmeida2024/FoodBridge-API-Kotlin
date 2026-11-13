@@ -18,10 +18,13 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", wf)
         self.assertIn("OCI_DEPLOY_ENABLED == 'true'", wf)
         deploy_job = wf.split("  deploy-oracle:", 1)[1]
-        self.assertNotIn("github.event_name == 'push'", deploy_job)
-        self.assertIn("github.event_name == 'workflow_dispatch'", deploy_job)
-        self.assertIn("github.event_name == 'workflow_dispatch' && inputs.deploy == true", wf)
-        self.assertIn("!inputs.preflight", wf)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs.deploy == true", deploy_job)
+        self.assertIn("github.event_name == 'push' && vars.OCI_AUTO_DEPLOY_ENABLED == 'true'", deploy_job)
+        self.assertIn("vars.OCI_DEPLOY_ENABLED == 'true'", deploy_job)
+        self.assertIn("github.ref == 'refs/heads/main'", deploy_job)
+        self.assertIn("needs: [build-e-testes]", deploy_job)
+        self.assertIn("!inputs.preflight", deploy_job)
+        self.assertNotIn("github.event_name == 'pull_request'", deploy_job)
 
     def test_preflight_is_manual_and_read_only(self):
         self.assertIn("verificar-oracle:", wf)
