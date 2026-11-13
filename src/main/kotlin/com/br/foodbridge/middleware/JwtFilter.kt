@@ -10,15 +10,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import com.br.foodbridge.service.ContextoAcessoService
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.HandlerExceptionResolver
 
 @Component
+@Profile("!schema-validation")
 class JwtFilter(
     private val jwtService: JwtService,
-    private val handlerExceptionResolver: HandlerExceptionResolver
+    @Qualifier("handlerExceptionResolver") private val handlerExceptionResolver: HandlerExceptionResolver,
+    private val contextoAcessoService: ContextoAcessoService
 ) : OncePerRequestFilter() {
 
     private val pathMatcher = AntPathMatcher()
@@ -60,6 +65,7 @@ class JwtFilter(
             validateTokenRoute(tokenType, isTempRoute)
 
             validateUserStatus(tokenType, tokenData)
+            contextoAcessoService.validar(tokenType, tokenData)
 
             val authorities = buildAuthorities(tokenType, tokenData)
 
@@ -101,7 +107,7 @@ class JwtFilter(
     }
 
     private fun validateUserStatus(tokenType: String, data: TokenData) {
-        if (tokenType == JwtService.TOKEN_TYPE_ACCESS && data.role != "ADMIN" && data.status != "VERIFICADO")
+        if (tokenType == JwtService.TOKEN_TYPE_ACCESS && data.status != "VERIFICADO")
             throw BusinessException("Usuário não verificado")
     }
 

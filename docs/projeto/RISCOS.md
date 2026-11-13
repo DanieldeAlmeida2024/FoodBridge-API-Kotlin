@@ -54,3 +54,27 @@ Nenhum risco é encerrado somente por documentação. Exigir código corrigido, 
 - **OCI-R06 · P0:** PRs #4/#5/#6 de segurança funcional seguem draft; CI verde de `main` não substitui testes de autorização/tenant antes de publicar externamente.
 
 - **OCI-R07 · Alto:** arquivos `application.properties` com definições duplicadas de `spring.jpa.hibernate.ddl-auto` podem sobrepor uma configuração segura por outra mutante. Preflight e script de atualização agora exigem **exatamente uma** definição explícita e com valor `validate` ou `none`, sem imprimir a configuração. Fontes externas ao arquivo ainda exigem auditoria do runtime.
+
+## Integração funcional FB-INT-001 — 13/11/2026
+
+Branch de integração baseada em main `32e13fdd8c2b3c9fd4784ccc7e77fdd2df462224`.
+Consolida o código dos PRs #4 (organizações), #5 (voluntários), #6 (estoque),
+#9 (timeout de 20 s) e #10 (validação no clone), preservando suas suítes.
+O conflito funcional da coleta foi resolvido com `findByIdForColeta`, sem liberar acesso global a voluntários.
+
+Correções adicionais: revalidação de usuário/vínculo/organização em cada JWT autenticado;
+bloqueio de contas suspensas inclusive ADMIN; vínculo real na resposta de seleção;
+validação do enum de organização; transações de onboarding/admin/exclusão;
+criação concorrente de requisições sob o mesmo lock da doação;
+recusa de quantidades não finitas e doações expiradas; voluntário ativo novamente conferido na conclusão;
+JWT inválido → 401 e método HTTP incorreto → 405, sem revelar credenciais.
+
+`FluxoFuncionalHttpIntegrationTest` acrescenta sete testes HTTP/JWT/PostgreSQL:
+login/seleção, vínculo revogado, ADMIN suspenso, cadastro organizacional sem autoaprovação,
+ciclo doação → solicitação → aprovação → voluntário → coleta → indicadores,
+método incorreto e JWT malformado. **Novos testes pendentes da execução do CI nesta revisão.**
+
+Esta integração não comprova os 165 cenários planejados, o navegador real,
+a prontidão dos papéis de gestor, o SSH do runner, deploy ou rollback.
+A entrega total exige fechar a matriz [ENTREGA_FUNCIONAL](../projeto/ENTREGA_FUNCIONAL.md)
+com evidência por módulo. Produção, serviço, Nginx e banco original não foram alterados.

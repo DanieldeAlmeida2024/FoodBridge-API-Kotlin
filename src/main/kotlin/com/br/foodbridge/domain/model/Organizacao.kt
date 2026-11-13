@@ -3,6 +3,7 @@ package com.br.foodbridge.domain.model
 import com.br.foodbridge.domain.enums.OrganizacaoRole
 import com.br.foodbridge.domain.enums.StatusOrganizacao
 import jakarta.persistence.*
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.validation.Valid
 import java.time.LocalDateTime
 import org.hibernate.type.SqlTypes
@@ -53,11 +54,14 @@ data class Organizacao(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    @get:JsonIgnore
     val usuarios: MutableList<UsuarioOrganizacao> = mutableListOf(),
 
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    @get:JsonIgnore
     val voluntarios: MutableList<VoluntarioOrganizacao> = mutableListOf(),
 
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    @get:JsonIgnore
     val doacoes: MutableList<Doacao> = mutableListOf(),
 )

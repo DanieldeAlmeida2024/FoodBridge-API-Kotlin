@@ -42,10 +42,11 @@ class VoluntarioController(
 
     @GetMapping("/{id}")
     fun buscarPorId(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long
     ): ResponseEntity<VoluntarioDTO> {
 
-        val voluntario = voluntarioService.findById(id)
+        val voluntario = voluntarioService.findById(id, tokenData)
 
         return ResponseEntity.ok(toResponse(voluntario))
     }
@@ -56,15 +57,17 @@ class VoluntarioController(
         @PathVariable cpf: String
     ): ResponseEntity<VoluntarioDTO> {
 
-        val voluntario = voluntarioService.findByCpf(cpf)
+        val voluntario = voluntarioService.findByCpf(cpf, tokenData)
 
         return ResponseEntity.ok(toResponse(voluntario))
     }
 
     @GetMapping
-    fun listar(): ResponseEntity<List<VoluntarioDTO>> {
+    fun listar(
+        @AuthenticationPrincipal tokenData: TokenData
+    ): ResponseEntity<List<VoluntarioDTO>> {
 
-        val lista = voluntarioService.findAll()
+        val lista = voluntarioService.findAll(tokenData)
             .map { toResponse(it) }
 
         return ResponseEntity.ok(lista)
@@ -72,11 +75,12 @@ class VoluntarioController(
 
     @PutMapping("/{id}")
     fun atualizar(
+        @AuthenticationPrincipal tokenData: TokenData,
         @PathVariable id: Long,
         @Valid @RequestBody request: CreateUpdateVoluntario
     ): ResponseEntity<VoluntarioDTO> {
 
-        val atualizado = voluntarioService.update(id, request)
+        val atualizado = voluntarioService.update(id, request, tokenData)
 
         return ResponseEntity.ok(toResponse(atualizado))
     }
@@ -87,10 +91,7 @@ class VoluntarioController(
         @PathVariable id: Long
     ): ResponseEntity<Void> {
 
-        val organizacaoId = tokenData.organizacaoId
-            ?: throw BusinessException("Usuário não vinculado a uma organização")
-
-        voluntarioService.desativarVinculo(id, organizacaoId)
+        voluntarioService.desativarVinculo(id, tokenData)
 
         return ResponseEntity.noContent().build()
     }

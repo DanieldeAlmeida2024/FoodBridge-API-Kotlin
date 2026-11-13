@@ -1,6 +1,7 @@
 package com.br.foodbridge.middleware
 
 import com.br.foodbridge.service.utils.JwtService
+import com.br.foodbridge.service.ContextoAcessoService
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -12,7 +13,8 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 class JwtFilterRotasPublicasTest {
     private val filtro = JwtFilter(
         mock(JwtService::class.java),
-        mock(HandlerExceptionResolver::class.java)
+        mock(HandlerExceptionResolver::class.java),
+        mock(ContextoAcessoService::class.java)
     )
 
     private fun verificarRotaPublica(metodo: String, caminho: String) {

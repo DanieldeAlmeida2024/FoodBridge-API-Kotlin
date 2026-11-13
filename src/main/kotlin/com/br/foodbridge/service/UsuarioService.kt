@@ -14,6 +14,7 @@ import com.br.foodbridge.exception.custom.ValidationException
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 
 
@@ -82,6 +83,7 @@ class UsuarioService(
         return UsuarioMapper.toResponse(saved)
     }
 
+    @Transactional
     fun delete(usuarioId: Long) {
 
         val usuario = findByIdEntity(usuarioId)

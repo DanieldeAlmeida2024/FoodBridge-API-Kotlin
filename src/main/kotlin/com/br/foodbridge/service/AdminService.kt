@@ -8,11 +8,13 @@ import com.br.foodbridge.domain.model.Usuario
 import com.br.foodbridge.domain.repository.*
 import com.br.foodbridge.exception.custom.BusinessException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import com.br.foodbridge.exception.custom.ResourceNotFoundException
 import com.br.foodbridge.exception.custom.ValidationException
 
 @Service
+@Transactional
 class AdminService(
     private val organizacaoRepository: OrganizacaoRepository,
     private val usuarioRepository: UsuarioRepository,
@@ -75,8 +77,7 @@ class AdminService(
         organizacaoRepository.save(atualizado)
 
         val vinculos = usuarioOrganizacaoRepository
-            .findAll()
-            .filter { it.organizacao?.id == id }
+            .findAllByOrganizacaoId(id)
 
         vinculos.forEach { vinculo ->
             usuarioOrganizacaoRepository.save(
