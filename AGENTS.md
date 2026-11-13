@@ -18,3 +18,7 @@ Preserve Kotlin, Spring Boot, Java 21 e PostgreSQL. Leia `README.md`, `build.gra
 - Ao alterar contrato HTTP, autorização, modelo de dados, tela, teste ou fluxo de deploy, atualizar documentos vinculados e `docs/controle/VERSIONAMENTO.md` no mesmo PR.
 - Diferenciar especificação histórica, código existente, CI aprovado e e2e homologado; registrar evidência real por commit/run. Não afirmar conformidade LGPD/HTTPS/100% de cobertura sem provas.
 - O CI/CD atual é disparado automaticamente em push de **código** na main. Um PR somente documental não deve acionar nova publicação na Oracle. Não restabelecer gates manuais legados sem decisão explícita.
+
+## Regra de escopo documental da VM
+
+- A documentação da infraestrutura deve **listar apenas** Nginx/frontend FoodBridge, API Java/`foodbridge.service`, PostgreSQL desta aplicação e componentes usados no CI/CD/backup/saúde. A VM pode ser compartilhada, mas serviços de terceiros hospedados nela não devem constar de diagramas, inventário operacional, apresentações ou relatórios do FoodBridge. Métricas globais do host podem ser citadas sem identificar outras aplicações.
