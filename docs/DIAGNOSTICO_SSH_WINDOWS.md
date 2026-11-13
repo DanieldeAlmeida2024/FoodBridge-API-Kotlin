@@ -74,6 +74,22 @@ O operador clonou a branch em C:\foodbridge-ssh-check e executou o diagnóstico 
 
 **Gate SSH local: PASS (exit 0). Gate GitHub Actions remoto: pendente.**
 
+### Preparação assistida via GitHub CLI (opcional)
+
+Foi acrescentado o script `deploy/oracle/preparar-github-preflight-windows.ps1` na mesma branch, para ser executado **apenas no computador do operador**. Ele depende de `gh.exe` autenticado e de `oracle-production` já criado no GitHub; não instala ferramentas nem modifica a VM. Confirma novamente o SSH, confere o `known_hosts` existente com as fingerprints públicas lidas na VM autenticada, define vars de deploy como `false`, e cadastra secrets por **stdin** no GitHub CLI, sem exibir chave privada.
+
+Antes de executar, garantir que o `known_hosts` local foi validado por fonte confiável; comparar a chave remota com a chave local atesta consistência, **não substitui uma verificação independente inicial de identidade**.
+
+Com a branch atualizada e com `gh auth status` bem-sucedido:
+
+    powershell.exe -NoProfile -File C:\foodbridge-ssh-check\deploy\oracle\preparar-github-preflight-windows.ps1
+
+A execução normal prepara as vars e secrets, mas **não dispara o workflow**. Somente depois de conferir a saída `ENVIRONMENT_READY=YES`, acionar o preflight exclusivamente de leitura:
+
+    gh workflow run oracle-preflight.yml --ref main --repo DanieldeAlmeida2024/FoodBridge-API-Kotlin
+
+O script também permite `-RunPreflight` para executar o despacho após a preparação; nesse modo, ainda **não** faz deploy. Todas as gravações são no GitHub (vars e secrets), não na VM. O script de provisionamento **ainda não foi executado ou homologado no Windows** nesta revisão; não declarar sucesso até obter saída real e logs do Actions.
+
 ### Próximo controle: environment do GitHub Actions
 
 1. Confirmar `oracle-production`, preferencialmente protegido para execuções aprovadas na `main`.
