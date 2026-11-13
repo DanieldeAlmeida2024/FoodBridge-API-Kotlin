@@ -45,6 +45,43 @@ awk '/^(MemTotal|MemAvailable|SwapTotal|SwapFree):/ {key=$1; sub(/:$/, "", key);
 if command -v swapon >/dev/null 2>&1; then
   swapon --noheadings --show=NAME,SIZE,USED --bytes 2>/dev/null | awk '{print "SWAP_DEVICE_PRESENT=YES"}' | head -n 1
 fi
+echo '=== MEMORY_PRESSURE_AND_SWAP_ACTIVITY ==='
+if [[ -r /proc/pressure/memory ]]; then
+  awk '($1 == "some" || $1 == "full") {
+    for (i=2; i<=NF; i++) {
+      if ($i ~ /^avg10=/) {
+        split($i, fields, "=")
+        printf "MEMORY_PSI_%s_AVG10_PCT=%s\n", toupper($1), fields[2]
+      }
+    }
+  }' /proc/pressure/memory
+else
+  echo 'MEMORY_PSI_STATUS=UNAVAILABLE'
+fi
+# O vmstat inclui uma primeira amostra de media desde o boot; exclui-la
+# e resumir apenas cinco intervalos de 1 segundo, sem gravar dados na VM.
+if command -v vmstat >/dev/null 2>&1; then
+  vmstat 1 6 | awk 'NR>=4 && NF>=17 {
+    n++
+    if ($7 > max_si) max_si=$7
+    if ($8 > max_so) max_so=$8
+    if ($7 > 0 || $8 > 0) swap_active++
+    if (n == 1 || $15 < min_idle) min_idle=$15
+    if ($16 > max_iowait) max_iowait=$16
+  } END {
+    printf "VMSTAT_INTERVALS=%d\n", n
+    printf "VMSTAT_SWAP_ACTIVE_INTERVALS=%d\n", swap_active
+    printf "VMSTAT_MAX_SWAPIN_KIBPS=%.0f\n", max_si
+    printf "VMSTAT_MAX_SWAPOUT_KIBPS=%.0f\n", max_so
+    printf "VMSTAT_MIN_CPU_IDLE_PCT=%.0f\n", min_idle
+    printf "VMSTAT_MAX_IOWAIT_PCT=%.0f\n", max_iowait
+  }'
+else
+  echo 'VMSTAT_STATUS=UNAVAILABLE'
+fi
+if command -v docker >/dev/null 2>&1; then
+  sudo -n docker stats --no-stream --format 'DOCKER_CONTAINER={{.Name}} DOCKER_MEMORY={{.MemUsage}}' 2>/dev/null || echo 'DOCKER_STATS=UNAVAILABLE'
+fi
 if sudo -n journalctl -k --since '2026-11-13 12:58:00 UTC' --no-pager -o cat >/dev/null 2>&1; then
   kernel_oom="$(sudo -n journalctl -k --since '2026-11-13 12:58:00 UTC' --no-pager -o cat 2>/dev/null | grep -Eic 'out of memory|killed process|oom-kill' || true)"
   echo "KERNEL_OOM_SIGNALS=$kernel_oom"
