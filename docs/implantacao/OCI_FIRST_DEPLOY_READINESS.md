@@ -25,6 +25,31 @@ Comprova:
 
 Relata `DEPLOY_READINESS=PASS` ou `DEPLOY_READINESS=BLOCKED` com rótulos de falha, **sem imprimir variáveis de ambiente, senhas, arquivos de configuração nem chaves**. O workflow não usa SCP, não modifica dados, não reinicia serviços.
 
+## Resultado real — 13/11/2026 09:18 BRT
+
+Execução de [GitHub Actions #43424042926](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43424042926), job `131880867329`: **SUCCESS**, SSH via environment `oracle-production`, executou auditoria remota **somente leitura**.
+
+```text
+API_SUDO_NONINTERACTIVE=PASS
+API_SYSTEMD_ACTIVE=PASS
+API_EXTERNAL_CONFIG_PRESENT=PASS
+API_GITHUB_DEPLOY_MARKER=PASS
+API_OLD_JAR_PRESENT=PASS
+API_HTTP_HEALTH=PASS
+API_SERVICE_USER=PASS
+WEB_NGINX_ACTIVE=PASS
+WEB_NGINX_CONFIG=PASS
+WEB_DIST_PRESENT=PASS
+WEB_PARENT_WRITABLE=PASS
+WEB_TOOLS_COMMANDS=PASS
+WEB_RESTORECON_SUDO=PASS
+ANIMEDEX_WORKER_HEALTH=PASS (informativo, nao bloqueia o deploy FoodBridge)
+DEPLOY_READINESS_FAILURES=0
+DEPLOY_READINESS=PASS (somente leitura; nao comprova o primeiro deploy real)
+```
+
+**Condição liberada:** pré-requisitos do host para publicação manual estão presentes. **Não liberado automaticamente:** secrets do repositório frontend, primeira troca real do JAR/`dist`, restart e rollback de produção, ativação de auto-deploy. Os dois gates `OCI_DEPLOY_ENABLED` e `OCI_AUTO_DEPLOY_ENABLED` continuam intencionalmente desligados até homologação de execução real.
+
 ## Próximos gates de publicação após o resultado
 
 1. Corrigir somente os pré-requisitos que retornarem FAIL, preservar owner e SELinux com mudança mínima após inspecionar estado real, e repetir o readiness até PASS.
