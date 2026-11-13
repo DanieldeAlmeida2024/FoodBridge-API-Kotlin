@@ -15,6 +15,7 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "INVENTARIO_PROJETO.md"
@@ -34,7 +35,7 @@ def generated_section(paths: list[str]) -> str:
     for name, count in sorted(sections.items()):
         text.append(f"- `{name}`: {count}")
     text.extend(["", "**Lista completa de caminhos versionados (gerada do Git):**", ""])
-    text.extend(f"- `{path}`" for path in paths)
+    text.extend(f"- [`{path}`](../{quote(path, safe=\x27/._-\x27)})" for path in paths)
     return "\n".join(text) + "\n"
 
 
