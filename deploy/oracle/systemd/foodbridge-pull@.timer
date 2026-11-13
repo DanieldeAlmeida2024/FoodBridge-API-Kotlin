@@ -1,0 +1,12 @@
+[Unit]
+Description=FoodBridge - consultar GitHub Actions para %i a cada 5 minutos
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Persistent=true
+Unit=foodbridge-pull@%i.service
+
+[Install]
+WantedBy=timers.target
