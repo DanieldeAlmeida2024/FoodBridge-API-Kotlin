@@ -35,6 +35,25 @@ Workflow `.github/workflows/foodbridge-ci-cd.yml`: `build-e-testes` usa PostgreS
 - No repositório **frontend**, os secrets/variables pertencem a outro repositório e precisam ser provisionados separadamente pelo script `deploy/oracle/preparar-secrets-ssh-windows.ps1` de lá. O job usa os mesmos nomes `OCI_SSH_*` e a mesma chave dedicada validada.
 - Proteger o environment `oracle-production` e a `main` conforme as opções disponíveis; não usar credenciais de produção em PRs.
 
+### Execução assistida e versionada do primeiro deploy (13/11/2026)
+
+Para evitar erros ao copiar comandos, há agora `deploy/oracle/publicar-api-manual-windows.ps1`. Esse script exige `-Publicar` e usa somente `gh`/`curl` locais; não lê nem imprime as chaves privadas. Ele impõe `OCI_AUTO_DEPLOY_ENABLED=false`, libera temporariamente `OCI_DEPLOY_ENABLED=true`, dispara exatamente um `workflow_dispatch` na main, acompanha o run, exige que o job **Publicar na VM Oracle** termine `success`, consulta `GET http://163.176.133.210/dashboards/publico` externamente com limite de 20 segundos e **restaura `OCI_DEPLOY_ENABLED=false` no bloco `finally`**, mesmo após erro.
+
+O gatilho envia o JAR construído no **mesmo run CI** e utiliza `deploy/oracle/atualizar-api.sh` na VM para validar SHA-256, guardar backup do JAR, reiniciar o serviço e tentar restaurar a versão antiga se o endpoint local falhar. O script Windows, por si só, não faz deploy: apenas solicita ao workflow e verifica o resultado.
+
+Execução no PowerShell Windows após atualizar a cópia local da **main**:
+
+```powershell
+gh repo clone DanieldeAlmeida2024/FoodBridge-API-Kotlin C:\foodbridge-api-deploy
+powershell.exe -NoProfile -File C:\foodbridge-api-deploy\deploy\oracle\publicar-api-manual-windows.ps1 -Publicar
+```
+
+Se a pasta de checkout já existir, use `cd` e `git pull --ff-only` em uma branch apropriada; não sobrescreva diretórios arbitrariamente. Um erro ou um job ignorado (*skipped*) não permite declarar a publicação como bem-sucedida. Após execução, preservar `run ID`, SHA, caminho do backup e resultado HTTP no registro de entrega.
+
+**Prerequisitos comprovados:** [run do preflight SSH #43355411573](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43355411573) e [readiness #43424042926](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43424042926) com falhas zero. O frontend já passou por primeira publicação real no [run #43425858526](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43425858526), incluindo Nginx e backup; o backend permanece pendente da primeira execução manual.
+
+Antes de executar em produção, confirmar backup de banco recuperável, compatibilidade de esquema e ausência de migrations destrutivas no código novo. `ddl-auto=validate` não é garantia de que todo código de inicialização seja não mutante.
+
 ## Gate 1 — primeira publicação API manual
 
 Executar no **CMD do Windows já autenticado com `gh`**, após CI da branch de SSH concluído e merge em `main`:
