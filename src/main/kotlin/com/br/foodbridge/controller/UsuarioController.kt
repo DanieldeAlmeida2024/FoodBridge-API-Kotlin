@@ -9,6 +9,7 @@ import com.br.foodbridge.exception.custom.BusinessException
 import com.br.foodbridge.exception.custom.ValidationException
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import com.br.foodbridge.service.UsuarioService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -21,7 +22,7 @@ class UsuarioController(
 
     @PostMapping
     fun criarUsuario(
-        @RequestBody request: CreateUpdateUserRequest
+        @RequestBody @Valid request: CreateUpdateUserRequest
     ): ResponseEntity<UsuarioResponse> {
 
         val usuario = usuarioService.createUser(request)

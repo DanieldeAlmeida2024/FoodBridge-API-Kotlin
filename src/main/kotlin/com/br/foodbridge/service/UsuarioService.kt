@@ -3,6 +3,7 @@ package com.br.foodbridge.service
 import com.br.foodbridge.controller.dto.mapper.UsuarioMapper
 import com.br.foodbridge.controller.dto.organizacao.OrganizacaoResumoDTO
 import com.br.foodbridge.controller.dto.usuario.CreateUpdateUserRequest
+import com.br.foodbridge.controller.dto.usuario.UpdateUserRequest
 import com.br.foodbridge.controller.dto.usuario.UsuarioResponse
 import com.br.foodbridge.domain.model.Usuario
 import com.br.foodbridge.domain.enums.StatusOrganizacao
@@ -56,7 +57,14 @@ class UsuarioService(
         return usuarioRepository.save(usuario)
     }
 
-    fun update(usuarioId: Long, request: CreateUpdateUserRequest): UsuarioResponse {
+    @Transactional
+    fun update(usuarioId: Long, request: UpdateUserRequest): UsuarioResponse {
+        if (request.nome != null && request.nome.isBlank()) {
+            throw ValidationException("Nome não pode estar em branco")
+        }
+        if (request.email != null && request.email.isBlank()) {
+            throw ValidationException("Email não pode estar em branco")
+        }
 
         val usuario = findByIdEntity(usuarioId)
 
