@@ -64,6 +64,16 @@ class OracleDeployContract(unittest.TestCase):
         self.assertIn("--connect-timeout 2", preflight)
         self.assertIn("AVISO: dashboard público lento", preflight)
 
+    def test_rollback_waits_for_spring_to_be_healthy(self):
+        # No incidente 13/11, rollback do JAR estava correto, mas o JVM levou
+        # tempo ate disponibilizar a porta 8080. Verificar janela nas duas fases.
+        self.assertIn("aguardar_saude() {", deploy)
+        self.assertIn("local limite_segundos=180", deploy)
+        self.assertIn("SECONDS - inicio < limite_segundos", deploy)
+        self.assertIn('if sudo -n systemctl restart "$SERVICO" && aguardar_saude; then', deploy)
+        self.assertIn("if aguardar_saude; then", deploy)
+        self.assertEqual(deploy.count("aguardar_saude; then"), 2)
+        self.assertNotIn('if saudavel; then\n  echo "Rollback executado', deploy)
     def test_integrity_backup_rollback_and_no_git_db_reset(self):
         self.assertIn("sha256sum --check --status", deploy)
         self.assertIn('sudo -n cp -p -- "$DESTINO" "$ANTIGO"', deploy)
