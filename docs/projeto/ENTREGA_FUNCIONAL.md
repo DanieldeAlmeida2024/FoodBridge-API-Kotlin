@@ -66,3 +66,12 @@ em branco. Status informado pelo cliente não é aplicado. Exclusão segue trans
 
 Seis novos testes HTTP/PostgreSQL estão adicionados no PR #12.
 Execução do CI ainda pendente nesta revisão; não é homologação do navegador/VM.
+
+### Evidência remota — SSH e preflight
+[Actions #43339087021](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43339087021)
+executou o workflow dedicado na main `6b78bf47e5a4113f46098dad47a8978db7635f75`.
+O job parou com `Configuração ausente: OCI_SSH_HOST no environment oracle-production`.
+No job, OCI_SSH_HOST, OCI_SSH_USER, OCI_SSH_PRIVATE_KEY e OCI_SSH_KNOWN_HOSTS
+não estavam disponíveis. A autenticação SSH e o preflight da VM ficaram skipped.
+Nenhum SSH_RSA_OK, SSH_EXIT=0, deploy, restart ou SQL foi executado.
+O acesso à administração de variáveis/secrets não está exposto pelo conector atual.

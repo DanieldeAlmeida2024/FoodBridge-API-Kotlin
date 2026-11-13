@@ -62,7 +62,7 @@ class UsuarioController(
     @PutMapping("/me")
     fun updateMe(
         @AuthenticationPrincipal tokenData: TokenData,
-        @RequestBody request: CreateUpdateUserRequest
+        @RequestBody @Valid request: UpdateUserRequest
     ): ResponseEntity<UsuarioResponse> {
 
         val usuarioId = tokenData.usuarioId
