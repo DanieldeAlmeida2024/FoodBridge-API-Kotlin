@@ -2,6 +2,12 @@
 
 > **FB-DOC-HUB-001 · 13/11/2026.** Este índice é o ponto de entrada **atual** para estudar, apresentar, operar ou manter a plataforma. Fontes primárias: código e testes versionados, seguidos de logs de CI/CD. Não confundir documentação histórica com comportamento atual.
 
+## Escopo de infraestrutura da VM
+
+A documentação do FoodBridge descreve **somente os recursos que pertencem ao projeto**: API Kotlin/Java e seu serviço systemd, banco PostgreSQL da aplicação, frontend React servido pelo Nginx, deploy/backup/rollback via SSH e monitoramento necessário à aplicação. A instância Oracle pode ser compartilhada; **outros produtos instalados no mesmo host não integram a arquitetura nem o inventário de serviços do FoodBridge**.
+
+Para diagnóstico de portas e serviços relevantes ao projeto, consulte [Rede e serviços do FoodBridge](implantacao/DIAGNOSTICO_REDE_FOODBRIDGE.md). O inventário [INVENTARIO_PROJETO.md](INVENTARIO_PROJETO.md) lista arquivos deste repositório, não software instalado na VM.
+
 ## Comece por aqui
 
 | Objetivo | Documento principal | O que encontrará |
