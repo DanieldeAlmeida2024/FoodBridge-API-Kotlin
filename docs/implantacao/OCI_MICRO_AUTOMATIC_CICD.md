@@ -14,7 +14,7 @@
 
 ## Infraestrutura existente
 
-Oracle Linux 9 / x86_64 / `VM.Standard.E2.1.Micro` / host `163.176.133.210`. Após a remoção de `crashkernel`/Kdump pelo operador, o Linux identifica ~945 MiB e há swap de ~2,9 GiB. Java 21, PostgreSQL, Nginx e Docker/AnimeDex compartilham a instância. Nada desta mudança cria outro servidor, altera firewall, apaga banco ou requer Tailscale.
+Oracle Linux 9 / x86_64 / `VM.Standard.E2.1.Micro` / host `163.176.133.210`. Após a remoção de `crashkernel`/Kdump pelo operador, o Linux identifica ~945 MiB e há swap de ~2,9 GiB. Para o FoodBridge, os componentes documentados na VM são Java 21/`foodbridge.service`, PostgreSQL da aplicação, Nginx com o frontend estático, configurações externas e rotinas de backup/rollback. A instância é compartilhada, mas esta documentação não inventaria serviços de outros projetos. Nada desta mudança cria outro servidor, altera firewall, apaga banco ou requer Tailscale.
 
 ## Risco e como verificar
 

@@ -1,13 +1,15 @@
 # FoodBridge — gate de prontidão para o primeiro deploy SSH direto
 
-**FB-OCI-SSH-READY-001 | 13/11/2026 | verificação read-only (não é publicação).**
+**FB-OCI-SSH-READY-001 | 13/11/2026 | verificação read-only histórica (não é publicação).**
+
+**Escopo:** apenas API FoodBridge, banco de dados da aplicação, site React/Nginx e o acesso SSH usado pelo CI/CD. O workflow original auditava o host compartilhado, mas os resultados reproduzidos aqui foram filtrados para os componentes do FoodBridge. Os gates manuais descritos abaixo pertencem à fase inicial; o CD automático posterior está documentado em [OCI_MICRO_AUTOMATIC_CICD.md](OCI_MICRO_AUTOMATIC_CICD.md).
 
 ## Contexto operacional
 
 - API e frontend possuem workflows CI/CD diretos por SSH na main, com gates manuais e automáticos inicialmente desabilitados.
 - [Preflight API no runner GitHub](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43355411573) comprovou `SSH_RSA_OK`, `SSH_EXIT=0` e `PREFLIGHT ORACLE: PASS`.
-- [Diagnóstico de rede e serviços](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43419709855) confirmou Nginx HTTP 200, worker AnimeDex HTTP 200, serviços ativos e ausência de listener HTTPS 443 na inspeção.
-- Usuário confirmou que voltou a conseguir acessar os serviços HTTP; incidente de rede não impede avançar na homologação do deploy.
+- [Diagnóstico de rede e serviços](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43419709855) confirmou Nginx do FoodBridge com HTTP 200, serviços da aplicação ativos e ausência de listener HTTPS 443 na inspeção.
+- Usuário confirmou a recuperação do acesso ao frontend FoodBridge via HTTP; o diagnóstico de rede não impedia a homologação do deploy.
 
 ## Por que um segundo gate?
 
@@ -21,7 +23,6 @@ Comprova:
 
 - `API_GITHUB_DEPLOY_MARKER`, JAR atual, `foodbridge.service`, configuração externa legível e GET local `/dashboards/publico`;
 - Nginx ativo e configuração válida, `dist/index.html` presente, pai do frontend gravável por `opc`, ferramentas de tar/Python/SELinux;
-- worker do AnimeDex em verificação informativa, sem criar dependência operacional entre os produtos.
 
 Relata `DEPLOY_READINESS=PASS` ou `DEPLOY_READINESS=BLOCKED` com rótulos de falha, **sem imprimir variáveis de ambiente, senhas, arquivos de configuração nem chaves**. O workflow não usa SCP, não modifica dados, não reinicia serviços.
 
@@ -43,7 +44,6 @@ WEB_DIST_PRESENT=PASS
 WEB_PARENT_WRITABLE=PASS
 WEB_TOOLS_COMMANDS=PASS
 WEB_RESTORECON_SUDO=PASS
-ANIMEDEX_WORKER_HEALTH=PASS (informativo, nao bloqueia o deploy FoodBridge)
 DEPLOY_READINESS_FAILURES=0
 DEPLOY_READINESS=PASS (somente leitura; nao comprova o primeiro deploy real)
 ```
@@ -59,4 +59,4 @@ DEPLOY_READINESS=PASS (somente leitura; nao comprova o primeiro deploy real)
 5. Executar primeiro deploy manual do frontend com gates equivalentes e validar domínio e build publicado.
 6. Só depois ativar `OCI_AUTO_DEPLOY_ENABLED=true` em cada repositório, com branch protection e revisão adequadas.
 
-**Não** usar a alternativa de agente pull/cron, Tailscale ou abrir o banco PostgreSQL à internet. Portas 22, 80 e 8787 são tratadas separadamente no firewall; nenhuma alteração de rede faz parte deste gate.
+**Não** usar a alternativa de agente pull/cron, Tailscale ou abrir o banco PostgreSQL à internet. As portas pertinentes ao acesso e à publicação do FoodBridge são 22 (SSH) e 80 (site HTTP); API 8080 e PostgreSQL 5432 não devem ser expostos diretamente à internet. Nenhuma alteração de rede faz parte deste gate.

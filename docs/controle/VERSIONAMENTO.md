@@ -31,6 +31,12 @@ As especificações de 29/10 e 11/11 permanecem como histórico: o número antig
 | FB-TST-001 | [Plano de testes](../testes/PLANO_DE_TESTES.md) | 1.1.0 | Histórico 6116749 | 165 planejados, parcial CI |
 | FB-TRC-001 | [Matriz de rastreabilidade](../testes/MATRIZ_RASTREABILIDADE.md) | 1.1.0 | Histórico 6116749 | 49 endpoints auditados |
 
+## v1.2.1 — escopo da documentação de infraestrutura (13/11/2026)
+
+Revisão somente documental: diagramas, mapa de recursos e relatórios de implantação passam a representar **exclusivamente serviços e dados do FoodBridge** hospedados na Oracle. O diagnóstico de rede passa a ser [DIAGNOSTICO_REDE_FOODBRIDGE.md](../implantacao/DIAGNOSTICO_REDE_FOODBRIDGE.md), restrito ao site/Nginx, API/systemd, PostgreSQL da aplicação, SSH e saúde. O documento anterior, que misturava projetos hospedados na VM, sai da árvore corrente (permanece recuperável pelo histórico Git).
+
+O inventário de arquivos do repositório acompanha a alteração de caminho. Não foram alterados scripts de deploy, configuração da VM, banco, serviços nem workflows do CI/CD automático.
+
 ## Histórico
 
 | Versão | Data | Alteração | Evidência |

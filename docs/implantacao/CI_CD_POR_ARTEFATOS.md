@@ -12,7 +12,7 @@ FB-OCI-PULL-001 | v1.0.0 | 13/11/2026 | implementação em revisão; produção 
 - O agente `deploy/oracle/pull-approved-artifact.sh` procura exclusivamente um run com `event=push`, branch `main`, conclusão `success` e SHA igual à HEAD atual de `main`.
 - No modo `--check`, baixa/verifica o pacote sem publicar. Em `--apply`, só publica quando `FOODBRIDGE_PULL_DEPLOY_ENABLED=true`.
 - O JAR é publicado pelo script existente `atualizar-api.sh` com preflight, backup e rollback. O React é entregue como `dist` ao Nginx, com backup e recuperação se as validações locais falharem.
-- Não há Docker em produção conforme arquivos consultados; aqui 'imagem do site' corresponde ao frontend estático, **não** à imagem do sistema operacional da VM.
+- O processo de entrega do FoodBridge utiliza JAR da API e arquivos `dist` do frontend. Não gera uma imagem de container para esses artefatos, nem modifica o sistema operacional da VM.
 - As buscas ocorrem por timer systemd a cada aproximadamente 5 minutos, não por push SSH. A publicação pode levar alguns minutos após o CI aprovado.
 
 ## Controles de segurança

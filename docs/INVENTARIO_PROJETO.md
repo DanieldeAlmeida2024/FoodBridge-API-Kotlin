@@ -93,7 +93,7 @@ O script usa `git ls-files -z`, agrupa por pasta e reconstrói **apenas o bloco 
 - [`docs/implantacao/CI_CD_ORACLE_SEGURANCA.md`](../docs/implantacao/CI_CD_ORACLE_SEGURANCA.md)
 - [`docs/implantacao/CI_CD_ORACLE_SSH_DIRETO.md`](../docs/implantacao/CI_CD_ORACLE_SSH_DIRETO.md)
 - [`docs/implantacao/CI_CD_POR_ARTEFATOS.md`](../docs/implantacao/CI_CD_POR_ARTEFATOS.md)
-- [`docs/implantacao/DIAGNOSTICO_REDE_NGINX_ANIMEDEX.md`](../docs/implantacao/DIAGNOSTICO_REDE_NGINX_ANIMEDEX.md)
+- [`docs/implantacao/DIAGNOSTICO_REDE_FOODBRIDGE.md`](../docs/implantacao/DIAGNOSTICO_REDE_FOODBRIDGE.md)
 - [`docs/implantacao/INCIDENTE_DEPLOY_API_20261113.md`](../docs/implantacao/INCIDENTE_DEPLOY_API_20261113.md)
 - [`docs/implantacao/OCI_FIRST_DEPLOY_READINESS.md`](../docs/implantacao/OCI_FIRST_DEPLOY_READINESS.md)
 - [`docs/implantacao/OCI_MICRO_AUTOMATIC_CICD.md`](../docs/implantacao/OCI_MICRO_AUTOMATIC_CICD.md)

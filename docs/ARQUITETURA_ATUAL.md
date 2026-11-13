@@ -2,6 +2,10 @@
 
 > **FB-ARC-ATUAL-001 · 13/11/2026.** Descreve os componentes observados em código e nos workflows homologados. Distingue execução comprovada de decisões não verificadas externamente.
 
+## Escopo da infraestrutura
+
+Estão representados **apenas os componentes usados diretamente pelo FoodBridge**: frontend React, Nginx, API Kotlin/Spring Boot, PostgreSQL, SSH/CI/CD e integrações efetivas do produto. A instância Oracle é compartilhada, porém não é objetivo deste documento inventariar outras aplicações hospedadas nela.
+
 ## Visão de camadas
 
 ```mermaid
@@ -13,14 +17,12 @@ flowchart TB
     S["Controllers → Services → Repositories JPA"]
     P[("PostgreSQL\nusuários, organizações, doações, solicitações, voluntários")]
     V["ViaCEP externo\nconsulta de CEP no formulário"]
-    X["AnimeDex scraper\ncontainer separado na mesma VM"]
     U --> W
     W --> N
     W -->|"requisições API: base URL configurável"| A
     A --> S
     S --> P
     W -->|"consulta de CEP"| V
-    X -.->|"serviço auxiliar independente; integração operacional a validar"| N
 ```
 
 **Cuidado:** Nginx servindo `dist` e API respondendo em `127.0.0.1:8080` foram comprovados em VM. O encaminhamento público de todos os caminhos API pelo Nginx **não** foi homologado por teste de integração externo abrangente; confirmar a configuração da instância e `VITE_API_BASE_URL` em cada ambiente.
@@ -125,7 +127,6 @@ flowchart LR
     VM --> DB[("PostgreSQL de produção (preservado)")]
     VM --> N["Nginx: dist"]
     VM --> J["systemd: foodbridge.service/Java"]
-    VM --> D["Docker: AnimeDex scraper"]
 ```
 
 - Backend: CI `foodbridge-ci-cd.yml` compila e testa em PostgreSQL de teste, depois publica JAR aprovado em push de código na `main`.
