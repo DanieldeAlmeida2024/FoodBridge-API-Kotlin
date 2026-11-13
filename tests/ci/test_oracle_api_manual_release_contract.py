@@ -20,8 +20,8 @@ class ManualAPIDeployGate(unittest.TestCase):
     def test_waits_for_real_job_and_external_http(self):
         for text in ("actions/runs/([0-9]+)", "run watch $runId", "--exit-status",
                      "run view $runId", "--json jobs", "Publicar na VM Oracle",
-                     ".conclusion -ne 'success'", "dashboards/publico",
-                     "API_EXTERNAL_HTTP=200"):
+                     ".conclusion -ne 'success'", "dashboards/publico", "SITE_EXTERNAL_HTTP=200",
+                     "API_INTERNAL_HEALTH=VERIFIED_BY_REMOTE_DEPLOY_JOB"):
             self.assertIn(text, PS)
         self.assertNotIn("gh.exe run list", PS)
 

@@ -57,14 +57,17 @@ try {
     }
     Write-Host 'API_DEPLOY_JOB=SUCCESS' -ForegroundColor Green
 
-    # Smoke externo apos reiniciar API. Dashboard conhecido leva 7-9 s.
-    $url = 'http://163.176.133.210/dashboards/publico'
-    $code = (& curl.exe -4 --noproxy '*' --silent --show-error --connect-timeout 3 --max-time 20 --output NUL --write-out '%{http_code}' $url | Out-String).Trim()
-    Check-LastExit 'smoke HTTP externo API'
+    # O workflow valida a API diretamente por loopback na VM, com a rota /dashboards/publico.
+    # O Nginx externo pode expor a API com prefixo diferente; nao assumir a mesma rota.
+    # Verificar separadamente que o site continua respondendo apos o restart do backend.
+    $siteUrl = 'http://163.176.133.210/'
+    $code = (& curl.exe -4 --noproxy '*' --silent --show-error --connect-timeout 3 --max-time 20 --output NUL --write-out '%{http_code}' $siteUrl | Out-String).Trim()
+    Check-LastExit 'smoke HTTP externo do site'
     if ($code -ne '200') {
-        throw "API remota publicada, mas smoke HTTP externo retornou $code. Investigar antes de habilitar auto-deploy."
+        throw "O job de deploy API passou, mas o Nginx externo retornou $code. Investigar separadamente antes de habilitar auto-deploy."
     }
-    Write-Host 'API_EXTERNAL_HTTP=200' -ForegroundColor Green
+    Write-Host 'SITE_EXTERNAL_HTTP=200' -ForegroundColor Green
+    Write-Host 'API_INTERNAL_HEALTH=VERIFIED_BY_REMOTE_DEPLOY_JOB' -ForegroundColor Green
     Write-Host 'API_MANUAL_DEPLOY=PASS' -ForegroundColor Green
 }
 finally {
