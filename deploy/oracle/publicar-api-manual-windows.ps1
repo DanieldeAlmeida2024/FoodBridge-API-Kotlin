@@ -1,0 +1,79 @@
+# FoodBridge API: primeiro deploy manual via GitHub Actions SSH, gates restaurados.
+# Windows PowerShell 5.1, gh autenticado. Nao imprime segredo.
+[CmdletBinding()]
+param(
+    [switch]$Publicar,
+    [string]$Repo = 'DanieldeAlmeida2024/FoodBridge-API-Kotlin'
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Check-LastExit {
+    param([string]$Step)
+    if ($LASTEXITCODE -ne 0) {
+        throw ("Falha em {0}: exit={1}" -f $Step, $LASTEXITCODE)
+    }
+}
+
+if (-not $Publicar) {
+    throw 'Publicacao nao solicitada. Execute explicitamente com -Publicar apos revisar o runbook.'
+}
+if (-not (Get-Command gh.exe -ErrorAction SilentlyContinue)) {
+    throw 'GitHub CLI nao foi encontrado.'
+}
+
+& gh.exe auth status
+Check-LastExit 'gh auth status'
+& gh.exe variable set OCI_AUTO_DEPLOY_ENABLED --body 'false' --repo $Repo
+Check-LastExit 'desligar auto-deploy'
+
+$manualGateOpened = $false
+try {
+    & gh.exe variable set OCI_DEPLOY_ENABLED --body 'true' --repo $Repo
+    Check-LastExit 'liberar deploy manual'
+    $manualGateOpened = $true
+
+    # Identifica exatamente o workflow recem-disparado, sem corrida com outros runs.
+    $dispatchOutput = (& gh.exe workflow run foodbridge-ci-cd.yml --ref main -f preflight=false -f deploy=true --repo $Repo | Out-String)
+    Check-LastExit 'workflow_dispatch API'
+    $match = [regex]::Match($dispatchOutput, '/actions/runs/([0-9]+)')
+    if (-not $match.Success) {
+        Write-Host $dispatchOutput
+        throw 'Trigger pode ter sido aceito, mas sem run ID. Consulte Actions antes de repetir.'
+    }
+    $runId = $match.Groups[1].Value
+    Write-Host "API_DEPLOY_RUN_ID=$runId"
+
+    & gh.exe run watch $runId --repo $Repo --exit-status
+    Check-LastExit 'acompanhar CI/CD API'
+
+    $jobJson = (& gh.exe run view $runId --repo $Repo --json jobs | Out-String)
+    Check-LastExit 'inspecionar jobs reais'
+    $jobs = @((ConvertFrom-Json $jobJson).jobs)
+    $deployJobs = @($jobs | Where-Object { $_.name -eq 'Publicar na VM Oracle' })
+    if ($deployJobs.Count -ne 1 -or $deployJobs[0].conclusion -ne 'success') {
+        throw 'Workflow terminou mas job Publicar na VM Oracle nao ficou SUCCESS.'
+    }
+    Write-Host 'API_DEPLOY_JOB=SUCCESS' -ForegroundColor Green
+
+    # Smoke externo apos reiniciar API. Dashboard conhecido leva 7-9 s.
+    $url = 'http://163.176.133.210/dashboards/publico'
+    $code = (& curl.exe -4 --noproxy '*' --silent --show-error --connect-timeout 3 --max-time 20 --output NUL --write-out '%{http_code}' $url | Out-String).Trim()
+    Check-LastExit 'smoke HTTP externo API'
+    if ($code -ne '200') {
+        throw "API remota publicada, mas smoke HTTP externo retornou $code. Investigar antes de habilitar auto-deploy."
+    }
+    Write-Host 'API_EXTERNAL_HTTP=200' -ForegroundColor Green
+    Write-Host 'API_MANUAL_DEPLOY=PASS' -ForegroundColor Green
+}
+finally {
+    if ($manualGateOpened) {
+        & gh.exe variable set OCI_DEPLOY_ENABLED --body 'false' --repo $Repo
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning 'ATENCAO: erro ao fechar OCI_DEPLOY_ENABLED. Desative manualmente no GitHub.'
+        } else {
+            Write-Host 'OCI_DEPLOY_ENABLED=false (restaurado)' -ForegroundColor Cyan
+        }
+    }
+}
