@@ -166,8 +166,15 @@ jobs:
   deploy-oracle:
     name: Publicar na VM Oracle
     needs: [build-e-testes]
-    # Publicação manual durante homologação; push na main executa somente CI.
-    if: github.ref == 'refs/heads/main' && vars.OCI_DEPLOY_ENABLED == 'true' && !inputs.preflight && github.event_name == 'workflow_dispatch' && inputs.deploy == true
+    # Homologacao manual primeiro; deploy automatico so com dois gates explicitos.
+    # Em pull_request ou preflight somente leitura, nunca publica.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      vars.OCI_DEPLOY_ENABLED == 'true' &&
+      (
+        (github.event_name == 'workflow_dispatch' && inputs.deploy == true && !inputs.preflight) ||
+        (github.event_name == 'push' && vars.OCI_AUTO_DEPLOY_ENABLED == 'true')
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: oracle-production
