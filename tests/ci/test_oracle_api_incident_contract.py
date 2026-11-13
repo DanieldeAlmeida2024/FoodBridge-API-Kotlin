@@ -27,6 +27,10 @@ class OracleAPIIncidentContract(unittest.TestCase):
         self.assertIn("CRASHKERNEL_ARG_PRESENT", SCRIPT)
         self.assertIn("KDUMP_SERVICE_STATUS", SCRIPT)
         self.assertIn("grep -Eq", SCRIPT)
+        for expected in ("MEMORY_PRESSURE_AND_SWAP_ACTIVITY", "MEMORY_PSI_", "VMSTAT_INTERVALS", "VMSTAT_SWAP_ACTIVE_INTERVALS", "VMSTAT_MAX_SWAPIN_KIBPS", "VMSTAT_MAX_SWAPOUT_KIBPS", "VMSTAT_MIN_CPU_IDLE_PCT", "VMSTAT_MAX_IOWAIT_PCT", "DOCKER_CONTAINER="):
+            self.assertIn(expected, SCRIPT)
+        self.assertIn("vmstat 1 6", SCRIPT)
+        self.assertIn("NR>=4", SCRIPT)  # Exclui media desde o boot
         self.assertNotIn("journalctl -u foodbridge.service --no-pager -n 1200 | tee", SCRIPT)
 
     def test_pinned_ssh_and_only_main_without_deploy(self):
