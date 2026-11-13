@@ -92,6 +92,13 @@ class PerfilHttpIntegrationTest(
         assertTrue(encoder.matches("senha-nova", usuarios.findById(c.usuario.id!!).orElseThrow().senha))
     }
     @Test
+    fun usuarioComumNaoPodeExcluirContaPelaRotaAdministrativa() {
+        val titular = conta()
+        val terceiro = conta()
+        chamada(delete("/usuarios/${terceiro.usuario.id!!}"), titular.token, status = 403)
+        assertTrue(usuarios.existsById(terceiro.usuario.id!!))
+    }
+    @Test
     fun exclusaoRemoveContaEVinculosEPreservaOrganizacao() {
         val c = conta()
         chamada(delete("/usuarios/me"), c.token, status = 204)
