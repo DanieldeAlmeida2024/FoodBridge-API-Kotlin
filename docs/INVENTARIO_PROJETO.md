@@ -37,14 +37,14 @@ O script usa `git ls-files -z`, agrupa por pasta e reconstrói **apenas o bloco 
 ## Relação completa de arquivos rastreados
 
 <!-- INVENTARIO_ARQUIVOS_INICIO -->
-**Total de arquivos rastreados:** 182.
+**Total de arquivos rastreados:** 183.
 
 **Distribuicao por pasta de primeiro nivel:**
 - `(raiz)`: 9
 - `.github`: 5
 - `.postman`: 1
 - `deploy`: 12
-- `docs`: 48
+- `docs`: 49
 - `gradle`: 2
 - `postman`: 4
 - `src`: 89
@@ -89,6 +89,7 @@ O script usa `git ls-files -z`, agrupa por pasta e reconstrói **apenas o bloco 
 - [`docs/REFERENCIA_API_ATUAL.md`](../docs/REFERENCIA_API_ATUAL.md)
 - [`docs/REQUISITOS.md`](../docs/REQUISITOS.md)
 - [`docs/UML.puml`](../docs/UML.puml)
+- [`docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`](../docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md)
 - [`docs/controle/VERSIONAMENTO.md`](../docs/controle/VERSIONAMENTO.md)
 - [`docs/implantacao/CI_CD_ORACLE_SEGURANCA.md`](../docs/implantacao/CI_CD_ORACLE_SEGURANCA.md)
 - [`docs/implantacao/CI_CD_ORACLE_SSH_DIRETO.md`](../docs/implantacao/CI_CD_ORACLE_SSH_DIRETO.md)
