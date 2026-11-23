@@ -17,7 +17,9 @@ Foi criado o documento auxiliar [HISTORICO_MUDANCAS_E_USO_IA.md](HISTORICO_MUDAN
 
 O [PR #12](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/12), sobre cadastro e edição de perfil, segue aberto como rascunho e não foi tratado como concluído. Os 165 testes históricos continuam sendo planejamento; a evidência de execução depende dos resultados do CI.
 
-**Arquivos atualizados nesta revisão:** `docs/controle/VERSIONAMENTO.md`, `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`, `docs/README_DOCUMENTACAO.md` e `docs/INVENTARIO_PROJETO.md`. Nenhum código da aplicação ou ambiente produtivo foi alterado.
+**Arquivos atualizados nesta revisão:** `docs/controle/VERSIONAMENTO.md`, `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`, `docs/README_DOCUMENTACAO.md`, `docs/INVENTARIO_PROJETO.md` e `docs/APRESENTACAO_PROJETO.md`. Nenhum código da aplicação ou ambiente produtivo foi alterado.
+
+O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) foi atualizado para explicar histórico do código, controle das versões documentais e uso de IA. A versão dos documentos não é a mesma versão do build Gradle (`0.0.1-SNAPSHOT`). Os prompts são exemplos reconstituídos, e somente commits, PRs e testes demonstram mudanças efetivamente realizadas.
 
 ## v1.2.0 — inventário integral, documentação atual e trilha didática (13/11/2026)
 
