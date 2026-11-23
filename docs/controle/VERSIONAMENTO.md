@@ -1,5 +1,24 @@
 # FoodBridge — controle de versão dos documentos
 
+## v1.2.2 — histórico das revisões e registro de consultas com IA (23/11/2026)
+
+Esta atualização é apenas da documentação. Foi feita uma revisão do histórico de 10 a 13/11/2026 para registrar as mudanças que aconteceram na aplicação e as verificações realizadas.
+
+| Período | Mudanças documentadas | Referências |
+|---|---|---|
+| 10–11/11/2026 | Logs JWT, rotas públicas, primeiros testes e organização das especificações | PRs [#1](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/1), [#3](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/3) |
+| 11–13/11/2026 | Autorização por organização, proteção de voluntários, estoque e testes integrados | PRs [#4](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/4), [#6](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/6), [#11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11) |
+| 12–13/11/2026 | Verificações Oracle, validação de banco, falhas de startup e rollback | PRs [#7](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/7), [#9](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/9), [#10](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/10), [#22](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/22) a [#28](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/28) |
+| 13/11/2026 | Publicação automática, testes de CI, catálogo de 50 rotas e documentação de infraestrutura | PRs [#28](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/28), [#29](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/29), [#30](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/30) |
+
+O sistema já tinha seus fluxos principais funcionando antes das revisões. Os ajustes foram motivados por riscos de segurança, verificações incompletas, possíveis problemas de concorrência e necessidade de organizar melhor testes e documentação.
+
+Foi criado o documento auxiliar [HISTORICO_MUDANCAS_E_USO_IA.md](HISTORICO_MUDANCAS_E_USO_IA.md), com resumo por dia, problemas estudados, três cenários para cada tema e exemplos de prompts. Os prompts foram **reconstituídos agora**, pois não havia transcrição verificável das mensagens originais desses dias. Eles não são apresentados como histórico literal de conversas.
+
+O [PR #12](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/12), sobre cadastro e edição de perfil, segue aberto como rascunho e não foi tratado como concluído. Os 165 testes históricos continuam sendo planejamento; a evidência de execução depende dos resultados do CI.
+
+**Arquivos atualizados nesta revisão:** `docs/controle/VERSIONAMENTO.md`, `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`, `docs/README_DOCUMENTACAO.md` e `docs/INVENTARIO_PROJETO.md`. Nenhum código da aplicação ou ambiente produtivo foi alterado.
+
 ## v1.2.0 — inventário integral, documentação atual e trilha didática (13/11/2026)
 
 Esta revisão é **exclusivamente documental e de verificação de documentação**. O material se baseia no código API Kotlin e web React corrente, após homologação do CD automático nos runs [API #43465999269](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269) e [web #43465805656](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656).
