@@ -19,7 +19,7 @@ O FoodBridge conecta organizações que disponibilizam alimentos a ONGs que os r
 
 ## Documentação completa para estudar e apresentar
 
-**[Central de documentação](docs/README_DOCUMENTACAO.md)** · [Inventário de todos os arquivos](docs/INVENTARIO_PROJETO.md) · [Recursos e status](docs/RECURSOS_E_STATUS.md) · [50 rotas da API](docs/REFERENCIA_API_ATUAL.md) · [Arquitetura e Mermaid](docs/ARQUITETURA_ATUAL.md) · [Guia de estudo](docs/GUIA_ESTUDO.md) · [Roteiro de apresentação](docs/APRESENTACAO_PROJETO.md).
+**[Central de documentação](docs/README_DOCUMENTACAO.md)** · [Inventário de todos os arquivos](docs/INVENTARIO_PROJETO.md) · [Recursos e status](docs/RECURSOS_E_STATUS.md) · [50 rotas da API](docs/REFERENCIA_API_ATUAL.md) · [Arquitetura e Mermaid](docs/ARQUITETURA_ATUAL.md) · [Guia de estudo](docs/GUIA_ESTUDO.md).
 
 A documentação histórica continua versionada: [requisitos](docs/projeto/ESPECIFICACAO_PROJETO.md), [UML PlantUML](docs/uml/README.md), [testes planejados](docs/testes/PLANO_DE_TESTES.md), [matriz de rastreabilidade](docs/testes/MATRIZ_RASTREABILIDADE.md), [incidente e recuperação da Oracle](docs/implantacao/INCIDENTE_DEPLOY_API_20261113.md).
 
