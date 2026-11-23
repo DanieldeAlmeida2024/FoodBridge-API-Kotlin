@@ -1,8 +1,16 @@
 # FoodBridge — controle de versão dos documentos
 
+## v1.2.4 — retirada do roteiro de apresentação do repositório (23/11/2026)
+
+O roteiro de apresentação `docs/APRESENTACAO_PROJETO.md` foi retirado da árvore atual do GitHub a pedido do responsável pelo projeto. A apresentação não será mantida como parte da documentação versionada. Os documentos de histórico de mudanças, registro de uso de IA, testes, arquitetura e versionamento continuam disponíveis.
+
+Foram ajustados os links no `README.md`, no índice de documentação e no guia de estudo, além do inventário, que voltou a ter 182 arquivos rastreados. Esta mudança é somente documental; não modifica o código Kotlin, a API, o banco, a VM ou a publicação automática.
+
+O arquivo existiu em revisões anteriores e, por isso, permanece recuperável no histórico de commits do Git. As entradas antigas abaixo são mantidas como histórico, sem links para um arquivo que não existe mais na versão atual.
+
 ## v1.2.3 — exemplos de perguntas ligados às mudanças (23/11/2026)
 
-Os exemplos de consultas sobre inteligência artificial no [histórico auxiliar](HISTORICO_MUDANCAS_E_USO_IA.md) foram organizados por etapa, com linguagem mais direta. Cada pergunta apresenta problemas, três cenários e possíveis soluções, além de apontar os PRs onde há alterações correspondentes. O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) também foi ajustado para mostrar esses exemplos junto com o versionamento.
+Os exemplos de consultas sobre inteligência artificial no [histórico auxiliar](HISTORICO_MUDANCAS_E_USO_IA.md) foram organizados por etapa, com linguagem mais direta. Cada pergunta apresenta problemas, três cenários e possíveis soluções, além de apontar os PRs onde há alterações correspondentes. Naquela revisão, um roteiro de apresentação também foi ajustado, mas o arquivo foi retirado da árvore atual na v1.2.4.
 
 O objetivo é explicar como analisar os problemas sem confundir uma sugestão de IA com uma alteração comprovada. Não há transcrição original verificada desses prompts; a evidência de implementação continua sendo o Git, os PRs e os testes. Esta revisão altera apenas texto dos documentos, sem mudança de código ou do ambiente Oracle.
 
@@ -25,7 +33,7 @@ O [PR #12](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/12)
 
 **Arquivos atualizados nesta revisão:** `docs/controle/VERSIONAMENTO.md`, `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`, `docs/README_DOCUMENTACAO.md`, `docs/INVENTARIO_PROJETO.md` e `docs/APRESENTACAO_PROJETO.md`. Nenhum código da aplicação ou ambiente produtivo foi alterado.
 
-O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) foi atualizado para explicar histórico do código, controle das versões documentais e uso de IA. A versão dos documentos não é a mesma versão do build Gradle (`0.0.1-SNAPSHOT`). Os exemplos de perguntas ajudam a explicar as análises; commits, PRs e testes demonstram as mudanças efetivamente realizadas.
+Naquela revisão, um roteiro de apresentação (posteriormente retirado do repositório) foi atualizado para explicar histórico do código, controle das versões documentais e uso de IA. A versão dos documentos não é a mesma versão do build Gradle (`0.0.1-SNAPSHOT`). Os exemplos de perguntas ajudam a explicar as análises; commits, PRs e testes demonstram as mudanças efetivamente realizadas.
 
 ## v1.2.0 — inventário integral, documentação atual e trilha didática (13/11/2026)
 
@@ -39,7 +47,7 @@ Esta revisão é **exclusivamente documental e de verificação de documentaçã
 | FB-ARC-ATUAL-001 | [Arquitetura atual](../ARQUITETURA_ATUAL.md) | Diagramas Mermaid de camadas, ER, fluxo e Oracle |
 | FB-FUNC-ATUAL-001 | [Recursos e estado](../RECURSOS_E_STATUS.md) | Implementado x testado x riscos pendentes |
 | FB-ESTUDO-001 | [Guia de estudo](../GUIA_ESTUDO.md) | Trilha de aprendizado, exercícios e perguntas |
-| FB-DEMO-001 | [Apresentação](../APRESENTACAO_PROJETO.md) | Pitch, slides e demo com evidências |
+| FB-DEMO-001 | Apresentação (arquivo retirado da árvore atual na v1.2.4) | Pitch, slides e demonstração: registro histórico |
 
 O gerador versionado `tools/atualizar_inventario.py` executa `git ls-files`; o contrato `tests/ci/test_inventory_contract.py` falha se qualquer arquivo rastreado não constar no inventário, ou houver arquivo obsoleto. **Isso controla a lista de caminhos, não garante a atualização semântica de texto ao alterar apenas conteúdo.** PRs futuros devem atualizar o mapa funcional, API e diagrams quando alterarem comportamento.
 

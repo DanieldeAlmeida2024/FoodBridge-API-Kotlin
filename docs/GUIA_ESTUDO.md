@@ -88,4 +88,4 @@ npm run build
 - [ ] Demonstrar uma limitação real e propor um PR específico com teste de regressão.
 - [ ] Apresentar o projeto em 3 minutos sem ler o código nem afirmar métricas não medidas.
 
-**Próxima leitura:** [roteiro de apresentação](APRESENTACAO_PROJETO.md), [catálogo HTTP](REFERENCIA_API_ATUAL.md) e [diagrama atual](ARQUITETURA_ATUAL.md).
+**Próxima leitura:** [histórico das mudanças](controle/HISTORICO_MUDANCAS_E_USO_IA.md), [catálogo HTTP](REFERENCIA_API_ATUAL.md) e [diagrama atual](ARQUITETURA_ATUAL.md).

@@ -15,13 +15,13 @@
 | Testes operacionais | `tests/ci/` | Contratos estáticos de CI/CD, scripts, inventário |
 | Build | `build.gradle.kts`, `gradlew*`, `gradle/wrapper/` | Gradle/JDK 21 e dependências |
 | CD automático | `.github/workflows/`, `deploy/oracle/` | CI PostgreSQL efêmero, SSH, preflight, backup JAR, health/rollback |
-| Docs | `docs/`, `README.md`, `AGENTS.md` | Projeto, API, UML, testes, estudo, apresentação e operação |
+| Docs | `docs/`, `README.md`, `AGENTS.md` | Projeto, API, UML, testes, estudo e operação |
 
 ## Catálogos de recursos
 
 - [Mapa de implementação e status](RECURSOS_E_STATUS.md): identifica entrega em código, CI, CD e pendências.
 - [50 endpoints da API](REFERENCIA_API_ATUAL.md) e [arquitetura atual](ARQUITETURA_ATUAL.md).
-- [Estudo](GUIA_ESTUDO.md) e [apresentação](APRESENTACAO_PROJETO.md).
+- [Estudo](GUIA_ESTUDO.md) e [histórico de mudanças](controle/HISTORICO_MUDANCAS_E_USO_IA.md).
 - [Documentação completa](README_DOCUMENTACAO.md), [UML PlantUML](uml/README.md), [versionamento](controle/VERSIONAMENTO.md).
 - API usa Oracle Linux 9, Java 21/Spring Boot/PostgreSQL; web em repositório separado [inventário React](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/blob/main/docs/INVENTARIO_PROJETO.md). **Não inventariar arquivos do outro repositório como se estivessem aqui.**
 
@@ -37,14 +37,14 @@ O script usa `git ls-files -z`, agrupa por pasta e reconstrói **apenas o bloco 
 ## Relação completa de arquivos rastreados
 
 <!-- INVENTARIO_ARQUIVOS_INICIO -->
-**Total de arquivos rastreados:** 183.
+**Total de arquivos rastreados:** 182.
 
 **Distribuicao por pasta de primeiro nivel:**
 - `(raiz)`: 9
 - `.github`: 5
 - `.postman`: 1
 - `deploy`: 12
-- `docs`: 49
+- `docs`: 48
 - `gradle`: 2
 - `postman`: 4
 - `src`: 89
@@ -77,7 +77,6 @@ O script usa `git ls-files -z`, agrupa por pasta e reconstrói **apenas o bloco 
 - [`deploy/oracle/verificar-predeploy-completo.sh`](../deploy/oracle/verificar-predeploy-completo.sh)
 - [`deploy/oracle/verificar-recursos-deploy.sh`](../deploy/oracle/verificar-recursos-deploy.sh)
 - [`deploy/oracle/verificar-vm.sh`](../deploy/oracle/verificar-vm.sh)
-- [`docs/APRESENTACAO_PROJETO.md`](../docs/APRESENTACAO_PROJETO.md)
 - [`docs/ARQUITETURA.md`](../docs/ARQUITETURA.md)
 - [`docs/ARQUITETURA_ATUAL.md`](../docs/ARQUITETURA_ATUAL.md)
 - [`docs/DEPLOY_ORACLE.md`](../docs/DEPLOY_ORACLE.md)
