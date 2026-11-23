@@ -1,5 +1,11 @@
 # FoodBridge — controle de versão dos documentos
 
+## v1.2.3 — exemplos de perguntas ligados às mudanças (23/11/2026)
+
+Os exemplos de consultas sobre inteligência artificial no [histórico auxiliar](HISTORICO_MUDANCAS_E_USO_IA.md) foram organizados por etapa, com linguagem mais direta. Cada pergunta apresenta problemas, três cenários e possíveis soluções, além de apontar os PRs onde há alterações correspondentes. O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) também foi ajustado para mostrar esses exemplos junto com o versionamento.
+
+O objetivo é explicar como analisar os problemas sem confundir uma sugestão de IA com uma alteração comprovada. Não há transcrição original verificada desses prompts; a evidência de implementação continua sendo o Git, os PRs e os testes. Esta revisão altera apenas texto dos documentos, sem mudança de código ou do ambiente Oracle.
+
 ## v1.2.2 — histórico das revisões e registro de consultas com IA (23/11/2026)
 
 Esta atualização é apenas da documentação. Foi feita uma revisão do histórico de 10 a 13/11/2026 para registrar as mudanças que aconteceram na aplicação e as verificações realizadas.
@@ -13,13 +19,13 @@ Esta atualização é apenas da documentação. Foi feita uma revisão do histó
 
 O sistema já tinha seus fluxos principais funcionando antes das revisões. Os ajustes foram motivados por riscos de segurança, verificações incompletas, possíveis problemas de concorrência e necessidade de organizar melhor testes e documentação.
 
-Foi criado o documento auxiliar [HISTORICO_MUDANCAS_E_USO_IA.md](HISTORICO_MUDANCAS_E_USO_IA.md), com resumo por dia, problemas estudados, três cenários para cada tema e exemplos de prompts. Os prompts foram **reconstituídos agora**, pois não havia transcrição verificável das mensagens originais desses dias. Eles não são apresentados como histórico literal de conversas.
+Foi criado o documento auxiliar [HISTORICO_MUDANCAS_E_USO_IA.md](HISTORICO_MUDANCAS_E_USO_IA.md), com resumo por dia, problemas estudados, três cenários para cada tema e exemplos de prompts. Os exemplos de perguntas foram organizados a partir dos problemas do período e não são transcrições verificadas de conversas.
 
 O [PR #12](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/12), sobre cadastro e edição de perfil, segue aberto como rascunho e não foi tratado como concluído. Os 165 testes históricos continuam sendo planejamento; a evidência de execução depende dos resultados do CI.
 
 **Arquivos atualizados nesta revisão:** `docs/controle/VERSIONAMENTO.md`, `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`, `docs/README_DOCUMENTACAO.md`, `docs/INVENTARIO_PROJETO.md` e `docs/APRESENTACAO_PROJETO.md`. Nenhum código da aplicação ou ambiente produtivo foi alterado.
 
-O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) foi atualizado para explicar histórico do código, controle das versões documentais e uso de IA. A versão dos documentos não é a mesma versão do build Gradle (`0.0.1-SNAPSHOT`). Os prompts são exemplos reconstituídos, e somente commits, PRs e testes demonstram mudanças efetivamente realizadas.
+O [roteiro de apresentação](../APRESENTACAO_PROJETO.md) foi atualizado para explicar histórico do código, controle das versões documentais e uso de IA. A versão dos documentos não é a mesma versão do build Gradle (`0.0.1-SNAPSHOT`). Os exemplos de perguntas ajudam a explicar as análises; commits, PRs e testes demonstram as mudanças efetivamente realizadas.
 
 ## v1.2.0 — inventário integral, documentação atual e trilha didática (13/11/2026)
 
