@@ -1,6 +1,6 @@
 # FoodBridge — apresentação técnica, portfólio e banca
 
-> **FB-DEMO-001 · 13/11/2026.** Roteiro reutilizável para entrevista, demonstração acadêmica e apresentação de projeto. Não contém dados pessoais reais ou números de impacto não medidos.
+> **FB-DEMO-001 · atualizado em 23/11/2026.** Roteiro reutilizável para entrevista, demonstração acadêmica e apresentação de projeto. Não contém dados pessoais reais ou números de impacto não medidos.
 
 ## Descrição curta para portfólio
 
@@ -10,7 +10,7 @@
 
 > O FoodBridge nasceu da ideia de reduzir desperdício ao aproximar quem disponibiliza alimentos de organizações que conseguem distribuí-los. Desenvolvi uma API Kotlin/Spring Boot com PostgreSQL, autenticação JWT e permissões por organização. O sistema organiza publicações de doação, pedidos, aprovação, voluntários e confirmação de coleta. No frontend React, cada perfil acessa suas operações e dashboards. Também montei testes integrados com banco descartável e CI/CD que publica automaticamente na Oracle Cloud com SSH, backup e rollback. Uma dificuldade real foi fazer o deploy funcionar numa instância Micro; analisei a memória, removi uma reserva excessiva de Kdump e corrigi a estratégia de health. Hoje tenho evidência de publicação automática bem-sucedida, e sigo evoluindo a segurança e a operação.
 
-## Roteiro de 8 telas/slides (5–8 minutos)
+## Roteiro de 11 tópicos/slides (7–10 minutos)
 
 | Slide | Título | Mensagem e demonstração sugeridas |
 |---|---|---|
@@ -18,10 +18,13 @@
 | 2 | Usuários | DOADOR, PRODUTOR, DISTRIBUIDOR, ONG, ADMIN e seus papéis |
 | 3 | Jornada | Publicar → ONG solicita → doador aprova → voluntário coleta → confirmar → contabilizar |
 | 4 | Arquitetura | React/Vite → REST Kotlin/Spring Boot → JPA/PostgreSQL; Nginx e Oracle |
-| 5 | Dados e segurança | 7 entidades de domínio JPA, vínculos, TEMP/ACCESS, autorização por organização |
-| 6 | Engenharia de qualidade | Testes Kotlin e de sessão; CI com PostgreSQL descartável; locks de estoque |
-| 7 | DevOps real | GitHub Actions → SSH pinado → JAR/dist → backup → health → rollback; runs PASS |
-| 8 | Aprendizados e próximos passos | Limitação E2.1.Micro, Kdump e Nginx 403 solucionados; TLS, LGPD, observabilidade e E2E |
+| 5 | Dados e segurança | Vínculos por organização, JWT TEMP/ACCESS e cuidados com os dados dos voluntários |
+| 6 | Testes | Exemplos de testes de login, autorização e disputa por estoque; CI com banco descartável |
+| 7 | Histórico das mudanças | Mostrar que a aplicação já funcionava, mas precisava de revisão; comparar os PRs de 10 a 13/11 |
+| 8 | Versionamento | Abrir `docs/controle/VERSIONAMENTO.md`; explicar versão do documento, data, PR e o que mudou |
+| 9 | Uso de IA na análise | Abrir `docs/controle/HISTORICO_MUDANCAS_E_USO_IA.md`; explicar perguntas, três cenários e revisão humana |
+| 10 | Publicação da API | GitHub Actions → SSH → JAR → backup → health → rollback; apresentar o run comprovado |
+| 11 | Aprendizados e próximos passos | Melhorias de segurança, organização e documentação; pendências como HTTPS, privacidade e testes no navegador |
 
 ## Demonstração técnica segura (sem dados sensíveis)
 
@@ -31,6 +34,22 @@
 4. Abrir os workflows e comparar **CI de PR** com **CD em push main**; mostrar logs reais dos runs comprovados, sem exibir chaves.
 5. Mostrar um exemplo de rollback em documentação ou teste controlado. **Não derrubar a API em produção durante uma banca.**
 
+## Como apresentar o histórico, o versionamento e a IA
+
+Esta parte pode ser apresentada em cerca de dois ou três minutos, com os documentos abertos no GitHub.
+
+**Histórico do projeto.** A aplicação FoodBridge já tinha cadastro, login, organizações, doações, pedidos e voluntários funcionando. Ao revisar o código, apareceram pontos para melhorar: informações de token em logs, checagem de permissões, proteção de dados pessoais, concorrência de estoque e validações. Não é correto dizer que a aplicação inteira não funcionava ou que todas as falhas listadas foram exploradas. Para mostrar as mudanças, abrir o [histórico de mudanças](controle/HISTORICO_MUDANCAS_E_USO_IA.md) e os PRs relacionados, por exemplo [#1](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/1) e [#11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11).
+
+**Versionamento.** Abrir o arquivo [VERSIONAMENTO.md](controle/VERSIONAMENTO.md). Explicar que as revisões dos documentos foram anotadas com datas e assuntos, e que o Git registra as alterações do código em commits e pull requests. Mostrar a revisão documental v1.2.2 (23/11/2026) e a v1.2.0 (13/11/2026). Essas versões são dos **documentos**: o arquivo `build.gradle.kts` ainda usa a versão de build `0.0.1-SNAPSHOT` e isso não deve ser confundido com a versão documental.
+
+**Uso de inteligência artificial.** Explicar que a IA foi usada como apoio para pensar sobre possíveis problemas, pedir explicações e organizar opções de solução, testes e textos. No [histórico auxiliar](controle/HISTORICO_MUDANCAS_E_USO_IA.md), mostrar três cenários de um mesmo assunto: um caso normal, um caso com acesso indevido e um caso de regra ou operação concorrente. Os prompts exibidos no documento foram **reconstituídos em 23/11/2026** conforme os assuntos do trabalho; não são cópias verificadas das conversas de 10 a 13/11. O que comprova uma mudança feita no projeto são os commits, os PRs, o código e os testes, e não a resposta da IA.
+
+**Exemplo de explicação em voz alta:**
+
+> O sistema já funcionava, mas fizemos uma revisão para encontrar pontos de segurança e melhorar o código. No GitHub estão registrados os PRs e as datas das mudanças. Nesse arquivo de versionamento fica o resumo do que foi documentado em cada revisão. Também usamos inteligência artificial como apoio para analisar problemas e pensar em testes. Aqui aparecem exemplos de perguntas reconstruídas depois da revisão. As correções de fato podem ser conferidas no código e nos testes do repositório.
+
+**Ordem recomendada para a demonstração:** [histórico auxiliar](controle/HISTORICO_MUDANCAS_E_USO_IA.md) → [versionamento](controle/VERSIONAMENTO.md) → [PR #11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11) → [execução de CI da API](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/actions/runs/43465999269).
+
 ## Evidência pública para apresentar
 
 - [Repositório API Kotlin](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin) e [repositório frontend React](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React).
@@ -38,6 +57,7 @@
 - [CI/CD automático do React: PASS, Nginx HTTP 200](https://github.com/DanieldeAlmeida2024/Foodbridge-Frontend-React/actions/runs/43465805656).
 - [Incidente de deploy e aprendizado](implantacao/INCIDENTE_DEPLOY_API_20261113.md) (memória e rollback).
 - [Catálogo atual de 50 endpoints](REFERENCIA_API_ATUAL.md) e [UML editável](uml/README.md).
+- [Histórico de mudanças e uso de IA](controle/HISTORICO_MUDANCAS_E_USO_IA.md) e [versionamento dos documentos](controle/VERSIONAMENTO.md).
 - [Plano de testes](testes/PLANO_DE_TESTES.md) e [matriz de rastreabilidade](testes/MATRIZ_RASTREABILIDADE.md), distinguindo casos planejados de testes executados.
 
 ## Perguntas difíceis que podem surgir
@@ -52,11 +72,16 @@
 
 **“O que faria para escalar?”** Separar serviços, melhorar observabilidade, usar migrations versionadas e backups testados, habilitar HTTPS e adequar recursos à carga.
 
+**“A IA fez as correções sozinha?”** A IA serviu de apoio na análise e no estudo de possibilidades. Para confirmar uma correção, consultar o PR, o arquivo alterado e os testes. As perguntas mostradas no documento auxiliar são reconstruções, não transcrições originais.
+
+**“A versão v1.2.2 é a versão da API?”** Não. É uma revisão da documentação. A versão do artefato de build está declarada separadamente no Gradle.
+
 ## Checklist antes da apresentação
 
 - [ ] Confirmar que a UI responde na rede da apresentação, sem supor que HTTP 80 prova HTTPS.
 - [ ] Usar conta e dados sintéticos; não mostrar CPF, senha, JWT, valores de `application.properties` ou segredos do Actions.
-- [ ] Abrir a documentação e uma versão de branch/commit específica.
+- [ ] Abrir o histórico auxiliar e o versionamento da branch principal, com links para os PRs e o CI correspondente.
+- [ ] Dizer que os prompts foram reconstituídos e diferenciar versão documental de versão do Gradle.
 - [ ] Conferir se a lista de rotas e inventário do Git estão atualizados.
 - [ ] Ensaiar pitch de 1 minuto e demonstração de 5 minutos.
 - [ ] Ter alternativa sem internet (prints sem dados pessoais e diagramas Mermaid/PlantUML).
