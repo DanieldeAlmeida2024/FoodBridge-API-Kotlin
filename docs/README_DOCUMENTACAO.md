@@ -17,7 +17,7 @@ Para diagnóstico de portas e serviços relevantes ao projeto, consulte [Rede e 
 | Estudar arquitetura | [Arquitetura atual](ARQUITETURA_ATUAL.md) | Componentes, dados, sequência JWT, fluxo de coleta e implantação |
 | Consultar API | [Catálogo atual de 50 rotas REST](REFERENCIA_API_ATUAL.md) | Método, caminho, guarda e finalidade |
 | Estudar para prova/entrevista | [Guia de estudo](GUIA_ESTUDO.md) | Trilha por sessão, exercícios, testes e perguntas |
-| Apresentar o projeto | [Roteiro de apresentação](APRESENTACAO_PROJETO.md) | Pitch, apresentação de 8 telas, demonstração e evidências |
+| Apresentar o projeto | [Roteiro de apresentação](APRESENTACAO_PROJETO.md) | Roteiro com histórico, versionamento, IA e demonstração |
 | Conferir CD real | [CI/CD automático na Micro](implantacao/OCI_MICRO_AUTOMATIC_CICD.md) | Jobs, requisitos, backup/rollback e logs PASS |
 | Ver incidente e aprendizado | [Incidente de implantação](implantacao/INCIDENTE_DEPLOY_API_20261113.md) | Diagnóstico de RAM, Kdump, saúde e mitigação |
 | Histórico de requisitos | [Especificação histórica](projeto/ESPECIFICACAO_PROJETO.md), [riscos](projeto/RISCOS.md) | Baseline documentada, nem toda afirmação atual |
