@@ -40,7 +40,7 @@ Esta parte pode ser apresentada em cerca de dois ou três minutos, com os docume
 
 **Histórico do projeto.** A aplicação FoodBridge já tinha cadastro, login, organizações, doações, pedidos e voluntários funcionando. Ao revisar o código, apareceram pontos para melhorar: informações de token em logs, checagem de permissões, proteção de dados pessoais, concorrência de estoque e validações. Não é correto dizer que a aplicação inteira não funcionava ou que todas as falhas listadas foram exploradas. Para mostrar as mudanças, abrir o [histórico de mudanças](controle/HISTORICO_MUDANCAS_E_USO_IA.md) e os PRs relacionados, por exemplo [#1](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/1) e [#11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11).
 
-**Versionamento.** Abrir o arquivo [VERSIONAMENTO.md](controle/VERSIONAMENTO.md). Explicar que as revisões dos documentos foram anotadas com datas e assuntos, e que o Git registra as alterações do código em commits e pull requests. Mostrar a revisão documental v1.2.2 (23/11/2026) e a v1.2.0 (13/11/2026). Essas versões são dos **documentos**: o arquivo `build.gradle.kts` ainda usa a versão de build `0.0.1-SNAPSHOT` e isso não deve ser confundido com a versão documental.
+**Versionamento.** Abrir o arquivo [VERSIONAMENTO.md](controle/VERSIONAMENTO.md). Explicar que as revisões dos documentos foram anotadas com datas e assuntos, e que o Git registra as alterações do código em commits e pull requests. Mostrar as revisões documentais v1.2.3 e v1.2.2 (23/11/2026) e a v1.2.0 (13/11/2026). Essas versões são dos **documentos**: o arquivo `build.gradle.kts` ainda usa a versão de build `0.0.1-SNAPSHOT` e isso não deve ser confundido com a versão documental.
 
 **Uso de inteligência artificial.** Explicar que a IA foi usada como apoio para pensar sobre possíveis problemas, pedir explicações e organizar opções de solução, testes e textos. No [histórico auxiliar](controle/HISTORICO_MUDANCAS_E_USO_IA.md), mostrar três cenários de um mesmo assunto: um caso normal, um caso com acesso indevido e um caso de regra ou operação concorrente. Mostrar as perguntas de análise organizadas por etapa, com seus três cenários e possíveis soluções. Esses textos são exemplos para explicar o estudo dos problemas, não registros literais de conversas. O que comprova uma mudança feita no projeto são os commits, os PRs, o código e os testes.
 
@@ -74,7 +74,7 @@ Esta parte pode ser apresentada em cerca de dois ou três minutos, com os docume
 
 **“A IA fez as correções sozinha?”** A IA serviu de apoio na análise e no estudo de possibilidades. Para confirmar uma correção, consultar o PR, o arquivo alterado e os testes. As perguntas do documento auxiliar ilustram a análise; não são registros literais. As alterações devem ser conferidas no GitHub.
 
-**“A versão v1.2.2 é a versão da API?”** Não. É uma revisão da documentação. A versão do artefato de build está declarada separadamente no Gradle.
+**“A versão v1.2.3 é a versão da API?”** Não. É uma revisão da documentação. A versão do artefato de build está declarada separadamente no Gradle.
 
 ## Checklist antes da apresentação
 
