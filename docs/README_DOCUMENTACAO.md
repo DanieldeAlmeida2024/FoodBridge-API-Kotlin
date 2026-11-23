@@ -24,7 +24,7 @@ Para diagnóstico de portas e serviços relevantes ao projeto, consulte [Rede e 
 | Testes planejados | [Plano](testes/PLANO_DE_TESTES.md) e [matriz](testes/MATRIZ_RASTREABILIDADE.md) | Casos de teste, critérios e rastreabilidade |
 | UML editável | [Catálogo PlantUML](uml/README.md) | Casos de uso, classes, sequências, estados e deploy |
 | Versões documentais | [Controle de versões](controle/VERSIONAMENTO.md) | Revisões, decisões e evidências |
-| Histórico de mudanças e IA | [Registro auxiliar das revisões de novembro](controle/HISTORICO_MUDANCAS_E_USO_IA.md) | Resumo por data, problemas, três cenários e prompts reconstituídos (não são transcrições) |
+| Histórico de mudanças e IA | [Registro auxiliar das revisões de novembro](controle/HISTORICO_MUDANCAS_E_USO_IA.md) | Resumo por data, problemas, três cenários e exemplos de perguntas para análise |
 
 ## Repositórios e divisão de responsabilidade
 

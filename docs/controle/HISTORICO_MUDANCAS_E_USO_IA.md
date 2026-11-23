@@ -131,27 +131,35 @@ Problema: a documentação pode ficar diferente do código ou apresentar como co
 
 Possíveis soluções: manter a lista de rotas e o inventário atualizados, registrar PRs e resultados reais dos testes e revisar diagramas quando a estrutura mudar. Relacionado aos PRs #3, #29 e #30.
 
-## 4. Registro do uso de inteligência artificial
+## 4. Uso de inteligência artificial na análise
 
-A inteligência artificial pode ajudar a localizar problemas, explicar partes do código, comparar opções, propor casos de teste e organizar documentos. Mesmo assim, é preciso conferir as respostas com os arquivos reais e com os testes.
+A inteligência artificial serviu como apoio para entender melhor o código, levantar possibilidades de melhoria, comparar situações e organizar ideias para testes e documentos. As correções precisavam ser conferidas nos arquivos do projeto.
 
-**Sobre os prompts:** não foram encontradas transcrições completas e verificáveis das perguntas feitas à IA nos dias abaixo. Os textos a seguir são **prompts reconstituídos em 23/11/2026 com base nos assuntos trabalhados em cada data**. Eles mostram exemplos de perguntas compatíveis com as mudanças, mas não comprovam que estas palavras foram usadas na ocasião.
+As perguntas abaixo são exemplos de consulta organizados pelas etapas das alterações. Elas representam os problemas estudados, mas não há transcrição verificada de que foram enviadas exatamente dessa forma nas datas indicadas. O histórico do código e dos testes pode ser conferido pelos links dos PRs.
 
-### 10/11/2026 — prompt reconstituído: segurança do login
+### Etapa de 10/11/2026 — Revisão de login, JWT e logs
 
-> Estou revisando a parte de login da minha API Kotlin com Spring Boot. Ela funciona, mas quero entender se tem algum problema no filtro JWT e nos logs. Pode olhar as regras de segurança e me explicar o que está errado, por que isso seria um risco e quais soluções eu poderia considerar? Analise três situações: uma rota pública sem token, uma requisição com token inválido e uma conta que perdeu o acesso. Fale também quais testes seriam úteis e o que precisaria ser registrado na documentação.
+> Estou olhando a segurança da minha API Kotlin Spring Boot. O login funciona, mas quero conferir o JwtFilter.kt e o SecurityConfig.kt. Vi que alguns logs podem mostrar informações do token. Isso é um problema? Analise três casos: 1) uma pessoa abre uma rota pública sem login; 2) alguém envia um JWT inválido ou vencido; 3) o usuário tem um token válido, mas perdeu permissão. Explique o risco em cada situação e compare possíveis soluções, como remover dados de autorização dos logs, separar as rotas públicas e conferir a situação do usuário no banco. Quais testes simples eu poderia criar e quais arquivos ou documentos precisam ser revisados?
 
-### 11/11/2026 — prompt reconstituído: permissões e doações
+**Pontos relacionados:** retirar logs sensíveis, tratar rotas públicas e testar o filtro de autenticação ([PR #1](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/1)).
 
-> Quero verificar se as permissões de organização e as quantidades das doações estão corretas no FoodBridge. O sistema já faz essas operações, mas pode ter problemas quando alguém tenta acessar dados de outra organização ou quando chegam duas solicitações juntas. Compare três casos: uma operação normal, uma tentativa sem permissão e duas aprovações que disputam o mesmo estoque. Descreva os problemas, possíveis formas de corrigir e quais testes ajudariam a conferir. Também quero saber como deixar essas regras mais claras nos documentos.
+### Etapa de 11/11/2026 — Permissões, voluntários e estoque
 
-### 12/11/2026 — prompt reconstituído: revisão do código e testes de implantação
+> Quero revisar as regras do FoodBridge sem refazer o sistema, porque os fluxos principais já funcionam. Olhe principalmente a parte de organizações, voluntários e doações. Compare três casos: 1) um usuário acessa dados da organização à qual pertence; 2) ele tenta editar outra organização ou consultar o CPF de um voluntário que não está vinculado a ela; 3) duas ONGs pedem quase ao mesmo tempo uma quantidade maior do que a doação tem disponível. Onde a API deveria negar a operação? Quais soluções posso estudar, como validar o vínculo no service, restringir consultas por organização e usar uma transação para controlar a quantidade? Indique também possíveis repetições ou validações confusas no código, testes de sucesso e erro e as mudanças necessárias na documentação.
 
-> Pode analisar os arquivos de configuração e os scripts da minha API antes da publicação na Oracle? Quero entender o que pode causar erro no início da aplicação e se as verificações estão organizadas. Considere três situações: a API inicia normalmente, a consulta de saúde demora e uma configuração do banco está incorreta. Explique as possíveis causas, como conferir cada caso sem alterar o banco de produção, quais testes seriam necessários e o que devo descrever no histórico das mudanças.
+**Pontos relacionados:** autorização por organização, isolamento de voluntários e controle de concorrência ([PR #4](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/4), [PR #6](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/6) e integração pelo [PR #11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11)).
 
-### 13/11/2026 — prompt reconstituído: revisão final e documentação
+### Etapa de 12/11/2026 — Configuração, saúde da API e testes
 
-> Fizemos várias mudanças no FoodBridge e quero conferir se o código, os testes e os documentos estão combinando. Analise o fluxo de login, organizações, voluntários, doações e coleta, além das regras básicas de segurança e da organização dos arquivos. Use três situações como exemplo: um fluxo que funciona, uma operação que deveria ser negada e um erro que pode voltar depois de uma mudança. Me mostre o que merece revisão, alternativas de melhoria, testes que poderiam comprovar cada parte e quais documentos precisam ser atualizados. Separe também o que foi feito do que ainda está pendente.
+> Quero entender melhor os arquivos de configuração e os scripts de publicação do FoodBridge na Oracle. A API funciona em desenvolvimento, mas tenho receio de mexer no banco errado ou achar que ela caiu só porque a resposta demorou. Analise três situações: 1) o serviço inicia e responde normalmente; 2) a consulta ao dashboard demora e o teste de saúde falha por tempo; 3) a configuração do banco está errada ou o novo JAR não inicia direito. Quais verificações posso fazer antes de publicar, sem alterar o PostgreSQL de produção? Compare as possibilidades de ter uma rota simples de saúde, conferir a configuração do Hibernate e manter backup/rollback. Explique quais testes e registros no documento de implantação seriam úteis.
+
+**Pontos relacionados:** preflight, validação de esquema e revisão das verificações de saúde ([PR #7](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/7), [PR #9](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/9) e [PR #10](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/10)).
+
+### Etapa de 13/11/2026 — Integração, testes e atualização dos documentos
+
+> Depois dessas revisões quero comparar o código com os requisitos do FoodBridge. Confira os controllers, services e DTOs de login, organização, doação, requisição e voluntários. Analise três casos: 1) o caminho completo de cadastro, aprovação, pedido e coleta funciona; 2) um usuário tenta fazer algo sem autorização ou com vínculo cancelado; 3) uma mudança corrige um erro, mas acaba afetando outra regra ou a publicação na Oracle. Quais testes unitários, HTTP e de integração com PostgreSQL ajudariam a verificar cada situação? Mostre onde o código pode ficar mais simples e quais documentos, rotas e diagramas precisam ser atualizados. Separe melhorias já implementadas de sugestões que ainda precisam de teste.
+
+**Pontos relacionados:** integração funcional e testes ([PR #11](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/11)); publicação automática e documentação atual ([PR #28](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/28), [PR #29](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/29) e [PR #30](https://github.com/DanieldeAlmeida2024/FoodBridge-API-Kotlin/pull/30)).
 
 ## 5. O que foi usado como referência
 
